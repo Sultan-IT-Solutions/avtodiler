@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Design / local refs (not needed for build)
+screenshots/
+.claude/
+design-tokens.json
+write-pages.mjs
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
