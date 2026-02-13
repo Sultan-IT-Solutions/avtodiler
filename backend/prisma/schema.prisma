@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  isAdmin   Boolean @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Brand {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  translations String
+  media       String?
+  models      Model[]
+  cars        Car[]
+  createdAt   DateTime @default(now())
+}
+
+model Model {
+  id          Int    @id @default(autoincrement())
+  brandId     Int
+  slug        String
+  translations String
+  brand       Brand  @relation(fields: [brandId], references: [id])
+  cars        Car[]
+}
+
+model Car {
+  id          Int     @id @default(autoincrement())
+  brandId     Int
+  modelId     Int
+  year        Int
+  price       Float?
+  mileage     Int?
+  media       String?
+  translations String
+  createdAt   DateTime @default(now())
+  brand       Brand   @relation(fields: [brandId], references: [id])
+  model       Model   @relation(fields: [modelId], references: [id])
+}
+
+model Service {
+  id Int @id @default(autoincrement())
+  translations String
+  price Float?
+}
+
+model Offer {
+  id Int @id @default(autoincrement())
+  translations String
+  image String?
+  startAt DateTime?
+  endAt DateTime?
+}
+
+model Dealer {
+  id Int @id @default(autoincrement())
+  name String
+  address String
+  phone String
+  hours String?
+  coords String?
+}
+
+model Request {
+  id Int @id @default(autoincrement())
+  type String
+  name String
+  phone String
+  carId Int?
+  dealerId Int?
+  serviceId Int?
+  comment String?
+  lang String @default("ru")
+  createdAt DateTime @default(now())
+}
+
+model PageContent {
+  id Int @id @default(autoincrement())
+  slug String @unique
+  translations String
+  seo String?
+}
