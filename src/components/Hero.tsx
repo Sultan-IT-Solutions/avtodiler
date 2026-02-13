@@ -37,8 +37,8 @@ export const Hero = () => {
       >
         <div className="absolute inset-0 bg-gradient-to-b from-luxury-black/70 via-luxury-black/50 to-luxury-black z-10" />
         <img
-          src="https://images.unsplash.com/photo-1751958034904-f90fe58bdfd0?w=2400&q=90&auto=format&fit=crop"
-          alt="Mercedes AMG GT 63 Black"
+          src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
+          alt="Hongqi"
           className="w-full h-full object-cover scale-110"
           loading="eager"
           onError={(e) => {

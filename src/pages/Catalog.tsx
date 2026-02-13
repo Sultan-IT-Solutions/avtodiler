@@ -6,6 +6,7 @@ import gsap from 'gsap';
 import { cars } from '../data/cars';
 import { ArrowRight, SlidersHorizontal, X, Search } from 'lucide-react';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 type SortOption = 'newest' | 'priceHigh' | 'priceLow';
 
@@ -130,7 +131,7 @@ export const Catalog = () => {
           className="absolute inset-0"
         >
           <img
-            src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=2400&q=90"
+            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
             alt="Catalog"
             className="w-full h-full object-cover"
           />
@@ -492,6 +493,7 @@ export const Catalog = () => {
         )}
       </AnimatePresence>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

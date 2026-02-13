@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 const dealers = [
   { id: 1, name: 'Luxury Auto — Аль-Фараби', address: 'ул. Аль-Фараби, 77, Алматы' },
@@ -67,7 +68,7 @@ export const TestDrive = () => {
           className="absolute inset-0 will-change-transform"
         >
           <img
-            src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=2400&q=90"
+            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
             alt="Test Drive"
             className="w-full h-[120%] object-cover"
           />
@@ -339,6 +340,7 @@ export const TestDrive = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

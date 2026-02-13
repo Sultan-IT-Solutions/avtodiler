@@ -6,7 +6,9 @@ import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { cars } from '../data/cars';
+import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -77,8 +79,6 @@ export const Home = () => {
   const heroContentRef = useRef<HTMLDivElement>(null);
   const horizontalRef = useRef<HTMLDivElement>(null);
   const horizontalInnerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoError, setVideoError] = useState(false);
 
   // Hero parallax
   const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -147,18 +147,11 @@ export const Home = () => {
         {/* Layer 1: Video/Image Background with parallax */}
         <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0 will-change-transform">
           <img
-            src="https://images.unsplash.com/photo-1751958034904-f90fe58bdfd0?w=2400&q=90&auto=format&fit=crop"
-            alt="Mercedes AMG GT 63"
+            src={SITE_IMAGES.hero}
+            alt="Hongqi"
             className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=2400&q=90&auto=format&fit=crop'; }}
+            onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; }}
           />
-          {!videoError && (
-            <video ref={videoRef} autoPlay muted loop playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={() => setVideoError(true)} onStalled={() => setVideoError(true)}>
-              <source src="https://videos.pexels.com/video-files/3945116/3945116-hd_1920_1080_25fps.mp4" type="video/mp4" />
-            </video>
-          )}
         </motion.div>
 
         {/* Layer 2: Cinematic noise/grain overlay */}
@@ -211,10 +204,10 @@ export const Home = () => {
             </div>
           </div>
 
-          {/* Main Title — Enormous, cinematic */}
-          <div className="max-w-6xl mb-6">
+          {/* Main Title — крупно, но помещается в экран */}
+          <div className="max-w-6xl mb-6 pr-4">
             <div className="overflow-hidden">
-              <h1 className="hero-reveal text-[clamp(52px,9vw,140px)] font-bold leading-[0.9] tracking-[-0.04em] text-white uppercase"
+              <h1 className="hero-reveal text-[clamp(32px,5.5vw,80px)] font-bold leading-[1.05] tracking-[-0.04em] text-white uppercase max-w-5xl"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
                 {t('hero.title')}
               </h1>
@@ -222,15 +215,15 @@ export const Home = () => {
           </div>
 
           {/* Subtitle */}
-          <div className="overflow-hidden mb-10">
-            <p className="hero-reveal text-base lg:text-lg text-white/40 max-w-lg font-light leading-relaxed">
+          <div className="overflow-hidden mb-10 max-w-2xl pr-4">
+            <p className="hero-reveal text-sm lg:text-base text-white/40 font-light leading-relaxed">
               {t('hero.subtitle')}
             </p>
           </div>
 
           {/* CTAs + Metrics */}
-          <div className="overflow-hidden">
-            <div className="hero-reveal flex flex-wrap items-center gap-12">
+          <div className="overflow-hidden pr-4">
+            <div className="hero-reveal flex flex-wrap items-center gap-8 lg:gap-12">
               {/* Buttons */}
               <div className="flex items-center gap-3">
                 <MagneticButton to="/catalog" className="btn-primary !py-3.5 !px-8 text-xs flex items-center gap-2">
@@ -425,7 +418,7 @@ export const Home = () => {
             >
               <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
                 <ParallaxImage
-                  src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&q=90"
+                  src={SITE_IMAGES.philosophy}
                   alt="Luxury Philosophy" className="w-full h-full" speed={0.2}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
@@ -466,7 +459,7 @@ export const Home = () => {
             transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
             className="relative aspect-video overflow-hidden rounded-sm group cursor-pointer"
           >
-            <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=2400&q=90" alt="Safety" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
+            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
             <div className="absolute inset-0 bg-luxury-black/40 group-hover:bg-luxury-black/20 transition-colors duration-700" />
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
@@ -574,7 +567,7 @@ export const Home = () => {
           ============================================================ */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <ParallaxImage src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=2400&q=90" alt="Power" className="w-full h-full" speed={0.15} />
+          <ParallaxImage src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full" speed={0.15} />
           <div className="absolute inset-0 bg-luxury-black/75" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -605,6 +598,7 @@ export const Home = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

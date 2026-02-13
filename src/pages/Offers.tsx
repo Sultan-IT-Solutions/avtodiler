@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Clock, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 const HEADING_FONT = { fontFamily: "'Montserrat', system-ui, sans-serif" };
 const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
@@ -82,7 +83,7 @@ export const Offers = () => {
           className="absolute inset-0"
         >
           <img
-            src="https://images.unsplash.com/photo-1542362567-b07e54358753?w=2400&q=90"
+            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
             alt="Offers"
             className="w-full h-full object-cover"
           />
@@ -270,6 +271,7 @@ export const Offers = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

@@ -71,7 +71,7 @@ export const Contact = () => {
           className="absolute inset-0 will-change-transform"
         >
           <img
-            src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2400&q=90"
+            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
             alt="Contact"
             className="w-full h-[120%] object-cover"
           />

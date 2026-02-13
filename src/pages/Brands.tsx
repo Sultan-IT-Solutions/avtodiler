@@ -4,7 +4,9 @@ import { ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -63,7 +65,7 @@ export const Brands = () => {
       {/* HERO */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
         <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0 will-change-transform">
-          <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0afe?w=2400&q=90" alt="Hongqi Brand" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" />
         </motion.div>
         <div className="absolute inset-0 z-[3] bg-gradient-to-b from-luxury-black/60 via-transparent to-luxury-black" />
         <div className="absolute inset-0 z-[3] bg-gradient-to-r from-luxury-black/70 via-luxury-black/20 to-transparent" />
@@ -115,7 +117,7 @@ export const Brands = () => {
             </motion.div>
             <motion.div initial={{ opacity: 0, scale: 0.92 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-100px' }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="lg:col-span-6 relative">
               <div className="relative aspect-[3/4] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=90" alt="Brand Philosophy" className="w-full h-full object-cover" />
+                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
               </div>
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.5 }} className="absolute -bottom-6 -left-6 lg:-left-12 bg-luxury-surface/90 backdrop-blur-xl border border-white/5 p-6">
@@ -163,7 +165,7 @@ export const Brands = () => {
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0418\u0441\u0442\u043e\u0440\u0438\u044f'}<br /><span className="text-white/20">Hongqi</span></h2>
           </div>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-100px' }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="relative aspect-video overflow-hidden group cursor-pointer">
-            <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=2400&q=90" alt="Hongqi Video" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
+            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
             <div className="absolute inset-0 bg-luxury-black/40 group-hover:bg-luxury-black/20 transition-colors duration-700" />
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -209,7 +211,7 @@ export const Brands = () => {
       {/* CTA */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=2400&q=90" alt="CTA" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.secondary} alt="Hongqi" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-luxury-black/80" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -228,6 +230,7 @@ export const Brands = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

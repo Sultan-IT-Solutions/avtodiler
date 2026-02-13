@@ -4,7 +4,9 @@ import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Award, Users, Car, Shield } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -98,7 +100,7 @@ export const About = () => {
       {/* HERO */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
         <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0 will-change-transform">
-          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=2400&q=90" alt="About Us" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" />
         </motion.div>
 
         <div className="absolute inset-0 z-[2] opacity-[0.04] pointer-events-none mix-blend-overlay"
@@ -193,7 +195,7 @@ export const About = () => {
               transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-6 relative">
               <div className="relative aspect-[3/4] overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0afe?w=1200&q=90" alt="Our Mission" className="w-full h-full object-cover" />
+                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
               </div>
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -329,7 +331,7 @@ export const About = () => {
       {/* CTA */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <img src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=2400&q=90" alt="CTA" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-luxury-black/80" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -364,6 +366,7 @@ export const About = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

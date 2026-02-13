@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
@@ -900,6 +901,7 @@ export const CarDetail = () => {
         )}
       </AnimatePresence>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );

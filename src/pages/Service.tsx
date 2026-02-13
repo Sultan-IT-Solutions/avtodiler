@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send } from 'lucide-react';
 import { Footer } from '../components/Footer';
+import { ContactFormSection } from '../components/ContactFormSection';
 
 const services = [
   {
@@ -83,7 +84,7 @@ export const Service = () => {
           className="absolute inset-0 will-change-transform"
         >
           <img
-            src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=2400&q=90"
+            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
             alt="Service"
             className="w-full h-[120%] object-cover"
           />
@@ -376,6 +377,7 @@ export const Service = () => {
         </div>
       </section>
 
+      <ContactFormSection />
       <Footer />
     </div>
   );
