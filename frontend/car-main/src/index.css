@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== PREMIUM BASE STYLES ===== */
 @layer base {
   * {
     @apply border-white/5;
@@ -12,7 +11,7 @@
   }
 
   html {
-    scroll-behavior: auto; 
+    scroll-behavior: auto;
   }
 
   body {
@@ -38,7 +37,6 @@
     overscroll-behavior: contain;
   }
 
-  /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -56,7 +54,6 @@
     background: #555;
   }
 
-  /* Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
     font-family: 'Montserrat', system-ui, sans-serif !important;

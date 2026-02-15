@@ -12,6 +12,22 @@ if (typeof window !== 'undefined') {
   window.addEventListener('gesturechange', block, { passive: false } as AddEventListenerOptions)
   window.addEventListener('gestureend', block, { passive: false } as AddEventListenerOptions)
 
+  document.addEventListener(
+    'touchstart',
+    (e) => {
+      if ((e as TouchEvent).touches && (e as TouchEvent).touches.length > 1) e.preventDefault()
+    },
+    { passive: false }
+  )
+
+  document.addEventListener(
+    'touchmove',
+    (e) => {
+      if ((e as TouchEvent).touches && (e as TouchEvent).touches.length > 1) e.preventDefault()
+    },
+    { passive: false }
+  )
+
   let lastTouchEnd = 0
   document.addEventListener(
     'touchend',
