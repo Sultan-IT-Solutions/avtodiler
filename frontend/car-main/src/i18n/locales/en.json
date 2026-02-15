@@ -1,0 +1,84 @@
+{
+  "nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "hero": {
+    "eyebrow": "LUXURY REDEFINED",
+    "title": "Experience Excellence in Every Drive",
+    "subtitle": "Discover Kazakhstan's premier collection of world's most prestigious automotive masterpieces",
+    "ctaPrimary": "Explore Collection",
+    "ctaSecondary": "Book Consultation"
+  },
+  "featured": {
+    "title": "Featured Collection",
+    "subtitle": "Handpicked masterpieces for discerning connoisseurs"
+  },
+  "catalog": {
+    "title": "Complete Collection",
+    "subtitle": "Explore our curated selection of luxury vehicles",
+    "filters": "Filters",
+    "brand": "Brand",
+    "year": "Year",
+    "priceRange": "Price Range",
+    "reset": "Reset Filters",
+    "sort": "Sort By",
+    "sortNewest": "Newest First",
+    "sortPriceHigh": "Price: High to Low",
+    "sortPriceLow": "Price: Low to High",
+    "loadMore": "Load More"
+  },
+  "car": {
+    "year": "Year",
+    "mileage": "Mileage",
+    "km": "km",
+    "viewDetails": "View Details",
+    "price": "Price on request"
+  },
+  "carDetail": {
+    "overview": "Overview",
+    "specifications": "Specifications",
+    "configure": "Configure",
+    "contact": "Contact Us",
+    "testDrive": "Book Test Drive",
+    "call": "Call Now",
+    "whatsapp": "WhatsApp",
+    "exterior": "Exterior Color",
+    "interior": "Interior",
+    "wheels": "Wheels",
+    "similarCars": "Similar Vehicles",
+    "specs": {
+      "engine": "Engine",
+      "power": "Power",
+      "acceleration": "0-100 km/h",
+      "topSpeed": "Top Speed",
+      "transmission": "Transmission",
+      "drivetrain": "Drivetrain",
+      "fuelType": "Fuel Type",
+      "consumption": "Consumption",
+      "seats": "Seats"
+    }
+  },
+  "lifestyle": {
+    "title": "Beyond Driving",
+    "subtitle": "Where luxury meets lifestyle",
+    "description": "Every vehicle in our collection represents more than transportation—it's a statement of refined taste, exceptional craftsmanship, and timeless elegance."
+  },
+  "cta": {
+    "title": "Begin Your Journey",
+    "description": "Schedule a private consultation with our luxury automotive specialists",
+    "button": "Contact Us"
+  },
+  "footer": {
+    "tagline": "Kazakhstan's Premier Luxury Automotive Destination",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Information",
+    "address": "Almaty, Kazakhstan",
+    "rights": "All rights reserved"
+  }
+}
