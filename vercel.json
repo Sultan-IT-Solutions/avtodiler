@@ -2,7 +2,7 @@
   "version": 2,
   "framework": null,
   "buildCommand": "(test -f frontend/car-main/package.json && npm install --prefix frontend/car-main && npm run build --prefix frontend/car-main) || (test -f car-main/package.json && npm install --prefix car-main && npm run build --prefix car-main)",
-  "outputDirectory": "frontend/car-main/dist",
+  "outputDirectory": "car-main/dist",
   "installCommand": "echo 'root install skipped'",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
