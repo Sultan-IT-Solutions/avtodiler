@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "npm ci --prefix frontend/car-main && npm run build --prefix frontend/car-main",
+  "buildCommand": "npm install --prefix frontend/car-main && npm run build --prefix frontend/car-main",
   "outputDirectory": "frontend/car-main/dist",
   "installCommand": "echo 'root install skipped'",
   "rewrites": [
