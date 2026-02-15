@@ -12,7 +12,7 @@
   }
 
   html {
-    scroll-behavior: auto; /* Lenis handles smooth scroll */
+    scroll-behavior: auto; 
   }
 
   body {
@@ -22,7 +22,10 @@
     cursor: default;
   }
 
-  /* Hide scrollbar for smooth scroll */
+  html, body {
+    touch-action: pan-y;
+  }
+
   html.lenis, html.lenis body {
     height: auto;
   }

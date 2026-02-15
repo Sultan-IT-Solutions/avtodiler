@@ -11,6 +11,27 @@ if (typeof window !== 'undefined') {
   window.addEventListener('gesturestart', block, { passive: false } as AddEventListenerOptions)
   window.addEventListener('gesturechange', block, { passive: false } as AddEventListenerOptions)
   window.addEventListener('gestureend', block, { passive: false } as AddEventListenerOptions)
+
+  let lastTouchEnd = 0
+  document.addEventListener(
+    'touchend',
+    (e) => {
+      const now = Date.now()
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault()
+      }
+      lastTouchEnd = now
+    },
+    { passive: false }
+  )
+
+  window.addEventListener(
+    'wheel',
+    (e) => {
+      if ((e as any).ctrlKey || (e as any).metaKey) e.preventDefault()
+    },
+    { passive: false }
+  )
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
