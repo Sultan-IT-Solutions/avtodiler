@@ -66,6 +66,7 @@ function init() {
     setupLanguageSwitcher();
     setupLeadCapture();
     setupMobileMenu();
+    setupMobileSidebar();
 }
 
 
@@ -350,6 +351,73 @@ function setupMobileMenu() {
         
         lastScrollY = currentScrollY;
     });
+}
+
+function setupMobileSidebar() {
+    const burger = document.querySelector('.header__burger');
+    const sidebar = document.getElementById('pmMobileSidebar');
+    const actions = document.getElementById('pmHeaderActions');
+    const mobileActions = document.getElementById('pmMobileActions');
+
+    if (!burger || !sidebar || !actions || !mobileActions) return;
+
+    const mq = window.matchMedia('(max-width: 768px)');
+
+    const syncActions = () => {
+        if (mq.matches) {
+            if (actions.children.length) {
+                while (actions.firstChild) mobileActions.appendChild(actions.firstChild);
+            }
+        } else {
+            if (mobileActions.children.length) {
+                while (mobileActions.firstChild) actions.appendChild(mobileActions.firstChild);
+            }
+            closeSidebar();
+        }
+
+        document.dispatchEvent(new Event('i18n:updated'));
+    };
+
+    const openSidebar = () => {
+        sidebar.classList.add('pm-sidebar--open');
+        sidebar.setAttribute('aria-hidden', 'false');
+        burger.setAttribute('aria-expanded', 'true');
+        document.documentElement.classList.add('pm-sidebar-open');
+        document.body.classList.add('pm-sidebar-open');
+    };
+
+    const closeSidebar = () => {
+        sidebar.classList.remove('pm-sidebar--open');
+        sidebar.setAttribute('aria-hidden', 'true');
+        burger.setAttribute('aria-expanded', 'false');
+        document.documentElement.classList.remove('pm-sidebar-open');
+        document.body.classList.remove('pm-sidebar-open');
+    };
+
+    const isOpen = () => sidebar.classList.contains('pm-sidebar--open');
+
+    burger.addEventListener('click', () => {
+        if (isOpen()) closeSidebar();
+        else openSidebar();
+    });
+
+    sidebar.addEventListener('click', (e) => {
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        if (t.matches('[data-pm-sidebar-close]')) closeSidebar();
+        if (t.closest('.pm-sidebar__nav-link')) closeSidebar();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSidebar();
+    });
+
+    syncActions();
+    if (mq.addEventListener) {
+        mq.addEventListener('change', syncActions);
+    } else {
+        mq.addListener(syncActions);
+    }
 }
 
 

@@ -56,7 +56,13 @@
                     </ul>
                 </nav>
 
-                <div class="header__actions">
+                <button class="header__burger" type="button" aria-label="Open menu" aria-controls="pmMobileSidebar" aria-expanded="false">
+                    <span class="header__burger-line" aria-hidden="true"></span>
+                    <span class="header__burger-line" aria-hidden="true"></span>
+                    <span class="header__burger-line" aria-hidden="true"></span>
+                </button>
+
+                <div class="header__actions" id="pmHeaderActions">
                     
                     <div class="language-switcher">
                         <button class="lang-btn lang-btn--active" data-lang="ru">RU</button>
@@ -76,6 +82,30 @@
 
                     
                     <a href="#" class="test-drive-btn" data-i18n="header.testDrive">Тест-драйв</a>
+                </div>
+
+                <div class="pm-sidebar" id="pmMobileSidebar" aria-hidden="true">
+                    <div class="pm-sidebar__overlay" data-pm-sidebar-close="1"></div>
+                    <aside class="pm-sidebar__panel" role="dialog" aria-modal="true" aria-label="Menu">
+                        <div class="pm-sidebar__header">
+                            <div class="pm-sidebar__title" data-i18n="nav.menu">Меню</div>
+                            <button class="pm-sidebar__close" type="button" data-pm-sidebar-close="1" aria-label="Close">×</button>
+                        </div>
+
+                        <nav class="pm-sidebar__nav" aria-label="Navigation">
+                            <ul class="pm-sidebar__nav-list">
+                                <li><a href="index.html" class="pm-sidebar__nav-link" data-i18n="nav.home">Главная</a></li>
+                                <li><a href="catalog.html" class="pm-sidebar__nav-link" data-i18n="nav.catalog">Каталог</a></li>
+                                <li><a href="brands.html" class="pm-sidebar__nav-link" data-i18n="nav.brands">Бренды</a></li>
+                                <li><a href="service.html" class="pm-sidebar__nav-link" data-i18n="nav.service">Сервис</a></li>
+                                <li><a href="offers.html" class="pm-sidebar__nav-link" data-i18n="nav.offers">Акции</a></li>
+                                <li><a href="#" class="pm-sidebar__nav-link" data-i18n="nav.findDealer">Найти дилера</a></li>
+                                <li><a href="#" class="pm-sidebar__nav-link" data-i18n="nav.contacts">Контакты</a></li>
+                            </ul>
+                        </nav>
+
+                        <div class="pm-sidebar__actions" id="pmMobileActions"></div>
+                    </aside>
                 </div>
         </div>
     </header>

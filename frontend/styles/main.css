@@ -96,6 +96,151 @@ p {
     z-index: 1000;
 }
 
+/* Mobile sidebar (shared header) */
+.header__burger {
+    display: none;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    background: transparent;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.header__burger-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #F8F8F8;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.pm-sidebar {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+}
+
+.pm-sidebar__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+}
+
+.pm-sidebar__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(86vw, 360px);
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.96);
+    border-left: 1px solid rgba(212, 175, 55, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+}
+
+.pm-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.pm-sidebar__title {
+    font-family: 'Montserrat';
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    color: #F8F8F8;
+}
+
+.pm-sidebar__close {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    background: transparent;
+    color: #F8F8F8;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.pm-sidebar__nav {
+    padding: 14px 0;
+}
+
+.pm-sidebar__nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pm-sidebar__nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    text-decoration: none;
+    color: #F8F8F8;
+    font-family: 'Montserrat';
+    font-size: 14px;
+    border: 1px solid transparent;
+}
+
+.pm-sidebar__nav-link:hover {
+    border-color: rgba(212, 175, 55, 0.25);
+    color: #D4AF37;
+}
+
+.pm-sidebar__actions {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pm-sidebar__actions .language-switcher {
+    justify-content: flex-start;
+}
+
+.pm-sidebar__actions .phone-link {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.pm-sidebar__actions .phone-number {
+    display: inline;
+}
+
+.pm-sidebar__actions .test-drive-btn {
+    width: 100%;
+}
+
+html.pm-sidebar-open,
+body.pm-sidebar-open {
+    overflow: hidden;
+}
+
+.pm-sidebar.pm-sidebar--open {
+    display: block;
+}
+
+.pm-sidebar.pm-sidebar--open .pm-sidebar__panel {
+    transform: translateX(0);
+}
+
 .header__content {
     display: flex;
     flex-direction: row;
@@ -582,6 +727,24 @@ p {
     .nav__link {
         padding: 8px 12px;
         font-size: 13px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header__content {
+        gap: 12px;
+    }
+
+    .header__nav {
+        display: none;
+    }
+
+    .header__actions {
+        display: none;
+    }
+
+    .header__burger {
+        display: inline-flex;
     }
 }
 
