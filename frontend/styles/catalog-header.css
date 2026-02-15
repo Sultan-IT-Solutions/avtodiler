@@ -1,0 +1,306 @@
+
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 113px;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 345.5px;
+}
+
+.header__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1440px;
+    height: 112px;
+}
+
+
+.header__logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    width: 131.25px;
+    height: 52px;
+}
+
+.header__logo-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(180deg, #D4AF37 0%, #C9A349 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.header__logo-pm {
+    font-family: 'Tinos', serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 28px;
+    letter-spacing: 0.16px;
+    color: #000000;
+}
+
+.header__logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.header__logo-premium {
+    font-family: 'Tinos', serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 28px;
+    letter-spacing: -0.45px;
+    color: #F8F8F8;
+}
+
+.header__logo-motors {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: #D4AF37;
+}
+
+
+.header__nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 701.27px;
+    height: 36px;
+}
+
+.header__nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    height: 36px;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.16px;
+    color: #F8F8F8;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.header__nav-link:hover {
+    color: #D4AF37;
+}
+
+.header__nav-link--active {
+    color: #D4AF37;
+}
+
+.header__nav-link--active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #D4AF37;
+}
+
+
+.header__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 433.84px;
+    height: 36px;
+}
+
+
+.header__language {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    height: 34px;
+    width: 131.28px;
+    padding: 0 2px;
+}
+
+.header__lang-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    height: 28px;
+    background: transparent;
+    border: none;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.header__lang-btn--active {
+    background: #D4AF37;
+    color: #000000;
+}
+
+
+.header__phone {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #F8F8F8;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.6px;
+    transition: color 0.3s ease;
+    width: 146.64px;
+    height: 16px;
+}
+
+.header__phone:hover {
+    color: #D4AF37;
+}
+
+.header__phone-icon {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+}
+
+
+.header__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    gap: 6px;
+    width: 123.92px;
+    height: 36px;
+    background: #D4AF37;
+    border: 2px solid #D4AF37;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.16px;
+    color: #000000;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.header__cta:hover {
+    background: transparent;
+    color: #D4AF37;
+}
+
+
+@media (max-width: 1440px) {
+    .header {
+        padding: 0 48px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .header {
+        padding: 0 24px;
+    }
+    
+    .header__nav {
+        display: none;
+    }
+    
+    .header__right {
+        gap: 12px;
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        height: 80px;
+        padding: 0 16px;
+    }
+    
+    .header__container {
+        height: 80px;
+    }
+    
+    .header__logo {
+        width: auto;
+        height: auto;
+        gap: 8px;
+    }
+    
+    .header__logo-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .header__logo-pm {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    
+    .header__logo-premium {
+        font-size: 14px;
+        line-height: 20px;
+    }
+    
+    .header__logo-motors {
+        font-size: 10px;
+        line-height: 12px;
+    }
+    
+    .header__right {
+        gap: 8px;
+    }
+    
+    .header__language {
+        display: none;
+    }
+    
+    .header__phone {
+        width: auto;
+        font-size: 11px;
+    }
+    
+    .header__cta {
+        padding: 12px 16px;
+        width: auto;
+        height: 32px;
+        font-size: 11px;
+    }
+}

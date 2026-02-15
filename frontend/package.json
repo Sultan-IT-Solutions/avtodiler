@@ -1,0 +1,32 @@
+{
+  "name": "premium-motors-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Premium Motors autodiler website",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=3000 --host=localhost",
+    "build": "echo 'Build process will be implemented'",
+    "dev": "live-server --port=3000 --host=localhost --watch=styles,scripts",
+    "lint": "eslint scripts/*.js",
+    "format": "prettier --write \"**/*.{html,css,js}\""
+  },
+  "keywords": [
+    "automotive",
+    "dealership",
+    "premium-motors",
+    "frontend",
+    "website"
+  ],
+  "author": "Premium Motors",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "eslint": "^8.0.0",
+    "prettier": "^2.8.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

@@ -1,0 +1,236 @@
+
+.test-drive {
+    position: relative;
+    width: 100%;
+    height: 874px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.test-drive__background {
+    position: absolute;
+    width: 2131px;
+    height: 874px;
+    left: 0px;
+    top: 0px;
+    border-radius: 0px;
+    pointer-events: none;
+}
+
+.test-drive__gradient-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(54.04% 131.77% at 50% 50%, rgba(212, 175, 55, 0.3) 0.05%, rgba(0, 0, 0, 0) 0%);
+    opacity: 0.05;
+    border-radius: 0px;
+}
+
+.test-drive__content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.test-drive__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 50px;
+    margin-bottom: 32px;
+    backdrop-filter: blur(10px);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.badge__dot {
+    width: 6px;
+    height: 6px;
+    background: #D4AF37;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.badge__text {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #D4AF37;
+}
+
+.test-drive__title {
+    font-family: 'Tinos';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 64px;
+    line-height: 72px;
+    text-align: center;
+    color: #F8F8F8;
+    margin-bottom: 24px;
+    letter-spacing: -1px;
+}
+
+.test-drive__description {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 28px;
+    text-align: center;
+    color: rgba(248, 248, 248, 0.7);
+    margin-bottom: 48px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.test-drive__actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.test-drive__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 32px;
+    border-radius: 8px;
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.test-drive__button--primary {
+    background: #D4AF37;
+    color: #000000;
+    border: 2px solid #D4AF37;
+    min-width: 240px;
+}
+
+.test-drive__button--primary:hover {
+    background: #C9A349;
+    border-color: #C9A349;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+}
+
+.test-drive__button--secondary {
+    background: transparent;
+    color: #F8F8F8;
+    border: 2px solid rgba(248, 248, 248, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.test-drive__button--secondary:hover {
+    background: rgba(248, 248, 248, 0.05);
+    border-color: rgba(212, 175, 55, 0.5);
+    color: #D4AF37;
+    transform: translateY(-2px);
+}
+
+.test-drive__button--secondary svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+@media (max-width: 1024px) {
+    .test-drive {
+        height: auto;
+        min-height: 600px;
+        padding: 80px 0;
+    }
+    
+    .test-drive__title {
+        font-size: 48px;
+        line-height: 56px;
+    }
+    
+    .test-drive__description {
+        font-size: 16px;
+        line-height: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .test-drive {
+        min-height: 500px;
+        padding: 60px 0;
+    }
+    
+    .test-drive__title {
+        font-size: 36px;
+        line-height: 44px;
+        margin-bottom: 16px;
+    }
+    
+    .test-drive__description {
+        font-size: 14px;
+        line-height: 22px;
+        margin-bottom: 32px;
+    }
+    
+    .test-drive__actions {
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
+    }
+    
+    .test-drive__button {
+        width: 100%;
+        max-width: 300px;
+        padding: 14px 24px;
+        font-size: 14px;
+    }
+    
+    .test-drive__button--primary {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .test-drive__title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+    
+    .badge__text {
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+}

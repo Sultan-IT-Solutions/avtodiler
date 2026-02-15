@@ -1,0 +1,346 @@
+
+
+.brands-footer {
+    position: relative;
+    width: 100%;
+    background: #0D0D0D;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    padding: 48px 16px 32px;
+    display: flex;
+    justify-content: center;
+}
+
+.brands-footer__container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1504px;
+    gap: 32px;
+}
+
+
+.brands-footer__main {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+    width: 100%;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+
+.brands-footer__logo-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.brands-footer__logo {
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.brands-footer__logo:hover {
+    transform: scale(1.02);
+}
+
+.brands-footer__logo-text {
+    font-family: 'Tinos', serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 32px;
+    color: #F8F8F8;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.brands-footer__description {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    max-width: 320px;
+}
+
+
+.brands-footer__nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.brands-footer__nav-title {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.16px;
+    color: #F8F8F8;
+}
+
+.brands-footer__nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+}
+
+.brands-footer__nav-link {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    display: inline-block;
+}
+
+.brands-footer__nav-link:hover {
+    color: #D4AF37;
+    transform: translateX(4px);
+}
+
+.brands-footer__nav-link::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 2px;
+    background: #D4AF37;
+    transition: width 0.3s ease;
+}
+
+.brands-footer__nav-link:hover::before {
+    width: 8px;
+}
+
+
+.brands-footer__contact-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.brands-footer__contact-title {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.16px;
+    color: #F8F8F8;
+}
+
+.brands-footer__contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.brands-footer__contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.brands-footer__contact-item:hover {
+    transform: translateX(4px);
+}
+
+.brands-footer__contact-icon {
+    width: 16px;
+    height: 16px;
+    fill: #D4AF37;
+    flex-shrink: 0;
+}
+
+.brands-footer__contact-text {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    transition: color 0.3s ease;
+}
+
+.brands-footer__contact-item:hover .brands-footer__contact-text {
+    color: #F8F8F8;
+}
+
+
+.brands-footer__social-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.brands-footer__social-title {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.16px;
+    color: #F8F8F8;
+}
+
+.brands-footer__social-list {
+    display: flex;
+    gap: 16px;
+}
+
+.brands-footer__social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #1A1A1A;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.brands-footer__social-link:hover {
+    background: #D4AF37;
+    transform: translateY(-2px);
+}
+
+.brands-footer__social-icon {
+    width: 20px;
+    height: 20px;
+    fill: #F8F8F8;
+    transition: fill 0.3s ease;
+}
+
+.brands-footer__social-link:hover .brands-footer__social-icon {
+    fill: #000000;
+}
+
+
+.brands-footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-top: 24px;
+}
+
+.brands-footer__copyright {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.16px;
+    color: #666666;
+}
+
+.brands-footer__legal {
+    display: flex;
+    gap: 24px;
+}
+
+.brands-footer__legal-link {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.16px;
+    color: #666666;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.brands-footer__legal-link:hover {
+    color: #D4AF37;
+}
+
+
+@media (max-width: 1200px) {
+    .brands-footer__container {
+        padding: 0 32px;
+    }
+    
+    .brands-footer__main {
+        gap: 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .brands-footer {
+        padding: 32px 16px 24px;
+    }
+    
+    .brands-footer__main {
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        row-gap: 32px;
+    }
+    
+    .brands-footer__logo-section {
+        grid-column: 1 / -1;
+    }
+    
+    .brands-footer__logo-text {
+        font-size: 24px;
+        line-height: 28px;
+    }
+    
+    .brands-footer__description {
+        max-width: 100%;
+    }
+    
+    .brands-footer__bottom {
+        flex-direction: column;
+        gap: 16px;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .brands-footer__legal {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .brands-footer {
+        padding: 24px 16px 20px;
+    }
+    
+    .brands-footer__main {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .brands-footer__logo-text {
+        font-size: 20px;
+        line-height: 24px;
+    }
+    
+    .brands-footer__social-list {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    
+    .brands-footer__legal {
+        flex-direction: column;
+        gap: 8px;
+    }
+}

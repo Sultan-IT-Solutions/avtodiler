@@ -1,0 +1,218 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #000000;
+    color: #F8F8F8;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.main {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    padding-top: 113px; 
+}
+
+
+.catalog-hero {
+    position: relative;
+    width: 100%;
+    height: 318px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    
+    padding-top: 40px;
+}
+
+.catalog-hero__container {
+    position: relative;
+    width: 100%;
+    max-width: 1440px;
+    padding: 0 48px;
+    text-align: center;
+    z-index: 2;
+}
+
+.catalog-hero__collection {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 4.8px;
+    text-transform: uppercase;
+    color: #D4AF37;
+    margin-bottom: 52px;
+}
+
+.catalog-hero__title {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 60px;
+    line-height: 60px;
+    text-align: center;
+    letter-spacing: -1.5px;
+    color: #F8F8F8;
+    margin-bottom: 48px;
+}
+
+.catalog-hero__line {
+    width: 128px;
+    height: 2px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, #D4AF37 50%, rgba(0, 0, 0, 0) 100%);
+    margin: 0 auto 66px auto;
+}
+
+.catalog-hero__description {
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 36px;
+    text-align: center;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    max-width: 576px;
+    margin: 0 auto;
+}
+
+.catalog-hero__divider {
+    position: absolute;
+    width: 1px;
+    height: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(212, 175, 55, 0.5) 100%);
+}
+
+
+.catalog-filters {
+    position: relative;
+    width: 100%;
+    padding: 130px 0 48px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.catalog-filters__container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 1440px;
+    padding: 0 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.catalog-filter__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 33px;
+    height: 46px;
+    background: transparent;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.catalog-filter__btn:hover {
+    border-color: #D4AF37;
+    color: #F8F8F8;
+}
+
+.catalog-filter__btn--active {
+    background: #D4AF37;
+    border-color: #D4AF37;
+    color: #000000;
+}
+
+
+@media (max-width: 1200px) {
+    .catalog-hero__container {
+        max-width: 100%;
+        padding: 0 32px;
+    }
+    
+    .catalog-filters__container {
+        padding: 0 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .catalog-hero {
+        height: 280px;
+    }
+    
+    .catalog-hero__title {
+        font-size: 40px;
+        line-height: 40px;
+        margin-bottom: 32px;
+    }
+    
+    .catalog-hero__collection {
+        margin-bottom: 32px;
+    }
+    
+    .catalog-hero__line {
+        margin: 0 auto 32px auto;
+    }
+    
+    .catalog-hero__description {
+        font-size: 16px;
+        line-height: 28px;
+    }
+    
+    .catalog-filters {
+        padding: 80px 0 32px 0;
+    }
+    
+    .catalog-filter__btn {
+        padding: 10px 20px;
+        height: 40px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .catalog-hero__container {
+        padding: 0 16px;
+    }
+    
+    .catalog-filters__container {
+        padding: 0 16px;
+        gap: 8px;
+    }
+    
+    .catalog-hero__title {
+        font-size: 32px;
+        line-height: 32px;
+    }
+    
+    .catalog-filter__btn {
+        padding: 8px 16px;
+        height: 36px;
+        font-size: 11px;
+    }
+}

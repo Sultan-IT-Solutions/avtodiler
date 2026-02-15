@@ -1,0 +1,253 @@
+
+
+.popular-cars {
+    padding: 100px 48px;
+    background: linear-gradient(180deg, #000000 0%, #0D0D0D 100%);
+    position: relative;
+}
+
+.popular-cars::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(212, 175, 55, 0.3) 50%, rgba(0, 0, 0, 0) 100%);
+}
+
+.popular-cars .container {
+    max-width: 1536px;
+    display: flex;
+    flex-direction: column;
+    gap: 128px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 138px;
+}
+
+.section-header__left {
+    position: relative;
+}
+
+.section__label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 4.8px;
+    text-transform: uppercase;
+    color: #D4AF37;
+    margin-bottom: 36px;
+}
+
+.section__title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 48px;
+    letter-spacing: -1.2px;
+    color: #F8F8F8;
+    margin-bottom: 34px;
+}
+
+.section__underline {
+    width: 128px;
+    height: 2px;
+    background: linear-gradient(180deg, #D4AF37 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.section__link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    color: #F8F8F8;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.16px;
+    transition: all 0.3s ease;
+}
+
+.section__link:hover {
+    color: #D4AF37;
+}
+
+.section__link svg {
+    flex-shrink: 0;
+}
+
+.cars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 64px;
+}
+
+
+.car-card {
+    background: #0D0D0D;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #0D0D0D;
+    transition: all 0.3s ease;
+}
+
+.car-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+.car-card__image-wrapper {
+    position: relative;
+    height: 320px;
+    background: linear-gradient(180deg, rgba(42, 42, 42, 0.2) 0%, #0D0D0D 100%);
+}
+
+.car-card__image {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: #1a1a1a;
+}
+
+.car-card__image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, #0D0D0D 0%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0.6;
+}
+
+.car-card__year {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    padding: 14px 21px 1px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 3px;
+    color: #D4AF37;
+    z-index: 1;
+}
+
+.car-card__content {
+    display: flex;
+    flex-direction: column;
+    padding: 64px;
+    gap: 48px;
+}
+
+.car-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.car-card__brand {
+    font-family: 'Tinos', serif;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 32px;
+    letter-spacing: -0.6px;
+    color: #F8F8F8;
+    margin: 0;
+}
+
+.car-card__model {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    line-height: 28px;
+    letter-spacing: 0.16px;
+    color: #A0A0A0;
+    margin: 0;
+}
+
+.car-card__specs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-top: 1px solid rgba(212, 175, 55, 0.0745098);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.0745098);
+}
+
+.spec__item {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.7px;
+    color: #A0A0A0;
+}
+
+.car-card__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding-top: 24px;
+}
+
+.car-card__price-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.price__label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 3.6px;
+    text-transform: uppercase;
+    color: #A0A0A0;
+    margin: 0;
+}
+
+.price__value {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
+    font-size: 24px;
+    line-height: 32px;
+    letter-spacing: 0.16px;
+    color: #C9A961;
+    margin: 0;
+}
+
+.car-card__link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 14px;
+    color: #F8F8F8;
+    text-decoration: none;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.16px;
+    transition: all 0.3s ease;
+}
+
+.car-card__link:hover {
+    color: #D4AF37;
+}
+
+.car-card__link svg {
+    flex-shrink: 0;
+}

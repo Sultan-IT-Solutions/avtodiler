@@ -4,89 +4,160 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
-model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
-  password  String
-  isAdmin   Boolean @default(true)
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model CarMake {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  nameRu    String
+  nameKz    String
+  nameEn    String
+  models    CarModel[]
+  cars      Car[]
   createdAt DateTime @default(now())
 }
 
-model Brand {
-  id          Int      @id @default(autoincrement())
-  slug        String   @unique
-  translations String
-  media       String?
-  models      Model[]
-  cars        Car[]
-  createdAt   DateTime @default(now())
-}
+model CarModel {
+  id        Int     @id @default(autoincrement())
+  makeId    Int
+  slug      String
+  nameRu    String
+  nameKz    String
+  nameEn    String
+  make      CarMake @relation(fields: [makeId], references: [id])
+  cars      Car[]
 
-model Model {
-  id          Int    @id @default(autoincrement())
-  brandId     Int
-  slug        String
-  translations String
-  brand       Brand  @relation(fields: [brandId], references: [id])
-  cars        Car[]
+  @@unique([makeId, slug])
 }
 
 model Car {
-  id          Int     @id @default(autoincrement())
-  brandId     Int
-  modelId     Int
-  year        Int
-  price       Float?
-  mileage     Int?
-  media       String?
-  translations String
-  createdAt   DateTime @default(now())
-  brand       Brand   @relation(fields: [brandId], references: [id])
-  model       Model   @relation(fields: [modelId], references: [id])
+  id            Int      @id @default(autoincrement())
+  slug          String   @unique
+  makeId        Int
+  modelId       Int
+  year          Int
+  engine        String?
+  mileageKm     Int?
+  priceKzt      Int?
+  isNew         Boolean  @default(false)
+  imagesJson    String?
+  videoUrl      String?
+  hoverMediaUrl String?
+  titleRu       String
+  titleKz       String
+  titleEn       String
+  descRu        String?
+  descKz        String?
+  descEn        String?
+  createdAt     DateTime @default(now())
+
+  make  CarMake  @relation(fields: [makeId], references: [id])
+  model CarModel @relation(fields: [modelId], references: [id])
+  leads Lead[]
 }
 
-model Service {
-  id Int @id @default(autoincrement())
-  translations String
-  price Float?
+model Brand {
+  id           Int      @id @default(autoincrement())
+  slug         String   @unique
+  titleRu      String
+  titleKz      String
+  titleEn      String
+  descRu       String?
+  descKz       String?
+  descEn       String?
+  historyRu    String?
+  historyKz    String?
+  historyEn    String?
+  philosophyRu String?
+  philosophyKz String?
+  philosophyEn String?
+  mediaJson    String?
+  createdAt    DateTime @default(now())
+}
+
+model ServiceItem {
+  id        Int      @id @default(autoincrement())
+  titleRu   String
+  titleKz   String
+  titleEn   String
+  descRu    String?
+  descKz    String?
+  descEn    String?
+  priceKzt  Int?
+  createdAt DateTime @default(now())
+  leads     Lead[]
 }
 
 model Offer {
-  id Int @id @default(autoincrement())
-  translations String
-  image String?
-  startAt DateTime?
-  endAt DateTime?
-}
-
-model Dealer {
-  id Int @id @default(autoincrement())
-  name String
-  address String
-  phone String
-  hours String?
-  coords String?
-}
-
-model Request {
-  id Int @id @default(autoincrement())
-  type String
-  name String
-  phone String
-  carId Int?
-  dealerId Int?
-  serviceId Int?
-  comment String?
-  lang String @default("ru")
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  titleRu   String
+  titleKz   String
+  titleEn   String
+  descRu    String?
+  descKz    String?
+  descEn    String?
+  imageUrl  String?
+  startAt   DateTime?
+  endAt     DateTime?
   createdAt DateTime @default(now())
 }
 
-model PageContent {
-  id Int @id @default(autoincrement())
-  slug String @unique
-  translations String
-  seo String?
+model DealerCenter {
+  id        Int      @id @default(autoincrement())
+  slug      String   @unique
+  nameRu    String
+  nameKz    String
+  nameEn    String
+  addressRu String
+  addressKz String
+  addressEn String
+  phone     String
+  hoursRu   String?
+  hoursKz   String?
+  hoursEn   String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime @default(now())
+  leads     Lead[]
+}
+
+model Lead {
+  id          Int      @id @default(autoincrement())
+  type        String
+  name        String
+  phone       String
+  comment     String?
+  lang        String   @default("ru")
+  carId       Int?
+  serviceId   Int?
+  dealerId    Int?
+  createdAt   DateTime @default(now())
+
+  car     Car?         @relation(fields: [carId], references: [id])
+  service ServiceItem? @relation(fields: [serviceId], references: [id])
+  dealer  DealerCenter? @relation(fields: [dealerId], references: [id])
+}
+
+model SeoPage {
+  id            Int      @id @default(autoincrement())
+  slug          String   @unique
+  titleRu       String?
+  titleKz       String?
+  titleEn       String?
+  descriptionRu String?
+  descriptionKz String?
+  descriptionEn String?
+  h1Ru          String?
+  h1Kz          String?
+  h1En          String?
+  createdAt     DateTime @default(now())
 }

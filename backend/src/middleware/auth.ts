@@ -2,10 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prisma';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => {
-  console.warn('JWT_Secret не установлен');
-  return 'X';
-})();
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -21,10 +18,10 @@ export async function requireAdmin(req: AuthRequest, res: Response, next: NextFu
 
     const token = parts[1];
     const payload: any = jwt.verify(token, JWT_SECRET);
-    if (!payload?.userId) return res.status(401).json({ error: 'Unauthorized' });
-    
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
-    if (!user || !user.isAdmin) return res.status(403).json({ error: 'Forbidden' });
+    if (!payload?.adminUserId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const user = await prisma.adminUser.findUnique({ where: { id: payload.adminUserId } });
+    if (!user) return res.status(403).json({ error: 'Forbidden' });
     req.user = { id: user.id, email: user.email };
     next();
   } catch (e) {
