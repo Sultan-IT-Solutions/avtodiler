@@ -19,8 +19,23 @@ export const publicApi = {
   async cars(): Promise<Car[]> {
     const res = await fetch('/api/public/cars');
     await ensureOk(res);
-    const body = (await res.json()) as ApiResult<{ items: { data: Car }[] }>;
-    return (body.items ?? []).map((x) => x.data);
+    const body = (await res.json()) as unknown;
+
+    const items = (body as { items?: unknown })?.items;
+    if (!Array.isArray(items)) {
+      throw new Error('Unexpected /api/public/cars response shape (items is not an array)');
+    }
+
+    const mapped = items
+      .map((row) => {
+        if (row && typeof row === 'object' && 'data' in (row as Record<string, unknown>)) {
+          return (row as { data: Car }).data;
+        }
+        return row as Car;
+      })
+      .filter(Boolean);
+
+    return mapped;
   },
 
   async offers(): Promise<OfferItem[]> {

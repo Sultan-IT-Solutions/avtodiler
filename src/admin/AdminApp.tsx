@@ -11,28 +11,11 @@ import type {
   LocaleText,
   OfferItem,
 } from '../types/admin';
-import { createId, getAdminData, saveAdminData } from '../utils/adminStorage';
+import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi } from '../utils/adminApi';
 
-const AUTH_STORAGE_KEY = 'admin_auth';
-const AUTH_TTL_MS = 1000 * 60 * 60 * 12;
-
 const readAuthOk = () => {
-  if (typeof window === 'undefined') return false;
-  const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return false;
-  try {
-    const parsed = JSON.parse(raw) as { ok?: boolean; at?: number; exp?: number };
-    if (!parsed?.ok) return false;
-    const exp = typeof parsed.exp === 'number' ? parsed.exp : 0;
-    if (Date.now() > exp) {
-      window.localStorage.removeItem(AUTH_STORAGE_KEY);
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
+  return false;
 };
 
 const localeField = (value?: LocaleText): LocaleText =>
@@ -102,10 +85,6 @@ const AdminLogin = ({ onSuccess }: { onSuccess: () => void }) => {
         setError('Неверный логин или пароль');
         return;
       }
-
-      const at = Date.now();
-      const exp = at + AUTH_TTL_MS;
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ ok: true, at, exp }));
       onSuccess();
     } catch {
       setError('Ошибка входа. Попробуйте ещё раз.');
@@ -237,7 +216,7 @@ const EmptyState = ({ text }: { text: string }) => (
 type SectionInfo = { key: AdminSectionKey; label: string };
 
 const AdminApp = () => {
-  const [data, setData] = useState<AdminData>(() => getAdminData());
+  const [data, setData] = useState<AdminData>(() => ({ cars: [], offers: [], dealers: [], leads: [] }));
   const [activeSection, setActiveSection] = useState<AdminSectionKey>('cars');
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
   const [toast, setToast] = useState<ToastPayload | null>(null);
@@ -273,12 +252,11 @@ const AdminApp = () => {
         setData((current) => {
           const next: AdminData = {
             ...current,
-            cars: cars.length > 0 ? cars : current.cars,
-            offers: offers.length > 0 ? offers : current.offers,
-            dealers: dealers.length > 0 ? dealers : current.dealers,
-            leads: leads.length > 0 ? leads : current.leads,
+            cars,
+            offers,
+            dealers,
+            leads,
           };
-          saveAdminData(next);
           return next;
         });
 
@@ -301,7 +279,6 @@ const AdminApp = () => {
   const updateData = (updater: (current: AdminData) => AdminData) => {
     const next = updater(data);
     setData(next);
-    saveAdminData(next);
   };
 
   const sections = useMemo<SectionInfo[]>(
@@ -320,7 +297,6 @@ const AdminApp = () => {
 
   const logout = () => {
     if (!window.confirm('Выйти из админ-панели?')) return;
-    localStorage.removeItem(AUTH_STORAGE_KEY);
     setIsAuthed(false);
     notify('Вы вышли из админ-панели', 'ОК');
   };

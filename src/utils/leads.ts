@@ -1,5 +1,5 @@
 import type { LeadItem, LeadType } from '../types/admin';
-import { appendLead, createId } from './adminStorage';
+import { createId } from './adminStorage';
 
 export interface LeadInput {
   type: LeadType;
@@ -49,8 +49,6 @@ export const submitLead = async (input: LeadInput) => {
     comment: input.comment,
     createdAt: new Date().toISOString(),
   };
-
-  appendLead(lead);
   await sendLeadToServer(lead);
   return lead;
 };

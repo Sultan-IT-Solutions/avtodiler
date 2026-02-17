@@ -14,7 +14,7 @@ import { SITE_IMAGES } from '../data/siteImages';
 import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
-import { getAdminData } from '../utils/adminStorage';
+import { publicApi } from '../utils/publicApi';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -83,11 +83,22 @@ const ParallaxImage = ({ src, alt, className = '', speed = 0.3, fallback = SITE_
    ================================================================ */
 export const Home = () => {
   const { t } = useTranslation();
-  const cars = useMemo<Car[]>(() => {
-    return getAdminData().cars as unknown as Car[];
-  }, []);
-  const featuredCars = useMemo<Car[]>(() => {
-    return cars.filter((car) => car.featured);
+  const [cars, setCars] = useState<Car[]>([]);
+  const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .cars()
+      .then((items) => {
+        if (!cancelled) setCars(items);
+      })
+      .catch(() => {
+        // no local fallback by requirement
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);

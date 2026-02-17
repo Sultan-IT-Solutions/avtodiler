@@ -7,7 +7,6 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { getAdminData } from '../utils/adminStorage';
 import { publicApi } from '../utils/publicApi';
 import { formatPriceKzt } from '../utils/formatPrice';
 import type { AdminCar } from '../types/admin';
@@ -88,7 +87,7 @@ const SpecBar = ({ label, value, delay }: { label: string; value: string; delay:
 export const CarDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const [cars, setCars] = useState<AdminCar[]>(() => getAdminData().cars);
+  const [cars, setCars] = useState<AdminCar[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +97,7 @@ export const CarDetail = () => {
         if (!cancelled && items.length > 0) setCars(items as unknown as AdminCar[]);
       })
       .catch(() => {
-        // fallback
+        // no local fallback by requirement
       });
     return () => {
       cancelled = true;

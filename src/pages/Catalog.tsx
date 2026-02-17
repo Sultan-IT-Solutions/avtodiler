@@ -2,13 +2,12 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPriceKzt } from '../utils/formatPrice';
 import { Link } from 'react-router-dom';
-import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { SITE_IMAGES } from '../data/siteImages';
 import { ArrowRight, SlidersHorizontal, X, Search, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
-import { getAdminData } from '../utils/adminStorage';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import type { AdminCar } from '../types/admin';
@@ -21,17 +20,21 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 /** Каталог только Hongqi — данные с [hongqi.ru](https://hongqi.ru) */
 export const Catalog = () => {
   const { t } = useTranslation();
-  const [cars, setCars] = useState<AdminCar[]>(() => getAdminData().cars);
+  const [cars, setCars] = useState<AdminCar[]>([]);
+  const [loadError, setLoadError] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
     void publicApi
       .cars()
       .then((items) => {
-        if (!cancelled && items.length > 0) setCars(items as unknown as AdminCar[]);
+        if (cancelled) return;
+        setCars(items as unknown as AdminCar[]);
+        setLoadError('');
       })
-      .catch(() => {
-        // fallback to local
+      .catch((err) => {
+        if (cancelled) return;
+        setLoadError((err as Error)?.message ?? String(err));
       });
     return () => {
       cancelled = true;
@@ -78,26 +81,40 @@ export const Catalog = () => {
   }, []);
 
   const filteredCars = useMemo(() => {
+    const toNumberOrNull = (value: unknown): number | null => {
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : null;
+      }
+      return null;
+    };
+
     let filtered = cars.filter((car) => {
-      const yearMatch = car.year >= yearRange[0] && car.year <= yearRange[1];
+      const year = toNumberOrNull((car as unknown as { year?: unknown }).year);
+      const price = toNumberOrNull((car as unknown as { price?: unknown }).price);
+
+      const yearMatch =
+        year == null || (year >= yearRange[0] && year <= yearRange[1]);
       const priceMatch =
-        car.price >= priceRange[0] && car.price <= priceRange[1];
+        price == null || (price >= priceRange[0] && price <= priceRange[1]);
+
       return yearMatch && priceMatch;
     });
 
     switch (sortBy) {
       case 'newest':
-        filtered.sort((a, b) => b.year - a.year);
+        filtered.sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
         break;
       case 'priceHigh':
-        filtered.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
         break;
       case 'priceLow':
-        filtered.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
         break;
     }
     return filtered;
-  }, [yearRange, priceRange, sortBy]);
+  }, [cars, yearRange, priceRange, sortBy]);
 
   const hasCars = filteredCars.length > 0;
 
@@ -187,7 +204,13 @@ export const Catalog = () => {
       {/* MAIN */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
-          {!hasCars && (
+          {loadError && (
+            <div className="mb-6 border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              Ошибка загрузки автомобилей: {loadError}
+            </div>
+          )}
+
+          {!hasCars && !loadError && (
             <div className="mb-10">
               <EmptyState />
             </div>
@@ -443,9 +466,7 @@ export const Catalog = () => {
   );
 };
 
-/* ================================================================
-   CATALOG CARD - Clean, modern design with availability badge
-   ================================================================ */
+
 const CatalogCard = ({
   car,
   index,
@@ -455,16 +476,14 @@ const CatalogCard = ({
   index: number;
   formatPrice: (p: number) => string;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '-60px' });
   const { t } = useTranslation();
 
   return (
     <motion.div
-      ref={ref}
       layout
       initial={{ opacity: 0, y: 60 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-60px' }}
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       transition={{
         duration: 1,

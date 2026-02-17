@@ -3,7 +3,6 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { MapPin, Phone, Clock, Navigation, ChevronRight } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
-import { getAdminData } from '../utils/adminStorage';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +11,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Dealers = () => {
   const { t, i18n } = useTranslation();
-  const [dealers, setDealers] = useState(() => getAdminData().dealers);
+  const [dealers, setDealers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.dealers>>);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,7 +21,7 @@ export const Dealers = () => {
         if (!cancelled && items.length > 0) setDealers(items);
       })
       .catch(() => {
-        // fallback
+        // no local fallback by requirement
       });
     return () => {
       cancelled = true;
@@ -37,9 +36,13 @@ export const Dealers = () => {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
-  const [selectedDealer, setSelectedDealer] = useState(dealers[0]);
+  const [selectedDealer, setSelectedDealer] = useState<(typeof dealers)[number] | undefined>(dealers[0]);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDealer && dealers.length > 0) setSelectedDealer(dealers[0]);
+  }, [dealers, selectedDealer]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

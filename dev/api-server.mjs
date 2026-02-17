@@ -2,7 +2,6 @@ import http from 'http';
 import dotenv from 'dotenv';
 import handler from '../api/index.ts';
 
-// Load local env vars for dev (ADMIN_PASSWORD, DATABASE_URL, etc.)
 dotenv.config({ path: '.env.local' });
 
 const port = Number(process.env.API_DEV_PORT ?? 8787);

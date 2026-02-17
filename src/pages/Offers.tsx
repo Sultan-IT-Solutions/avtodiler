@@ -6,7 +6,6 @@ import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { useEffect, useState } from 'react';
-import { getAdminData } from '../utils/adminStorage';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +15,7 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 
 export const Offers = () => {
   const { t, i18n } = useTranslation();
-  const [offers, setOffers] = useState(() => getAdminData().offers);
+  const [offers, setOffers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.offers>>);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +25,7 @@ export const Offers = () => {
         if (!cancelled && items.length > 0) setOffers(items);
       })
       .catch(() => {
-        // fallback
+        // no local fallback by requirement
       });
     return () => {
       cancelled = true;
