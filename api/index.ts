@@ -61,6 +61,13 @@ const routes: Record<string, Handler> = {
   '/telegram/lead': telegramLead,
 };
 
+function setNoStore(res: ApiResponse) {
+  res.setHeader('cache-control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('pragma', 'no-cache');
+  res.setHeader('expires', '0');
+  res.setHeader('surrogate-control', 'no-store');
+}
+
 function getPath(req: ApiRequest) {
   const raw = req.url ?? '';
   const withoutQuery = raw.split('?')[0] ?? '';
@@ -72,6 +79,10 @@ function getPath(req: ApiRequest) {
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     const path = getPath(req);
+
+    if (path.startsWith('/admin/')) {
+      setNoStore(res);
+    }
 
     if (path === '' || path === '/' || path === '/health') {
       if (!isMethodAllowed(req, ['GET'])) return methodNotAllowed(req, res);

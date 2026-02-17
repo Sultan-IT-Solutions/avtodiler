@@ -17,7 +17,7 @@ const ensureOk = async (res: Response) => {
 
 export const carsApi = {
   async list(): Promise<AdminCar[]> {
-    const res = await fetch('/api/admin/cars', { method: 'GET' });
+    const res = await fetch('/api/admin/cars', { method: 'GET', cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{ items: { id: string; data: AdminCar }[] }>;
     return (body.items ?? []).map((row) => row.data);
@@ -46,7 +46,7 @@ export const carsApi = {
 
 export const offersApi = {
   async list(): Promise<OfferItem[]> {
-    const res = await fetch('/api/admin/offers', { method: 'GET' });
+    const res = await fetch('/api/admin/offers', { method: 'GET', cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{ items: { id: string; data: OfferItem }[] }>;
     return (body.items ?? []).map((row) => row.data);
@@ -75,7 +75,7 @@ export const offersApi = {
 
 export const dealersApi = {
   async list(): Promise<DealerItem[]> {
-    const res = await fetch('/api/admin/dealers', { method: 'GET' });
+    const res = await fetch('/api/admin/dealers', { method: 'GET', cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{ items: { id: string; data: DealerItem }[] }>;
     return (body.items ?? []).map((row) => row.data);
@@ -104,7 +104,7 @@ export const dealersApi = {
 
 export const leadsApi = {
   async list(): Promise<LeadItem[]> {
-    const res = await fetch('/api/admin/leads', { method: 'GET' });
+    const res = await fetch('/api/admin/leads', { method: 'GET', cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{ items: { id: string; data: LeadItem }[] }>;
     return (body.items ?? []).map((row) => row.data);

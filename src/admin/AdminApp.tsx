@@ -14,9 +14,8 @@ import type {
 import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi } from '../utils/adminApi';
 
-const readAuthOk = () => {
-  return false;
-};
+
+const readAuthOk = () => true;
 
 const localeField = (value?: LocaleText): LocaleText =>
   value ?? { ru: '', kz: '', en: '' };
@@ -228,10 +227,30 @@ const AdminApp = () => {
 
   useEffect(() => {
     if (!isAuthed) return;
+    let cancelled = false;
     const tick = window.setInterval(() => {
-      if (!readAuthOk()) setIsAuthed(false);
-    }, 10_000);
-    return () => window.clearInterval(tick);
+      void fetch('/api/admin/login/status', {
+        method: 'GET',
+        cache: 'no-store',
+      })
+        .then((res) => {
+          if (cancelled) return;
+          if (!res.ok) {
+            setIsAuthed(false);
+            return;
+          }
+
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setIsAuthed(false);
+        });
+    }, 15_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(tick);
+    };
   }, [isAuthed]);
 
   useEffect(() => {
