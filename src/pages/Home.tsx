@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, useMotionValue, useSpring, useTransform, useInView, useScroll } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { cars } from '../data/cars';
+import type { Car } from '../types/car';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
@@ -56,15 +58,18 @@ const MagneticButton = ({ children, className = '', ...props }: React.ComponentP
   );
 };
 
-const ParallaxImage = ({ src, alt, className = '', speed = 0.3 }: {
-  src: string; alt: string; className?: string; speed?: number;
+const ParallaxImage = ({ src, alt, className = '', speed = 0.3, fallback = SITE_IMAGES.hero }: {
+  src: string; alt: string; className?: string; speed?: number; fallback?: string;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [imgSrc, setImgSrc] = useState(src);
+  useEffect(() => setImgSrc(src), [src]);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
   const y = useTransform(scrollYProgress, [0, 1], [speed * -100, speed * 100]);
+  const handleError = () => setImgSrc(fallback);
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>
-      <motion.img src={src} alt={alt} style={{ y }} className="w-full h-[120%] object-cover" />
+      <motion.img src={imgSrc} alt={alt} style={{ y }} className="w-full h-[120%] object-cover" onError={handleError} />
     </div>
   );
 };
@@ -77,8 +82,6 @@ export const Home = () => {
   const featuredCars = cars.filter(car => car.featured);
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
-  const horizontalRef = useRef<HTMLDivElement>(null);
-  const horizontalInnerRef = useRef<HTMLDivElement>(null);
 
   // Hero parallax
   const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -112,14 +115,6 @@ export const Home = () => {
         );
       }
 
-      // Horizontal scroll
-      if (horizontalRef.current && horizontalInnerRef.current) {
-        const totalWidth = horizontalInnerRef.current.scrollWidth - window.innerWidth;
-        gsap.to(horizontalInnerRef.current, {
-          x: -totalWidth, ease: 'none',
-          scrollTrigger: { trigger: horizontalRef.current, start: 'top top', end: () => `+=${totalWidth}`, scrub: 1, pin: true, anticipatePin: 1 },
-        });
-      }
 
       // Section reveals
       gsap.utils.toArray<HTMLElement>('.gsap-reveal').forEach((el) => {
@@ -150,7 +145,7 @@ export const Home = () => {
             src={SITE_IMAGES.hero}
             alt="Hongqi"
             className="absolute inset-0 w-full h-full object-cover"
-            onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; }}
+            onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
           />
         </motion.div>
 
@@ -328,112 +323,89 @@ export const Home = () => {
       </section>
 
       {/* ============================================================
-          SECTION: FEATURED MODELS — HORIZONTAL SCROLL
+          SECTION: FEATURED MODELS — PRESENTATION CAROUSEL
           ============================================================ */}
-      <section ref={horizontalRef} className="relative h-screen">
-        <div className="h-full flex items-center">
-          <div ref={horizontalInnerRef} className="flex items-center gap-6 px-16 h-full">
-            {/* Intro card */}
-            <div className="flex-shrink-0 w-[400px] lg:w-[480px] h-full flex flex-col justify-center pr-8">
-              <div className="flex items-center gap-3 mb-6">
-                <span className="w-10 h-px bg-luxury-burgundy" />
-                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('featured.subtitle')}</span>
-              </div>
-              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-6"
-                style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                {t('featured.title')}
-              </h2>
-              <p className="text-base text-white/30 font-light mb-8 max-w-sm">
-                Откройте для себя флагманские модели, которые определяют новый стандарт роскоши
-              </p>
-              <Link to="/catalog" className="group inline-flex items-center gap-3">
-                <span className="text-[11px] uppercase tracking-[0.2em] text-white/50 group-hover:text-white transition-colors">Все модели</span>
-                <span className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 group-hover:bg-white/5 transition-all">
-                  <ArrowRight size={14} className="text-white/50 group-hover:text-white transition-colors" />
-                </span>
-              </Link>
-            </div>
-
-            {/* Car Cards */}
-            {featuredCars.map((car, index) => (
-              <HorizontalCarCard key={car.id} car={car} index={index} />
-            ))}
-
-            {/* View All */}
-            <div className="flex-shrink-0 w-[300px] h-[70vh] flex items-center justify-center">
-              <Link to="/catalog" className="group flex flex-col items-center gap-4">
-                <div className="w-20 h-20 rounded-full border border-white/10 flex items-center justify-center group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy/5 transition-all duration-500">
-                  <ArrowRight size={24} className="text-white/30 group-hover:text-luxury-burgundy transition-colors" />
-                </div>
-                <span className="text-[11px] uppercase tracking-[0.2em] text-white/20 group-hover:text-white/50 transition-colors">Весь каталог</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FeaturedModelsCarousel cars={featuredCars} />
 
       {/* ============================================================
-          SECTION: PHILOSOPHY (Cinematic split)
+          SECTION: HONGQI HERITAGE
           ============================================================ */}
-      <section className="relative py-32 lg:py-48 overflow-hidden">
+      <section className="relative py-32 lg:py-48 overflow-hidden bg-luxury-surface">
         <div className="container mx-auto px-6 lg:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 80 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:col-span-6"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <span className="w-10 h-px bg-luxury-burgundy" />
-                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Философия</span>
-              </div>
-              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-8"
-                style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                Представьте<br /><span className="text-white/20">совершенство</span>
-              </h2>
-              <p className="text-lg text-white/40 font-light leading-relaxed mb-6 max-w-lg">
-                Каждый автомобиль — это продолжение вашей личности. Линии кузова, продолжающиеся
-                в каждой детали. Фары как источник вдохновения.
-              </p>
-              <p className="text-base text-white/20 font-light leading-relaxed mb-12 max-w-lg">
-                Каждый автомобиль в нашей коллекции — это заявление об утончённом вкусе,
-                исключительном мастерстве и вневременной элегантности.
-              </p>
-              <Link to="/about" className="group inline-flex items-center gap-3">
-                <span className="text-[11px] uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-colors">Узнать больше</span>
-                <span className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 group-hover:bg-white/5 transition-all duration-500">
-                  <ArrowRight size={16} className="text-white/40 group-hover:text-white transition-colors" />
-                </span>
-              </Link>
-            </motion.div>
-
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:col-span-6 relative"
+              className="lg:col-span-6 relative order-2 lg:order-1"
             >
-              <div className="relative aspect-[3/4] overflow-hidden rounded-sm">
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <ParallaxImage
                   src={SITE_IMAGES.philosophy}
-                  alt="Luxury Philosophy" className="w-full h-full" speed={0.2}
+                  alt="Hongqi Heritage"
+                  className="w-full h-full"
+                  speed={0.2}
+                  fallback={SITE_IMAGES.hero}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-40" />
+
+                {/* Floating stats */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                  className="absolute bottom-8 left-8 right-8 grid grid-cols-2 gap-4"
+                >
+                  <div className="bg-luxury-black/80 backdrop-blur-xl border border-white/10 p-5">
+                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">Основан</div>
+                    <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>1958</div>
+                  </div>
+                  <div className="bg-luxury-black/80 backdrop-blur-xl border border-white/10 p-5">
+                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">Наследие</div>
+                    <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>65+</div>
+                    <div className="text-xs text-white/50">лет престижа</div>
+                  </div>
+                </motion.div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                className="absolute -bottom-6 -left-6 lg:-left-12 bg-luxury-surface/90 backdrop-blur-xl border border-white/5 p-6"
-              >
-                <div className="text-[11px] uppercase tracking-[0.2em] text-luxury-burgundy mb-2">С 2020 года</div>
-                <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>150+</div>
-                <div className="text-xs text-white/30">довольных клиентов</div>
-              </motion.div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 80 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:col-span-6 order-1 lg:order-2"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-12 h-px bg-luxury-red" />
+                <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">Наследие бренда</span>
+              </div>
+              <h2 className="text-[clamp(36px,5vw,64px)] font-bold leading-[1.1] tracking-[-0.03em] text-white uppercase mb-8"
+                style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
+                Hongqi<br /><span className="text-luxury-red">Красное знамя</span>
+              </h2>
+              <div className="space-y-6 mb-10">
+                <p className="text-lg text-white/90 font-light leading-relaxed max-w-lg">
+                  С 1958 года Hongqi создает автомобили для государственных лидеров Китая.
+                  Каждая модель — символ престижа и технологического совершенства.
+                </p>
+                <p className="text-base text-white/70 font-light leading-relaxed max-w-lg">
+                  Входя в состав FAW — старейшей автомобильной корпорации Китая,
+                  Hongqi сочетает богатое наследие с инновационными технологиями будущего.
+                </p>
+                <div className="border-l-2 border-luxury-red pl-6 py-2">
+                  <p className="text-white/60 italic font-light">
+                    "Hongqi" переводится как "Красное знамя" —
+                    символ величия и национальной гордости Китая
+                  </p>
+                </div>
+              </div>
+              <Link to="/brands" className="group inline-flex items-center gap-3 px-8 py-4 bg-luxury-red hover:bg-luxury-redBright transition-all duration-400">
+                <span className="text-xs uppercase tracking-luxury text-white font-semibold">История бренда</span>
+                <ArrowRight size={18} className="text-white transition-transform group-hover:translate-x-1" />
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -448,7 +420,7 @@ export const Home = () => {
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">Технологии безопасности</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              Тотальное<br /><span className="text-white/20">управление</span>
+              Тотальное<br /><span className="text-white/90">управление</span>
             </h2>
           </div>
 
@@ -459,7 +431,7 @@ export const Home = () => {
             transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
             className="relative aspect-video overflow-hidden rounded-sm group cursor-pointer"
           >
-            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
+            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.philosophy; }; }} />
             <div className="absolute inset-0 bg-luxury-black/40 group-hover:bg-luxury-black/20 transition-colors duration-700" />
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
@@ -489,7 +461,7 @@ export const Home = () => {
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">Модельный ряд</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              Найдите свой<br /><span className="text-white/20">Hongqi</span>
+              Найдите свой<br /><span className="text-white/90">Hongqi</span>
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -518,7 +490,7 @@ export const Home = () => {
               </div>
               <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                Актуальные<br /><span className="text-white/20">акции</span>
+                Актуальные<br /><span className="text-white/90">акции</span>
               </h2>
             </div>
             <Link to="/offers" className="hidden md:flex items-center gap-3 text-white/20 hover:text-white/60 transition-colors group">
@@ -543,7 +515,7 @@ export const Home = () => {
                 <Link to="/offers" className="block group">
                   <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-500">
                     <div className="relative aspect-[16/9] overflow-hidden">
-                      <img src={offer.image} alt={offer.title} className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" />
+                      <img src={offer.image} alt={offer.title} className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70" />
                       <div className="absolute top-3 left-3 bg-luxury-burgundy px-2.5 py-1">
                         <span className="text-[10px] uppercase tracking-[0.2em] text-white">{offer.badge}</span>
@@ -567,7 +539,7 @@ export const Home = () => {
           ============================================================ */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <ParallaxImage src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full" speed={0.15} />
+          <ParallaxImage src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full" speed={0.15} fallback={SITE_IMAGES.hero} />
           <div className="absolute inset-0 bg-luxury-black/75" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -605,63 +577,180 @@ export const Home = () => {
 };
 
 /* ================================================================
-   HORIZONTAL CAR CARD
+   FEATURED MODELS CAROUSEL - Presentation Style
    ================================================================ */
-const HorizontalCarCard = ({ car, index }: { car: typeof cars[0]; index: number }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), { stiffness: 200, damping: 25 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), { stiffness: 200, damping: 25 });
+const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
-    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
-  };
+  const currentCar = cars[currentIndex];
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'KZT', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % cars.length);
+  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + cars.length) % cars.length);
+
+  // Auto-advance every 5 seconds
+  useEffect(() => {
+    if (isPaused) return;
+    timerRef.current = setInterval(nextSlide, 5000);
+    return () => clearInterval(timerRef.current);
+  }, [currentIndex, isPaused, cars.length]);
+
   return (
-    <motion.div
-      ref={cardRef}
-      style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { mouseX.set(0); mouseY.set(0); setIsHovered(false); }}
-      className="flex-shrink-0 w-[380px] lg:w-[460px]"
+    <section
+      className="relative min-h-screen bg-luxury-black overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-      <Link to={`/car/${car.id}`} className="block group">
-        <motion.div animate={{ y: isHovered ? -6 : 0 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-500">
-          <div className="relative aspect-[16/10] overflow-hidden">
-            <motion.img animate={{ scale: isHovered ? 1.06 : 1 }} transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              src={car.images[0]} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70" />
-            <div className="absolute top-5 right-5">
-              <span className="text-6xl font-bold text-white/[0.03]" style={{ fontFamily: "'Space Grotesk', monospace" }}>0{index + 1}</span>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="text-[10px] uppercase tracking-[0.25em] text-luxury-burgundy mb-2">{car.brand}</div>
-            <h3 className="text-xl lg:text-2xl font-bold text-white mb-2 group-hover:text-luxury-burgundy transition-colors duration-400"
-              style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{car.model}</h3>
-            <div className="flex items-center gap-3 text-xs text-white/20 mb-4">
-              <span>{car.specifications.power}</span>
-              <span className="w-1 h-1 rounded-full bg-white/10" />
-              <span>{car.specifications.acceleration}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-lg text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>{formatPrice(car.price)}</span>
-              <motion.div animate={{ x: isHovered ? 4 : 0 }} className="text-luxury-burgundy"><ArrowRight size={16} /></motion.div>
-            </div>
-          </div>
+      {/* Background Image */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
+          <img
+            src={currentCar.images[0]}
+            alt={`${currentCar.brand} ${currentCar.model}`}
+            className="w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-luxury-black via-luxury-black/70 to-luxury-black/40" />
         </motion.div>
-      </Link>
-    </motion.div>
+      </AnimatePresence>
+
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-6 lg:px-16 min-h-screen flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center w-full">
+          {/* Left: Info */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, x: -60 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 60 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-12 h-px bg-luxury-red" />
+                <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
+                  Модельный ряд
+                </span>
+              </div>
+
+              <h2 className="text-[clamp(48px,8vw,120px)] font-bold leading-[0.9] tracking-[-0.03em] text-white uppercase mb-6"
+                style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
+                {currentCar.model}
+              </h2>
+
+              <p className="text-xl text-white/70 font-light mb-8 max-w-lg leading-relaxed">
+                {currentCar.description}
+              </p>
+
+              {/* Specs */}
+              <div className="grid grid-cols-3 gap-6 mb-10">
+                <div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">Мощность</div>
+                  <div className="text-2xl text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
+                    {currentCar.specifications.power.split(' ')[0]}
+                  </div>
+                  <div className="text-xs text-white/50">HP</div>
+                </div>
+                <div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">0-100 км/ч</div>
+                  <div className="text-2xl text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
+                    {currentCar.specifications.acceleration}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">Цена</div>
+                  <div className="text-lg text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
+                    {formatPrice(currentCar.price)}
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="flex items-center gap-4">
+                <Link to={`/car/${currentCar.id}`} className="btn-primary inline-flex items-center gap-2">
+                  Подробнее <ArrowRight size={16} />
+                </Link>
+                <Link to="/catalog" className="btn-outline inline-flex items-center gap-2">
+                  Все модели
+                </Link>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Right: Navigation Dots & Controls */}
+          <div className="hidden lg:flex flex-col items-end gap-8">
+            {/* Navigation Dots */}
+            <div className="flex flex-col gap-4">
+              {cars.map((car: Car, idx: number) => (
+                <button
+                  key={car.id}
+                  onClick={() => setCurrentIndex(idx)}
+                  className="group flex items-center gap-4 transition-all duration-400"
+                >
+                  <span className={`text-xs uppercase tracking-wider transition-all duration-400 ${
+                    idx === currentIndex ? 'text-white opacity-100' : 'text-white/30 opacity-0 group-hover:opacity-100'
+                  }`}>
+                    {car.model}
+                  </span>
+                  <div className={`h-px transition-all duration-600 ${
+                    idx === currentIndex ? 'w-16 bg-luxury-red' : 'w-8 bg-white/20 group-hover:w-12 group-hover:bg-white/40'
+                  }`} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex items-center gap-6">
+        <button
+          onClick={prevSlide}
+          className="w-12 h-12 border border-white/20 flex items-center justify-center hover:border-luxury-red hover:bg-luxury-red/10 transition-all duration-400"
+          aria-label="Previous"
+        >
+          <ChevronRight size={20} className="text-white rotate-180" />
+        </button>
+
+        {/* Progress indicators */}
+        <div className="flex gap-2">
+          {cars.map((_: Car, idx: number) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className="relative h-1 w-12 bg-white/10 overflow-hidden group"
+            >
+              <motion.div
+                className="absolute inset-0 bg-luxury-red"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: idx === currentIndex ? 1 : 0 }}
+                transition={{ duration: idx === currentIndex && !isPaused ? 5 : 0.3, ease: 'linear' }}
+                style={{ transformOrigin: 'left' }}
+              />
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={nextSlide}
+          className="w-12 h-12 border border-white/20 flex items-center justify-center hover:border-luxury-red hover:bg-luxury-red/10 transition-all duration-400"
+          aria-label="Next"
+        >
+          <ChevronRight size={20} className="text-white" />
+        </button>
+      </div>
+    </section>
   );
 };
 
@@ -680,7 +769,8 @@ const ModelGridCard = ({ car, index }: { car: typeof cars[0]; index: number }) =
       <Link to={`/car/${car.id}`} className="block group relative overflow-hidden rounded-sm">
         <div className="relative aspect-[16/9] overflow-hidden bg-luxury-elevated">
           <img src={car.images[0]} alt={`${car.brand} ${car.model}`}
-            className="w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110" loading="lazy" />
+            className="w-full h-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110" loading="lazy"
+            onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
           <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 translate-y-2 group-hover:translate-y-0 transition-transform duration-700">
             <div className="text-[10px] uppercase tracking-[0.25em] text-luxury-burgundy mb-2">{car.brand} {car.year}</div>

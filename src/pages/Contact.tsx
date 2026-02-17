@@ -117,9 +117,9 @@ export const Contact = () => {
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 0.2, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.35, ease }}
-                className="block text-white/20"
+                className="block text-white/90"
               >
                 с нами
               </motion.span>
@@ -156,7 +156,7 @@ export const Contact = () => {
             >
               Выберите удобный
               <br />
-              <span className="text-white/20">способ связи</span>
+              <span className="text-white/90">способ связи</span>
             </h2>
           </motion.div>
 
@@ -213,7 +213,7 @@ export const Contact = () => {
               >
                 Персональная
                 <br />
-                <span className="text-white/20">консультация</span>
+                <span className="text-white/90">консультация</span>
               </h2>
               <p className="text-white/40 font-light text-lg leading-relaxed mb-12 max-w-md">
                 Заполните форму, и наш специалист свяжется с вами для подбора идеального автомобиля.

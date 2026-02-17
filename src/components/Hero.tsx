@@ -61,7 +61,7 @@ export const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-luxury-burgundy text-label uppercase tracking-luxury mb-6"
+            className="text-luxury-red text-label uppercase tracking-luxury mb-6 font-semibold"
           >
             {t('hero.eyebrow')}
           </motion.div>
@@ -82,7 +82,7 @@ export const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="text-body-lg text-luxury-muted max-w-3xl mx-auto mb-12"
+            className="text-body-lg text-luxury-cream/90 max-w-3xl mx-auto mb-12"
           >
             {t('hero.subtitle')}
           </motion.p>

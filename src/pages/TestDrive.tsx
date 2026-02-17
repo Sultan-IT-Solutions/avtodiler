@@ -114,9 +114,9 @@ export const TestDrive = () => {
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 0.2, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.35, ease }}
-                className="block text-white/20"
+                className="block text-white/90"
               >
                 тест-драйв
               </motion.span>
@@ -153,7 +153,7 @@ export const TestDrive = () => {
             >
               Три простых
               <br />
-              <span className="text-white/20">шага</span>
+              <span className="text-white/90">шага</span>
             </h2>
           </motion.div>
 
@@ -239,7 +239,7 @@ export const TestDrive = () => {
                 >
                   Забронируйте
                   <br />
-                  <span className="text-white/20">тест-драйв</span>
+                  <span className="text-white/90">тест-драйв</span>
                 </h2>
               </div>
 

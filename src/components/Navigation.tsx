@@ -66,34 +66,17 @@ export const Navigation = () => {
           isScrolled ? 'glass-dark py-3' : 'bg-transparent py-6'
         }`}
       >
-        <nav className="container mx-auto px-6 lg:px-12">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link to="/" className="relative group flex items-center gap-3">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
-                className="flex items-center gap-3"
-              >
-                <div className="w-10 h-10 bg-luxury-burgundy flex items-center justify-center">
-                  <span className="text-white font-display text-lg font-bold">L</span>
-                </div>
-                <div className="hidden md:block">
-                  <div className="text-white font-display text-lg tracking-tight leading-none">Luxury Auto</div>
-                  <div className="text-luxury-muted text-micro uppercase tracking-ultra mt-0.5">Kazakhstan</div>
-                </div>
-              </motion.div>
-            </Link>
-
-            {/* Center Navigation Links */}
-            <div className="hidden lg:flex items-center gap-12">
-              {navLinks.map((link) => (
+        <nav className="container mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between py-2">
+            {/* Left: Navigation Links (half) */}
+            <div className="hidden lg:flex items-center gap-8 flex-1">
+              {navLinks.slice(0, Math.ceil(navLinks.length / 2)).map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
                   className="relative group"
                 >
-                  <span className={`text-micro uppercase tracking-ultra transition-colors duration-400 ${
+                  <span className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
                     location.pathname === link.path
                       ? 'text-white'
                       : 'text-luxury-subtle hover:text-white'
@@ -104,7 +87,7 @@ export const Navigation = () => {
                   {location.pathname === link.path && (
                     <motion.div
                       layoutId="nav-indicator"
-                      className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-burgundy"
+                      className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
                       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                     />
                   )}
@@ -112,18 +95,66 @@ export const Navigation = () => {
               ))}
             </div>
 
-            {/* Right Side: Language + CTA */}
-            <div className="hidden lg:flex items-center gap-6">
+            {/* Center: Logo */}
+            <Link to="/" className="relative group flex-shrink-0 mx-8">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-16 h-16 flex items-center justify-center">
+                  <img
+                    src="https://cdn.hongqi.ru/storage/mediadocument/document/0/19/325/19325/01jb1w2g0p3rcwrq2gdxkdy6g5.webp"
+                    alt="Hongqi"
+                    className="h-14 w-auto object-contain brightness-110"
+                  />
+                </div>
+                <div className="hidden xl:block">
+                  <div className="text-white font-display text-base tracking-tight leading-none">Hongqi</div>
+                  <div className="text-luxury-subtle text-micro uppercase tracking-ultra mt-0.5">Kazakhstan</div>
+                </div>
+              </motion.div>
+            </Link>
+
+            {/* Right: Navigation Links (half) + Language + CTA */}
+            <div className="hidden lg:flex items-center gap-6 flex-1 justify-end">
+              {/* Right navigation links */}
+              <div className="flex items-center gap-8">
+                {navLinks.slice(Math.ceil(navLinks.length / 2)).map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className="relative group"
+                  >
+                    <span className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
+                      location.pathname === link.path
+                        ? 'text-white'
+                        : 'text-luxury-subtle hover:text-white'
+                    }`}>
+                      {link.label}
+                    </span>
+                    {/* Active indicator */}
+                    {location.pathname === link.path && (
+                      <motion.div
+                        layoutId="nav-indicator-right"
+                        className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      />
+                    )}
+                  </Link>
+                ))}
+              </div>
+
               {/* Language Switcher */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 border-l border-white/10 pl-6">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
                     onClick={() => changeLanguage(lang.code)}
-                    className={`px-2.5 py-1 text-micro uppercase tracking-ultra transition-all duration-300 ${
+                    className={`px-2 py-1 text-micro uppercase tracking-ultra transition-all duration-300 ${
                       i18n.language === lang.code
                         ? 'text-white bg-white/10'
-                        : 'text-luxury-muted hover:text-white'
+                        : 'text-luxury-subtle hover:text-white'
                     }`}
                   >
                     {lang.label}
@@ -134,13 +165,13 @@ export const Navigation = () => {
               {/* CTA Button */}
               <Link
                 to="/contact"
-                className="btn-primary text-micro px-6 py-3"
+                className="btn-primary text-micro px-5 py-2.5"
               >
                 {t('hero.ctaSecondary')}
               </Link>
             </div>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile: Logo or Menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden relative w-10 h-10 flex items-center justify-center"

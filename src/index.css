@@ -411,12 +411,65 @@
   transition: opacity 0.4s ease;
 }
 
-/* ===== RESPONSIVE VIDEO ===== */
+/* ===== MOBILE OPTIMIZATIONS ===== */
 @media (max-width: 768px) {
   .hero-video {
     display: none;
   }
   .hero-poster {
     display: block !important;
+  }
+
+  /* Brighter mobile experience */
+  body {
+    background-color: #0d0d0d; /* Slightly lighter than luxury-black */
+  }
+
+  /* More visible text on mobile */
+  h1, h2, h3, h4, h5, h6 {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  }
+
+  /* Reduce excessive padding to minimize dark space */
+  section {
+    padding-top: clamp(2rem, 8vw, 4rem) !important;
+    padding-bottom: clamp(2rem, 8vw, 4rem) !important;
+  }
+
+  /* Make backgrounds less dark on mobile */
+  .bg-luxury-black {
+    background-color: #0a0a0a !important;
+  }
+
+  .bg-luxury-surface {
+    background-color: #121212 !important;
+  }
+
+  .bg-luxury-elevated {
+    background-color: #1a1a1a !important;
+  }
+
+  /* Enhance red accents on mobile */
+  .text-luxury-burgundy, .text-luxury-red {
+    filter: brightness(1.3);
+  }
+
+  /* Better text visibility */
+  .text-white\/40 {
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+
+  .text-white\/30 {
+    color: rgba(255, 255, 255, 0.55) !important;
+  }
+
+  .text-white\/20 {
+    color: rgba(255, 255, 255, 0.45) !important;
+  }
+
+  /* Mobile floating WhatsApp - make it more prominent */
+  .fixed.bottom-6.right-6 {
+    bottom: 1.5rem !important;
+    right: 1rem !important;
   }
 }

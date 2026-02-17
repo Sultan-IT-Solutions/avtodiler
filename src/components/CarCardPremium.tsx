@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, Gauge } from 'lucide-react';
 import { Car } from '../types/car';
+import { SITE_IMAGES } from '../data/siteImages';
 
 interface CarCardPremiumProps {
   car: Car;
@@ -94,6 +95,7 @@ export const CarCardPremium = ({ car, index = 0 }: CarCardPremiumProps) => {
                 alt={`${car.brand} ${car.model}`}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
               />
             </motion.div>
 

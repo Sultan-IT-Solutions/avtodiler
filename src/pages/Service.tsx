@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send } from 'lucide-react';
+import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 
@@ -130,9 +130,9 @@ export const Service = () => {
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 0.2, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.35, ease }}
-                className="block text-white/20"
+                className="block text-white"
               >
                 центр
               </motion.span>
@@ -148,6 +148,54 @@ export const Service = () => {
         >
           <div className="scroll-line" />
         </motion.div>
+      </section>
+
+      {/* Contact Section */}
+      <section className="py-16 lg:py-20 bg-luxury-surface border-b border-white/5">
+        <div className="container mx-auto px-6 lg:px-16">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-px bg-luxury-red" />
+              <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
+                Связаться с сервисом
+              </span>
+            </div>
+            <h2 className="text-h2 font-display text-white mb-8">
+              Свяжитесь с нами прямо сейчас
+            </h2>
+            <p className="text-body text-white/70 mb-10">
+              Наши специалисты ответят на все ваши вопросы и помогут записаться на сервис
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a
+                href="https://wa.me/77001234567?text=Здравствуйте!%20У%20меня%20вопрос%20по%20сервису%20Hongqi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group px-8 py-5 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-3 hover:shadow-[0_0_40px_rgba(34,197,94,0.5)] transition-all duration-400"
+              >
+                <MessageCircle size={22} strokeWidth={2.5} />
+                <span className="text-label uppercase tracking-luxury font-semibold">
+                  Написать в WhatsApp
+                </span>
+              </a>
+              <a
+                href="tel:+77001234567"
+                className="group px-8 py-5 bg-luxury-burgundy text-white flex items-center justify-center gap-3 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
+              >
+                <Phone size={22} strokeWidth={2.5} />
+                <span className="text-label uppercase tracking-luxury font-semibold">
+                  Позвонить
+                </span>
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       {/* Services Grid */}
@@ -169,7 +217,7 @@ export const Service = () => {
             >
               Что мы
               <br />
-              <span className="text-white/20">предлагаем</span>
+              <span className="text-white/90">предлагаем</span>
             </h2>
           </motion.div>
 
@@ -236,7 +284,7 @@ export const Service = () => {
               >
                 Запишитесь
                 <br />
-                <span className="text-white/20">на сервис</span>
+                <span className="text-white/90">на сервис</span>
               </h2>
               <p className="text-white/40 font-light text-lg leading-relaxed mb-12 max-w-md">
                 Заполните форму и наш специалист свяжется с вами для подтверждения записи.

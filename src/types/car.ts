@@ -2,12 +2,15 @@ export interface Car {
   id: string;
   brand: string;
   model: string;
+  /** Отображаемое название (напр. "НОВЫЙ HS5") — с hongqi.ru */
+  modelDisplay?: string;
   year: number;
   price: number;
   mileage: number;
   images: string[];
   image360?: string[];
   featured: boolean;
+  availability?: 'В наличии' | 'Под заказ' | 'Ожидается';
   specifications: {
     engine: string;
     power: string;

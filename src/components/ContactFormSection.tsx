@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { Send, MessageCircle, Phone } from 'lucide-react';
 
 export const ContactFormSection = () => {
   const [name, setName] = useState('');
@@ -14,6 +14,11 @@ export const ContactFormSection = () => {
     setPhone('');
     setTimeout(() => setIsSubmitted(false), 4000);
   };
+
+  const whatsappNumber = '+77010000000'; // Замените на реальный номер
+  const whatsappMessage = encodeURIComponent(`Здравствуйте! Меня зовут ${name || '[Имя]'}. Интересуют автомобили Hongqi.`);
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+  const phoneNumber = '+77001234567'; // Замените на реальный номер
 
   return (
     <section className="py-20 lg:py-28 border-t border-white/5">
@@ -38,9 +43,36 @@ export const ContactFormSection = () => {
             >
               Оставьте заявку
             </h2>
-            <p className="text-white/40 font-light mb-8">
+            <p className="text-white/60 font-light mb-8">
               Оставьте контакты — мы перезвоним и ответим на вопросы
             </p>
+
+            {/* Quick Contact Buttons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 pb-8 border-b border-white/10">
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative px-6 py-4 bg-gradient-to-br from-green-500 to-green-600 text-white overflow-hidden flex items-center justify-center gap-3 hover:shadow-[0_0_40px_rgba(34,197,94,0.4)] transition-all duration-400"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <MessageCircle size={20} strokeWidth={2.5} />
+                <span className="text-label uppercase tracking-luxury font-semibold">
+                  Написать в WhatsApp
+                </span>
+              </a>
+
+              <a
+                href={`tel:${phoneNumber}`}
+                className="group relative px-6 py-4 bg-luxury-burgundy text-white overflow-hidden flex items-center justify-center gap-3 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <Phone size={20} strokeWidth={2.5} />
+                <span className="text-label uppercase tracking-luxury font-semibold">
+                  Позвонить
+                </span>
+              </a>
+            </div>
 
             {isSubmitted ? (
               <motion.div
@@ -56,7 +88,7 @@ export const ContactFormSection = () => {
             ) : (
               <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[11px] uppercase tracking-[0.2em] text-white/40 block mb-2">
+                  <label className="text-[11px] uppercase tracking-[0.2em] text-white/60 block mb-2">
                     Имя *
                   </label>
                   <input
@@ -69,7 +101,7 @@ export const ContactFormSection = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] uppercase tracking-[0.2em] text-white/40 block mb-2">
+                  <label className="text-[11px] uppercase tracking-[0.2em] text-white/60 block mb-2">
                     Телефон *
                   </label>
                   <input

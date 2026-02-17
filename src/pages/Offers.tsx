@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Clock, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 
@@ -115,7 +116,7 @@ export const Offers = () => {
             </div>
             <div className="overflow-hidden">
               <span
-                className="block text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white/20 uppercase"
+                className="block text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white/80 uppercase"
                 style={HEADING_FONT}
               >
                 {'\u0438 \u0430\u043A\u0446\u0438\u0438'}
@@ -160,6 +161,7 @@ export const Offers = () => {
                         alt={offer.title}
                         className="w-full h-full object-cover transition-transform duration-[1.5s] ease-luxury group-hover:scale-110"
                         loading="lazy"
+                        onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent to-luxury-elevated/60 hidden lg:block" />
                       <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/40 to-transparent lg:hidden" />
@@ -251,7 +253,7 @@ export const Offers = () => {
             >
               {'\u041D\u0435 \u043D\u0430\u0448\u043B\u0438 \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0449\u0435\u0435'}
               <br />
-              <span className="text-white/20">
+              <span className="text-white/90">
                 {'\u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u0435?'}
               </span>
             </h2>

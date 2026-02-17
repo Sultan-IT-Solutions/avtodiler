@@ -100,7 +100,7 @@ export const About = () => {
       {/* HERO */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
         <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0 will-change-transform">
-          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
         </motion.div>
 
         <div className="absolute inset-0 z-[2] opacity-[0.04] pointer-events-none mix-blend-overlay"
@@ -134,7 +134,7 @@ export const About = () => {
               </h1>
             </div>
             <div className="overflow-hidden">
-              <span className="hero-reveal block text-[clamp(44px,8vw,120px)] font-bold leading-[0.9] tracking-[-0.04em] text-white/20 uppercase"
+              <span className="hero-reveal block text-[clamp(44px,8vw,120px)] font-bold leading-[0.9] tracking-[-0.04em] text-white/70 uppercase"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
                 KAZAKHSTAN
               </span>
@@ -178,7 +178,7 @@ export const About = () => {
                 <p className="text-[clamp(24px,3.5vw,48px)] font-bold leading-[1.15] tracking-[-0.02em] text-white uppercase"
                   style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
                   {'\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0430\u043c\u044b\u0439 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u044b\u0439, \u044d\u043a\u043e\u043b\u043e\u0433\u0438\u0447\u043d\u044b\u0439 \u0438 \u044d\u043d\u0435\u0440\u0433\u043e\u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u044b\u0439'}{' '}
-                  <span className="text-white/20">{'\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u043f\u044b\u0442'}</span>
+                  <span className="text-white/90">{'\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0438\u043b\u044c\u043d\u044b\u0439 \u043e\u043f\u044b\u0442'}</span>
                 </p>
               </blockquote>
               <div className="w-16 h-px bg-white/10 mb-8" />
@@ -195,7 +195,7 @@ export const About = () => {
               transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-6 relative">
               <div className="relative aspect-[3/4] overflow-hidden">
-                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" />
+                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
               </div>
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
@@ -220,7 +220,7 @@ export const About = () => {
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{'\u0412 \u0446\u0438\u0444\u0440\u0430\u0445'}</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              {'\u041d\u0430\u0448\u0438'} <span className="text-white/20">{'\u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b'}</span>
+              {'\u041d\u0430\u0448\u0438'} <span className="text-white/90">{'\u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b'}</span>
             </h2>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-16">
@@ -251,7 +251,7 @@ export const About = () => {
               </div>
               <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                {'\u0427\u0442\u043e \u043d\u0430\u0441'}<br /><span className="text-white/20">{'\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u044f\u0435\u0442'}</span>
+                {'\u0427\u0442\u043e \u043d\u0430\u0441'}<br /><span className="text-white/90">{'\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u044f\u0435\u0442'}</span>
               </h2>
             </div>
             <p className="text-base text-white/30 font-light max-w-md lg:text-right">
@@ -292,7 +292,7 @@ export const About = () => {
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{'\u041d\u0430\u0448\u0430 \u0438\u0441\u0442\u043e\u0440\u0438\u044f'}</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              {'\u041f\u0443\u0442\u044c \u043a'}<br /><span className="text-white/20">{'\u0441\u043e\u0432\u0435\u0440\u0448\u0435\u043d\u0441\u0442\u0432\u0443'}</span>
+              {'\u041f\u0443\u0442\u044c \u043a'}<br /><span className="text-white/90">{'\u0441\u043e\u0432\u0435\u0440\u0448\u0435\u043d\u0441\u0442\u0432\u0443'}</span>
             </h2>
           </div>
           <div className="relative max-w-4xl mx-auto">
@@ -331,7 +331,7 @@ export const About = () => {
       {/* CTA */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.philosophy; }; }} />
           <div className="absolute inset-0 bg-luxury-black/80" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

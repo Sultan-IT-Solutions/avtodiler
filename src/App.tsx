@@ -5,6 +5,7 @@ import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navigation } from './components/Navigation';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { CarDetail } from './pages/CarDetail';
@@ -111,9 +112,9 @@ const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorDotRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [hideCursor, setHideCursor] = useState(false);
 
   useEffect(() => {
-    // Don't show custom cursor on touch devices
     if ('ontouchstart' in window) return;
 
     const cursor = cursorRef.current;
@@ -128,27 +129,31 @@ const CustomCursor = () => {
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-
-      // Dot follows immediately
       gsap.set(dot, { x: mouseX, y: mouseY });
     };
 
     const animate = () => {
-      // Smooth follow for outer cursor
       cursorX += (mouseX - cursorX) * 0.12;
       cursorY += (mouseY - cursorY) * 0.12;
       gsap.set(cursor, { x: cursorX, y: cursorY });
       requestAnimationFrame(animate);
     };
 
-    // Track interactive elements
     const handleMouseEnter = () => setIsHovering(true);
     const handleMouseLeave = () => setIsHovering(false);
+    const handleHideEnter = () => setHideCursor(true);
+    const handleHideLeave = () => setHideCursor(false);
 
     const interactiveElements = document.querySelectorAll('a, button, [data-cursor-hover]');
     interactiveElements.forEach(el => {
       el.addEventListener('mouseenter', handleMouseEnter);
       el.addEventListener('mouseleave', handleMouseLeave);
+    });
+
+    const hideElements = document.querySelectorAll('[data-cursor-hide]');
+    hideElements.forEach(el => {
+      el.addEventListener('mouseenter', handleHideEnter);
+      el.addEventListener('mouseleave', handleHideLeave);
     });
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -160,32 +165,42 @@ const CustomCursor = () => {
         el.removeEventListener('mouseenter', handleMouseEnter);
         el.removeEventListener('mouseleave', handleMouseLeave);
       });
+      hideElements.forEach(el => {
+        el.removeEventListener('mouseenter', handleHideEnter);
+        el.removeEventListener('mouseleave', handleHideLeave);
+      });
     };
   }, []);
 
-  // Re-bind on navigation
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const t = setTimeout(() => {
       const interactiveElements = document.querySelectorAll('a, button, [data-cursor-hover]');
       const handleMouseEnter = () => setIsHovering(true);
       const handleMouseLeave = () => setIsHovering(false);
+      const handleHideEnter = () => setHideCursor(true);
+      const handleHideLeave = () => setHideCursor(false);
 
       interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', handleMouseEnter);
         el.addEventListener('mouseleave', handleMouseLeave);
       });
+      document.querySelectorAll('[data-cursor-hide]').forEach(el => {
+        el.addEventListener('mouseenter', handleHideEnter);
+        el.addEventListener('mouseleave', handleHideLeave);
+      });
     }, 500);
-
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   });
 
   if (typeof window !== 'undefined' && 'ontouchstart' in window) return null;
+
+  const invisible = hideCursor ? 'opacity-0 pointer-events-none' : '';
 
   return (
     <>
       <div
         ref={cursorRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
+        className={`fixed top-0 left-0 pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 mix-blend-difference transition-opacity duration-200 ${invisible}`}
       >
         <div
           className={`rounded-full border border-white transition-all duration-500 ease-luxury ${
@@ -195,7 +210,7 @@ const CustomCursor = () => {
       </div>
       <div
         ref={cursorDotRef}
-        className="fixed top-0 left-0 pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2"
+        className={`fixed top-0 left-0 pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ${invisible}`}
       >
         <div className="w-1 h-1 rounded-full bg-white" />
       </div>
@@ -294,6 +309,7 @@ function App() {
           <div className="min-h-screen bg-luxury-black noise-overlay">
             <CustomCursor />
             <Navigation />
+            <FloatingWhatsApp />
             <main>
               <AnimatedRoutes />
             </main>

@@ -189,9 +189,9 @@ export const Dealers = () => {
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 0.2, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.35, ease }}
-                className="block text-white/20"
+                className="block text-white/90"
               >
                 дилера
               </motion.span>
@@ -228,7 +228,7 @@ export const Dealers = () => {
             >
               Дилерские
               <br />
-              <span className="text-white/20">центры</span>
+              <span className="text-white/90">центры</span>
             </h2>
           </motion.div>
 

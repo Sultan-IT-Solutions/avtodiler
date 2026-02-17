@@ -28,7 +28,7 @@ export const Footer = () => {
           className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 mb-20"
         >
           <div>
-            <span className="text-micro uppercase tracking-ultra text-luxury-burgundy block mb-4">
+            <span className="text-micro uppercase tracking-ultra text-luxury-red block mb-4 font-semibold">
               Свяжитесь с нами
             </span>
             <h2 className="text-h1 font-display text-white font-light leading-tight">
@@ -39,7 +39,7 @@ export const Footer = () => {
             to="/contact"
             className="group flex items-center gap-4"
           >
-            <span className="text-label uppercase tracking-luxury text-luxury-muted group-hover:text-white transition-colors">
+            <span className="text-label uppercase tracking-luxury text-luxury-subtle group-hover:text-white transition-colors">
               Связаться
             </span>
             <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy transition-all duration-400">

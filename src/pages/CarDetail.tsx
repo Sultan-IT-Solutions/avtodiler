@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { cars } from '../data/cars';
+import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import gsap from 'gsap';
@@ -101,12 +102,6 @@ export const CarDetail = () => {
   const configRef = useRef<HTMLDivElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
-  // Smooth cursor follow
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const smoothX = useSpring(mouseX, { stiffness: 150, damping: 20 });
-  const smoothY = useSpring(mouseY, { stiffness: 150, damping: 20 });
-
   // Hero parallax
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
@@ -114,7 +109,7 @@ export const CarDetail = () => {
   });
   const heroImgY = useTransform(heroProgress, [0, 1], ['0%', '30%']);
   const heroImgScale = useTransform(heroProgress, [0, 1], [1, 1.2]);
-  const heroOverlayOpacity = useTransform(heroProgress, [0, 0.5, 1], [0.3, 0.6, 0.95]);
+  const heroOverlayOpacity = useTransform(heroProgress, [0, 0.5, 1], [0.06, 0.3, 0.82]);
   const heroTitleY = useTransform(heroProgress, [0, 1], ['0%', '80%']);
   const heroInfoOpacity = useTransform(heroProgress, [0, 0.4], [1, 0]);
 
@@ -176,13 +171,6 @@ export const CarDetail = () => {
     return () => ctx.revert();
   }, [car]);
 
-  // Track mouse for gradient effect on hero
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width);
-    mouseY.set((e.clientY - rect.top) / rect.height);
-  };
-
   if (!car) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-luxury-black">
@@ -197,12 +185,12 @@ export const CarDetail = () => {
   const similarCars = cars.filter(c => c.id !== car.id && c.brand === car.brand).slice(0, 3);
 
   const formatPrice = (price: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'KZT', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
+    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
   // Extract numeric for animated specs
   const heroSpecs = [
-    { label: 'Мощность', value: car.specifications.power.split('/')[0].trim(), unit: '' },
-    { label: 'Разгон', value: car.specifications.acceleration.replace('s', ''), unit: 'с' },
+    { label: 'Мощность', value: car.specifications.power.split(/\s/)[0], unit: '' },
+    { label: 'Разгон', value: car.specifications.acceleration.replace(/\s*сек$/i, '').replace('s', ''), unit: 'с' },
     { label: 'Макс. скорость', value: car.specifications.topSpeed.replace(/[^\d]/g, ''), unit: 'км/ч' },
     { label: 'Привод', value: car.specifications.drivetrain, unit: '' },
   ];
@@ -227,12 +215,11 @@ export const CarDetail = () => {
       <section
         ref={heroRef}
         className="relative h-[100vh] min-h-[600px] overflow-hidden"
-        onMouseMove={handleMouseMove}
       >
-        {/* Parallax image */}
+        {/* Фото машины — ярче и контрастнее, как главный объект, не фон */}
         <motion.div
           style={{ y: heroImgY, scale: heroImgScale }}
-          className="absolute inset-0 will-change-transform"
+          className="absolute inset-0 will-change-transform [filter:brightness(1.15)_contrast(1.12)_saturate(1.05)]"
         >
           <AnimatePresence mode="wait">
             <motion.img
@@ -244,27 +231,25 @@ export const CarDetail = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
             />
           </AnimatePresence>
         </motion.div>
 
-        {/* Dynamic gradient overlay that follows mouse */}
+        {/* Затемнение только внизу под текст и кнопки — остальное фото остаётся ярким */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at ${smoothX.get() * 100}% ${smoothY.get() * 100}%, transparent 20%, rgba(5,5,5,0.7) 80%)`,
-          }}
-        />
-
-        {/* Cinematic overlays */}
-        <motion.div
-          className="absolute inset-0"
           style={{ opacity: heroOverlayOpacity }}
         >
           <div className="absolute inset-0 bg-luxury-black" />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-luxury-black/50" />
-        <div className="absolute bottom-0 left-0 right-0 h-[40vh] bg-gradient-to-t from-luxury-black to-transparent" />
+        {/* Один градиент снизу: тёмная полоса только под блоком с ценой и CTA */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.7) 18%, rgba(0,0,0,0.2) 35%, transparent 55%)',
+          }}
+        />
 
         {/* Back button — minimal glass pill */}
         <motion.div
@@ -284,9 +269,9 @@ export const CarDetail = () => {
           </Link>
         </motion.div>
 
-        {/* Image navigation dots */}
+        {/* Image navigation dots — слева от списка моделей */}
         {car.images.length > 1 && (
-          <div className="absolute right-6 lg:right-16 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
+          <div className="absolute right-6 lg:right-[11rem] top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
             {car.images.map((_, index) => (
               <button
                 key={index}
@@ -309,6 +294,29 @@ export const CarDetail = () => {
           </div>
         )}
 
+        {/* Вертикальный список моделей Hongqi — как на hongqi.ru */}
+        <div className="absolute right-6 lg:right-16 top-1/2 -translate-y-1/2 z-20 hidden lg:flex flex-col items-end gap-0.5">
+          {cars.map((c) => {
+            const isActive = c.id === car.id;
+            return (
+              <Link
+                key={c.id}
+                to={`/car/${c.id}`}
+                className={`group flex items-center gap-3 py-2 transition-colors duration-300 ${
+                  isActive ? 'text-white' : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <span className={`block w-px min-h-[1rem] transition-colors duration-300 ${
+                  isActive ? 'bg-luxury-burgundy' : 'bg-transparent group-hover:bg-white/30'
+                }`} />
+                <span className="text-[11px] uppercase tracking-[0.2em] whitespace-nowrap">
+                  {c.modelDisplay ?? c.model}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
         {/* Hero title & info overlay */}
         <motion.div
           ref={titleRef}
@@ -327,14 +335,14 @@ export const CarDetail = () => {
                 </div>
               </div>
 
-              {/* Model name — cinematic scale */}
+              {/* Model name — как на hongqi.ru */}
               <div className="overflow-hidden mb-6">
                 <div className="reveal-line">
                   <h1
                     className="text-[clamp(56px,10vw,160px)] font-bold leading-[0.9] tracking-[-0.04em] text-white uppercase"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    {car.model}
+                    {car.modelDisplay ?? car.model}
                   </h1>
                 </div>
               </div>
@@ -354,23 +362,39 @@ export const CarDetail = () => {
                 </div>
               </div>
 
-              {/* Price & CTA */}
+              {/* Price + В кредит от 0,01% & CTA */}
               <div className="overflow-hidden">
                 <div className="reveal-line flex items-center gap-8 flex-wrap">
-                  <div className="text-3xl lg:text-4xl font-light text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', monospace" }}>
-                    {formatPrice(car.price)}
+                  <div>
+                    <div className="text-3xl lg:text-4xl font-light text-white tracking-tight" style={{ fontFamily: "'Space Grotesk', monospace" }}>
+                      от {formatPrice(car.price)}
+                    </div>
+                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 border border-white/20 rounded-full">
+                      <span className="text-xs text-white/70">В кредит</span>
+                      <span className="text-xs font-medium text-white">от 0,01%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Link to="/test-drive" className="btn-primary !py-3 !px-8 text-xs">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <a
+                      href={`https://wa.me/77001234567?text=${encodeURIComponent(`Интересует ${car.brand} ${car.model} ${car.year}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group px-6 py-3 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all duration-400"
+                    >
+                      <MessageCircle size={18} strokeWidth={2.5} />
+                      <span className="text-xs uppercase tracking-luxury font-semibold">WhatsApp</span>
+                    </a>
+                    <a
+                      href="tel:+77001234567"
+                      className="group px-6 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
+                    >
+                      <Phone size={18} strokeWidth={2.5} />
+                      <span className="text-xs uppercase tracking-luxury font-semibold">Позвонить</span>
+                    </a>
+                    <Link to="/test-drive" className="btn-outline !py-3 !px-6 text-xs whitespace-nowrap">
                       <Calendar size={14} className="inline mr-2" />
                       Тест-драйв
                     </Link>
-                    <a href="tel:+77001234567" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all duration-500">
-                      <Phone size={16} />
-                    </a>
-                    <a href="https://wa.me/77001234567" target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all duration-500">
-                      <MessageCircle size={16} />
-                    </a>
                   </div>
                 </div>
               </div>
@@ -496,7 +520,7 @@ export const CarDetail = () => {
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
               Каждая деталь<br />
-              <span className="text-white/20">имеет значение</span>
+              <span className="text-white/90">имеет значение</span>
             </h2>
           </motion.div>
 
@@ -556,7 +580,7 @@ export const CarDetail = () => {
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
               Ваш стиль<br />
-              <span className="text-white/20">ваш автомобиль</span>
+              <span className="text-white/90">ваш автомобиль</span>
             </h2>
           </motion.div>
 
@@ -574,6 +598,7 @@ export const CarDetail = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
                   />
                 </AnimatePresence>
 
@@ -614,7 +639,7 @@ export const CarDetail = () => {
                           : 'opacity-30 hover:opacity-60 grayscale hover:grayscale-0'
                       }`}
                     >
-                      <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
+                      <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
                     </button>
                   ))}
                 </div>
@@ -743,15 +768,33 @@ export const CarDetail = () => {
               {/* Summary */}
               <div className="config-item pt-6 border-t border-white/5">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">Итого</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/60">Итого</span>
                   <span className="text-2xl text-white font-light tracking-tight" style={{ fontFamily: "'Space Grotesk', monospace" }}>
                     {formatPrice(car.price)}
                   </span>
                 </div>
-                <Link to="/test-drive" className="btn-primary w-full flex items-center justify-center gap-2 !py-4">
-                  <Calendar size={16} />
-                  Забронировать тест-драйв
-                </Link>
+                <div className="space-y-3">
+                  <a
+                    href={`https://wa.me/77001234567?text=${encodeURIComponent(`Хочу забронировать ${car.brand} ${car.model} ${car.year}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group w-full px-6 py-4 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] transition-all duration-400"
+                  >
+                    <MessageCircle size={18} strokeWidth={2.5} />
+                    <span className="text-label uppercase tracking-luxury font-semibold">Забронировать в WhatsApp</span>
+                  </a>
+                  <a
+                    href="tel:+77001234567"
+                    className="group w-full px-6 py-4 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
+                  >
+                    <Phone size={18} strokeWidth={2.5} />
+                    <span className="text-label uppercase tracking-luxury font-semibold">Позвонить</span>
+                  </a>
+                  <Link to="/test-drive" className="btn-outline w-full flex items-center justify-center gap-2 !py-4">
+                    <Calendar size={16} />
+                    Тест-драйв
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -808,6 +851,7 @@ export const CarDetail = () => {
                           src={sc.images[0]}
                           alt={`${sc.brand} ${sc.model}`}
                           className="w-full h-full object-cover transition-all duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+                          onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-luxury-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-700" />
 
@@ -873,6 +917,7 @@ export const CarDetail = () => {
               alt={`${car.brand} ${car.model}`}
               className="max-w-[90vw] max-h-[85vh] object-contain"
               onClick={(e) => e.stopPropagation()}
+              onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
             />
 
             {/* Navigation arrows */}

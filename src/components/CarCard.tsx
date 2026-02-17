@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, Gauge } from 'lucide-react';
 import { Car } from '../types/car';
+import { SITE_IMAGES } from '../data/siteImages';
 
 interface CarCardProps {
   car: Car;
@@ -96,6 +97,7 @@ export const CarCard = ({ car, index = 0 }: CarCardProps) => {
                 alt={`${car.brand} ${car.model}`}
                 className="w-full h-full object-cover"
                 loading="lazy"
+                onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
               />
             </motion.div>
 

@@ -2,6 +2,11 @@
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
+    "brands": "Brand",
+    "service": "Service",
+    "offers": "Offers",
+    "dealers": "Dealers",
+    "testDrive": "Test Drive",
     "about": "About",
     "contact": "Contact"
   },

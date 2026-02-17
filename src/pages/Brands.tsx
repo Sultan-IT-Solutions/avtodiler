@@ -65,7 +65,7 @@ export const Brands = () => {
       {/* HERO */}
       <section ref={heroRef} className="relative h-[70vh] min-h-[500px] w-full overflow-hidden">
         <motion.div style={{ y: heroY, scale: heroScale }} className="absolute inset-0 will-change-transform">
-          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.hero} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
         </motion.div>
         <div className="absolute inset-0 z-[3] bg-gradient-to-b from-luxury-black/60 via-transparent to-luxury-black" />
         <div className="absolute inset-0 z-[3] bg-gradient-to-r from-luxury-black/70 via-luxury-black/20 to-transparent" />
@@ -110,14 +110,14 @@ export const Brands = () => {
                 <span className="w-10 h-px bg-luxury-burgundy" />
                 <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{'\u0424\u0438\u043b\u043e\u0441\u043e\u0444\u0438\u044f'}</span>
               </div>
-              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-8" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0411\u043e\u043b\u044c\u0448\u0435 \u0447\u0435\u043c'}<br /><span className="text-white/20">{'\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0438\u043b\u044c'}</span></h2>
+              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-8" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0411\u043e\u043b\u044c\u0448\u0435 \u0447\u0435\u043c'}<br /><span className="text-white/90">{'\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0438\u043b\u044c'}</span></h2>
               <div className="w-16 h-px bg-white/10 mb-8" />
-              <p className="text-lg text-white/40 font-light leading-relaxed mb-6 max-w-lg">{brandInfo.philosophy}</p>
-              <p className="text-base text-white/25 font-light leading-relaxed max-w-lg">{brandInfo.description}</p>
+              <p className="text-lg text-white/85 font-light leading-relaxed mb-6 max-w-lg">{brandInfo.philosophy}</p>
+              <p className="text-base text-white/70 font-light leading-relaxed max-w-lg">{brandInfo.description}</p>
             </motion.div>
             <motion.div initial={{ opacity: 0, scale: 0.92 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-100px' }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="lg:col-span-6 relative">
               <div className="relative aspect-[3/4] overflow-hidden">
-                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" />
+                <img src={SITE_IMAGES.philosophy} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
               </div>
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.5 }} className="absolute -bottom-6 -left-6 lg:-left-12 bg-luxury-surface/90 backdrop-blur-xl border border-white/5 p-6">
@@ -139,7 +139,7 @@ export const Brands = () => {
                 <span className="w-10 h-px bg-luxury-burgundy" />
                 <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{'\u0426\u0435\u043d\u043d\u043e\u0441\u0442\u0438'}</span>
               </div>
-              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0427\u0442\u043e \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u044f\u0435\u0442'}<br /><span className="text-white/20">Hongqi</span></h2>
+              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0427\u0442\u043e \u043e\u043f\u0440\u0435\u0434\u0435\u043b\u044f\u0435\u0442'}<br /><span className="text-white/90">Hongqi</span></h2>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,10 +162,10 @@ export const Brands = () => {
         <div className="container mx-auto px-6 lg:px-16">
           <div className="text-center mb-16 gsap-reveal">
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{'\u0412\u0438\u0434\u0435\u043e'}</span>
-            <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0418\u0441\u0442\u043e\u0440\u0438\u044f'}<br /><span className="text-white/20">Hongqi</span></h2>
+            <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u0418\u0441\u0442\u043e\u0440\u0438\u044f'}<br /><span className="text-white/90">Hongqi</span></h2>
           </div>
           <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, margin: '-100px' }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} className="relative aspect-video overflow-hidden group cursor-pointer">
-            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" />
+            <img src={SITE_IMAGES.cta} alt="Hongqi" className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.philosophy; }; }} />
             <div className="absolute inset-0 bg-luxury-black/40 group-hover:bg-luxury-black/20 transition-colors duration-700" />
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
@@ -185,7 +185,7 @@ export const Brands = () => {
         <div className="container mx-auto px-6 lg:px-16">
           <div className="text-center mb-20 gsap-reveal">
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{'\u0425\u0440\u043e\u043d\u043e\u043b\u043e\u0433\u0438\u044f'}</span>
-            <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u041a\u043b\u044e\u0447\u0435\u0432\u044b\u0435'}<br /><span className="text-white/20">{'\u043c\u043e\u043c\u0435\u043d\u0442\u044b'}</span></h2>
+            <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase" style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{'\u041a\u043b\u044e\u0447\u0435\u0432\u044b\u0435'}<br /><span className="text-white/90">{'\u043c\u043e\u043c\u0435\u043d\u0442\u044b'}</span></h2>
           </div>
           <div className="relative max-w-4xl mx-auto">
             <div className="absolute left-8 lg:left-1/2 top-0 bottom-0 w-px bg-white/5 -translate-x-1/2" />
@@ -211,7 +211,7 @@ export const Brands = () => {
       {/* CTA */}
       <section className="relative py-40 lg:py-56 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={SITE_IMAGES.secondary} alt="Hongqi" className="w-full h-full object-cover" />
+          <img src={SITE_IMAGES.secondary} alt="Hongqi" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
           <div className="absolute inset-0 bg-luxury-black/80" />
         </div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">

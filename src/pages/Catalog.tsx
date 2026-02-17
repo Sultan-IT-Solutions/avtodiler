@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { cars } from '../data/cars';
-import { ArrowRight, SlidersHorizontal, X, Search } from 'lucide-react';
+import { SITE_IMAGES } from '../data/siteImages';
+import { ArrowRight, SlidersHorizontal, X, Search, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 
@@ -13,12 +14,12 @@ type SortOption = 'newest' | 'priceHigh' | 'priceLow';
 const HEADING_FONT = { fontFamily: "'Montserrat', system-ui, sans-serif" };
 const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 
+/** Каталог только Hongqi — данные с [hongqi.ru](https://hongqi.ru) */
 export const Catalog = () => {
   const { t } = useTranslation();
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [yearRange, setYearRange] = useState<[number, number]>([2020, 2024]);
+  const [yearRange, setYearRange] = useState<[number, number]>([2020, 2030]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortBy, setSortBy] = useState<SortOption>('priceLow');
   const [showFilters, setShowFilters] = useState(false);
 
   const heroRef = useRef<HTMLDivElement>(null);
@@ -56,18 +57,12 @@ export const Catalog = () => {
     return () => ctx.revert();
   }, []);
 
-  const brands = useMemo(() => {
-    return Array.from(new Set(cars.map((c) => c.brand))).sort();
-  }, []);
-
   const filteredCars = useMemo(() => {
     let filtered = cars.filter((car) => {
-      const brandMatch =
-        selectedBrands.length === 0 || selectedBrands.includes(car.brand);
       const yearMatch = car.year >= yearRange[0] && car.year <= yearRange[1];
       const priceMatch =
         car.price >= priceRange[0] && car.price <= priceRange[1];
-      return brandMatch && yearMatch && priceMatch;
+      return yearMatch && priceMatch;
     });
 
     switch (sortBy) {
@@ -82,33 +77,24 @@ export const Catalog = () => {
         break;
     }
     return filtered;
-  }, [selectedBrands, yearRange, priceRange, sortBy]);
-
-  const toggleBrand = (brand: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(brand)
-        ? prev.filter((b) => b !== brand)
-        : [...prev, brand],
-    );
-  };
+  }, [yearRange, priceRange, sortBy]);
 
   const resetFilters = () => {
-    setSelectedBrands([]);
-    setYearRange([2020, 2024]);
+    setYearRange([2020, 2030]);
     setPriceRange([0, 10000000]);
   };
 
   const hasActiveFilters =
-    selectedBrands.length > 0 ||
     yearRange[0] !== 2020 ||
-    yearRange[1] !== 2024 ||
+    yearRange[1] !== 2030 ||
     priceRange[0] !== 0 ||
     priceRange[1] !== 10000000;
 
+  /** Цены в рублях, как на hongqi.ru */
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('ru-RU', {
       style: 'currency',
-      currency: 'KZT',
+      currency: 'RUB',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -131,9 +117,10 @@ export const Catalog = () => {
           className="absolute inset-0"
         >
           <img
-            src="https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg"
-            alt="Catalog"
+            src={SITE_IMAGES.hero}
+            alt="Каталог Hongqi"
             className="w-full h-full object-cover"
+            onError={(e) => { e.currentTarget.src = SITE_IMAGES.philosophy; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-luxury-black/60 via-luxury-black/30 to-luxury-black" />
         </motion.div>
@@ -160,10 +147,10 @@ export const Catalog = () => {
           </div>
           <div className="overflow-hidden">
             <span
-              className="hero-line block text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white/20 uppercase opacity-0"
+              className="hero-line block text-[clamp(28px,4vw,56px)] font-bold leading-[1] tracking-[-0.03em] text-white/30 uppercase opacity-0"
               style={HEADING_FONT}
             >
-              Collection
+              Кроссоверы и седаны Hongqi
             </span>
           </div>
 
@@ -209,55 +196,6 @@ export const Catalog = () => {
                     )}
                   </div>
 
-                  <div className="mb-10">
-                    <h4
-                      className="text-[11px] uppercase tracking-[0.25em] text-white/50 mb-6"
-                      style={HEADING_FONT}
-                    >
-                      {t('catalog.brand')}
-                    </h4>
-                    <div className="space-y-4">
-                      {brands.map((brand) => (
-                        <label
-                          key={brand}
-                          className="flex items-center gap-3 cursor-pointer group"
-                        >
-                          <div
-                            className={`w-4 h-4 border flex items-center justify-center transition-all duration-400 ${
-                              selectedBrands.includes(brand)
-                                ? 'bg-luxury-burgundy border-luxury-burgundy'
-                                : 'border-white/20 group-hover:border-white/40'
-                            }`}
-                            onClick={() => toggleBrand(brand)}
-                          >
-                            {selectedBrands.includes(brand) && (
-                              <motion.svg
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ duration: 0.2 }}
-                                width="10"
-                                height="8"
-                                viewBox="0 0 10 8"
-                                fill="none"
-                              >
-                                <path
-                                  d="M1 4L3.5 6.5L9 1"
-                                  stroke="white"
-                                  strokeWidth="1.5"
-                                />
-                              </motion.svg>
-                            )}
-                          </div>
-                          <span className="text-sm text-white/40 group-hover:text-white transition-colors duration-400 font-light">
-                            {brand}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-white/5 mb-10" />
-
                   <div>
                     <h4
                       className="text-[11px] uppercase tracking-[0.25em] text-white/50 mb-6"
@@ -280,6 +218,37 @@ export const Catalog = () => {
                         </button>
                       ))}
                     </div>
+                  </div>
+                </div>
+
+                {/* Consultation Section */}
+                <div className="mt-6 bg-gradient-to-br from-luxury-elevated to-luxury-surface border border-white/5 p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-px bg-luxury-red" />
+                    <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
+                      Консультация
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/70 font-light mb-6 leading-relaxed">
+                    Наши эксперты помогут подобрать идеальный автомобиль
+                  </p>
+                  <div className="space-y-3">
+                    <a
+                      href="https://wa.me/77001234567?text=Здравствуйте!%20Хочу%20получить%20консультацию%20по%20автомобилям%20Hongqi"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group w-full px-4 py-3 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all duration-400"
+                    >
+                      <MessageCircle size={16} strokeWidth={2.5} />
+                      <span className="text-xs uppercase tracking-luxury font-semibold">WhatsApp</span>
+                    </a>
+                    <a
+                      href="tel:+77001234567"
+                      className="group w-full px-4 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_25px_rgba(200,16,46,0.4)] transition-all duration-400"
+                    >
+                      <Phone size={16} strokeWidth={2.5} />
+                      <span className="text-xs uppercase tracking-luxury font-semibold">Позвонить</span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -413,47 +382,6 @@ export const Catalog = () => {
               <div className="space-y-10">
                 <div>
                   <h4 className="text-[11px] uppercase tracking-[0.25em] text-white/50 mb-5">
-                    {t('catalog.brand')}
-                  </h4>
-                  <div className="space-y-4">
-                    {brands.map((brand) => (
-                      <label
-                        key={brand}
-                        className="flex items-center gap-3 cursor-pointer"
-                      >
-                        <div
-                          className={`w-5 h-5 border flex items-center justify-center transition-all duration-400 ${
-                            selectedBrands.includes(brand)
-                              ? 'bg-luxury-burgundy border-luxury-burgundy'
-                              : 'border-white/20'
-                          }`}
-                          onClick={() => toggleBrand(brand)}
-                        >
-                          {selectedBrands.includes(brand) && (
-                            <svg
-                              width="12"
-                              height="10"
-                              viewBox="0 0 10 8"
-                              fill="none"
-                            >
-                              <path
-                                d="M1 4L3.5 6.5L9 1"
-                                stroke="white"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
-                          )}
-                        </div>
-                        <span className="text-base text-white/40 font-light">
-                          {brand}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[11px] uppercase tracking-[0.25em] text-white/50 mb-5">
                     {t('catalog.sort')}
                   </h4>
                   <div className="space-y-3">
@@ -500,7 +428,7 @@ export const Catalog = () => {
 };
 
 /* ================================================================
-   CATALOG CARD - hover zoom + info reveal + 3D tilt
+   CATALOG CARD - Clean, modern design with availability badge
    ================================================================ */
 const CatalogCard = ({
   car,
@@ -513,7 +441,6 @@ const CatalogCard = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
 
   return (
     <motion.div
@@ -527,81 +454,95 @@ const CatalogCard = ({
         delay: (index % 2) * 0.15,
         ease: [0.16, 1, 0.3, 1],
       }}
-      style={{ perspective: 900 }}
     >
       <Link to={`/car/${car.id}`} className="group block">
-        <motion.div
-          onMouseMove={(e) => {
-            const rect = (
-              e.currentTarget as HTMLDivElement
-            ).getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
-            setTilt({ rx: (y - 0.5) * -8, ry: (x - 0.5) * 8 });
-          }}
-          onMouseLeave={() => setTilt({ rx: 0, ry: 0 })}
-          animate={{ rotateX: tilt.rx, rotateY: tilt.ry }}
-          transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-          className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-600 will-change-transform"
-          style={{ transformStyle: 'preserve-3d' }}
-        >
-          <div className="relative aspect-[16/10] overflow-hidden">
+        <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-luxury-red/30 transition-all duration-600">
+          {/* Image Section */}
+          <div className="relative aspect-[16/9] overflow-hidden bg-luxury-surface">
             <img
               src={car.images[0]}
               alt={`${car.brand} ${car.model}`}
-              className="w-full h-full object-cover transition-transform duration-[1.5s] ease-luxury group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               loading="lazy"
+              onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/80 via-luxury-black/20 to-transparent" />
 
-            <div className="absolute inset-0 bg-luxury-black/50 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-600 flex items-center justify-center pointer-events-none">
-              <div className="flex items-center gap-5 text-[11px] uppercase tracking-[0.25em] text-white/80">
-                <span>{car.specifications.engine}</span>
-                <span className="w-1 h-1 rounded-full bg-luxury-burgundy" />
-                <span>{car.specifications.acceleration} 0-100</span>
-              </div>
-            </div>
-
-            {car.featured && (
-              <div className="absolute top-4 left-4 bg-luxury-burgundy/90 backdrop-blur-sm px-4 py-1.5">
-                <span className="text-[11px] uppercase tracking-[0.25em] text-white">
-                  Featured
+            {/* Availability Badge */}
+            {car.availability && (
+              <div className="absolute top-4 left-4 bg-green-500/90 backdrop-blur-sm px-4 py-2 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span className="text-xs uppercase tracking-wider text-white font-semibold">
+                  {car.availability}
                 </span>
               </div>
             )}
-          </div>
 
-          <div className="p-6 lg:p-8">
-            <div className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy mb-3">
-              {car.brand}
-            </div>
-            <h3
-              className="text-2xl lg:text-3xl font-bold text-white mb-3 group-hover:text-luxury-burgundy transition-colors duration-400 uppercase tracking-[-0.03em]"
-              style={HEADING_FONT}
-            >
-              {car.model}
-            </h3>
-            <div className="flex items-center gap-3 text-sm text-white/40 mb-6 font-light">
-              <span style={MONO_FONT}>{car.year}</span>
-              <span className="w-1 h-1 rounded-full bg-white/20" />
-              <span>{car.specifications.power}</span>
-              <span className="w-1 h-1 rounded-full bg-white/20" />
-              <span>{car.specifications.drivetrain}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-xl text-white font-light" style={MONO_FONT}>
-                {formatPrice(car.price)}
-              </span>
-              <div className="w-10 h-10 border border-white/10 flex items-center justify-center group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy/10 transition-all duration-400">
-                <ArrowRight
-                  size={16}
-                  className="text-white/60 group-hover:text-luxury-burgundy transition-all duration-400 group-hover:translate-x-0.5"
-                />
+            {/* Quick specs on hover */}
+            <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
+              <div className="flex items-center justify-between text-xs text-white/90 bg-luxury-black/70 backdrop-blur-md px-4 py-3 border border-white/10">
+                <span className="font-light">{car.specifications.engine}</span>
+                <span className="w-px h-4 bg-white/20" />
+                <span className="font-light">{car.specifications.power}</span>
+                <span className="w-px h-4 bg-white/20" />
+                <span className="font-light">{car.specifications.acceleration}</span>
               </div>
             </div>
           </div>
-        </motion.div>
+
+          {/* Content Section */}
+          <div className="p-6">
+            {/* Brand */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
+                {car.brand}
+              </span>
+              <span className="text-xs text-white/50 font-light" style={MONO_FONT}>
+                {car.year}
+              </span>
+            </div>
+
+            {/* Model Name — как на hongqi.ru */}
+            <h3
+              className="text-2xl font-bold text-white mb-2 group-hover:text-luxury-red transition-colors duration-400 uppercase tracking-tight"
+              style={HEADING_FONT}
+            >
+              {car.modelDisplay ?? car.model}
+            </h3>
+
+            {/* Цена от + В кредит от 0,01% */}
+            <div className="mb-4">
+              <div className="text-lg text-white font-light tracking-tight" style={MONO_FONT}>
+                от {formatPrice(car.price)}
+              </div>
+              <div className="inline-flex items-center gap-2 mt-1.5 px-3 py-1 border border-white/20 rounded-full">
+                <span className="text-xs text-white/70">В кредит</span>
+                <span className="text-xs font-medium text-white">от 0,01%</span>
+              </div>
+            </div>
+
+            {/* Specs */}
+            <div className="flex items-center gap-2 text-sm text-white/50 mb-5 font-light">
+              <span>{car.specifications.power.split(' ')[0]} л. с.</span>
+              <span>•</span>
+              <span>{car.specifications.acceleration}</span>
+              <span>•</span>
+              <span>{car.specifications.seats} мест</span>
+            </div>
+
+            {/* CTA */}
+            <div className="flex items-center justify-end pt-5 border-t border-white/5">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-luxury text-luxury-red group-hover:text-luxury-redBright transition-colors font-semibold">
+                <span>Подробнее</span>
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </div>
+              <div className="flex items-center gap-2 text-xs uppercase tracking-luxury text-luxury-red group-hover:text-luxury-redBright transition-colors font-semibold">
+                <span>Подробнее</span>
+                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          </div>
+        </div>
       </Link>
     </motion.div>
   );
