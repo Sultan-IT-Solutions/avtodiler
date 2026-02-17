@@ -20,6 +20,16 @@ const json = (res: VercelResponse, status: number, body: unknown) => {
 
 const normalizeValue = (value?: unknown) => (typeof value === 'string' ? value.trim() : '');
 
+const safeJsonParse = (value: unknown) => {
+  if (value && typeof value === 'object') return { ok: true as const, value };
+  if (typeof value !== 'string') return { ok: false as const };
+  try {
+    return { ok: true as const, value: JSON.parse(value) as unknown };
+  } catch {
+    return { ok: false as const };
+  }
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const guard = requireBasicAuth(req, res);
   if (!guard.ok) return;
@@ -33,13 +43,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const expectedPass = (process.env.ADMIN_PASSWORD ?? '').trim();
 
   if (!expectedPass) {
-    json(res, 500, { ok: false, error: 'Server is not configured' });
+    json(res, 500, { ok: false, error: 'Server is not configured (missing ADMIN_PASSWORD)' });
     return;
   }
 
-  const body = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) as
-    | { username?: unknown; password?: unknown }
-    | undefined;
+  const parsed = safeJsonParse(req.body);
+  if (!parsed.ok) {
+    json(res, 400, { ok: false, error: 'Invalid JSON body' });
+    return;
+  }
+
+  const body = parsed.value as { username?: unknown; password?: unknown };
 
   const username = normalizeValue(body?.username);
   const password = normalizeValue(body?.password);

@@ -13,8 +13,6 @@ import type {
 } from '../types/admin';
 import { createId, getAdminData, saveAdminData } from '../utils/adminStorage';
 
-const DEFAULT_ADMIN_USERNAME = 'admin';
-
 const AUTH_STORAGE_KEY = 'admin_auth';
 const AUTH_TTL_MS = 1000 * 60 * 60 * 12;
 
@@ -151,7 +149,6 @@ const AdminLogin = ({ onSuccess }: { onSuccess: () => void }) => {
         >
           Войти
         </button>
-        <p className="mt-4 text-[11px] text-white/40 tracking-[0.2em]">Логин: {DEFAULT_ADMIN_USERNAME}</p>
       </form>
     </div>
   );
