@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { json } from '../../_http.js';
+import { requireBasicAuth } from '../_guard.js';
+import { requireAdminSession } from '../_session.js';
 
 type VercelRequest = IncomingMessage & {
   method?: string;
@@ -12,8 +14,11 @@ type VercelResponse = ServerResponse & {
 };
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
-  json(res, 410, {
-    ok: false,
-    error: 'This endpoint has been removed',
-  });
+  const guard = requireBasicAuth(_req, res);
+  if (!guard.ok) return;
+
+  const session = requireAdminSession(_req, res);
+  if (!session.ok) return;
+
+  json(res, 200, { ok: true, authed: true });
 }

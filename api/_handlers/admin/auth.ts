@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { requireBasicAuth } from './_guard.js';
+import { clearSessionCookie, createSessionToken, setSessionCookie } from './_session.js';
 
 type VercelRequest = IncomingMessage & {
   method?: string;
@@ -68,9 +69,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const password = normalizeValue(body?.password);
 
   if (username === expectedUser && password === expectedPass) {
+    setSessionCookie(res, createSessionToken());
     json(res, 200, { ok: true });
     return;
   }
 
+  clearSessionCookie(res);
   json(res, 401, { ok: false });
 }

@@ -218,6 +218,25 @@ const AdminApp = () => {
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
   const [toast, setToast] = useState<ToastPayload | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void fetch('/api/admin/login/status', { method: 'GET', cache: 'no-store' })
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) {
+          setIsAuthed(false);
+          return;
+        }
+        const body = (await res.json()) as { ok?: boolean; authed?: boolean };
+        setIsAuthed(Boolean(body?.ok && body?.authed));
+      })
+      .catch(() => {
+        if (!cancelled) setIsAuthed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const notify = (message: string, actionLabel = 'ОК', onAction?: () => void) => {
     setToast({ id: createId(), message, actionLabel, onAction });
@@ -249,7 +268,12 @@ const AdminApp = () => {
         notify('Данные загружены из Neon', 'ОК');
       } catch (error) {
         if (!cancelled) {
-          notify(`Не удалось загрузить из Neon: ${(error as Error).message}`, 'ОК');
+          const msg = (error as Error).message;
+          if (msg.includes('HTTP 401')) {
+            setIsAuthed(false);
+          } else {
+            notify(`Не удалось загрузить из Neon: ${msg}`, 'ОК');
+          }
         }
       } finally {
         if (!cancelled) setIsSyncing(false);

@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { requireBasicAuth } from './_guard.js';
+import { requireAdminSession } from './_session.js';
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
 
@@ -35,6 +36,9 @@ const readRawBody = async (req: IncomingMessage) => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const guard = requireBasicAuth(req, res);
   if (!guard.ok) return;
+
+  const session = requireAdminSession(req, res);
+  if (!session.ok) return;
 
   const sql = getSql();
 
