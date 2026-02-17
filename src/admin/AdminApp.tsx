@@ -1,6 +1,5 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { useEffect } from 'react';
 import { LogOut, Plus, Save, Trash2 } from 'lucide-react';
 import type {
   AdminCar,
@@ -14,8 +13,7 @@ import type {
 import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi } from '../utils/adminApi';
 
-
-const readAuthOk = () => true;
+const readAuthOk = () => false;
 
 const localeField = (value?: LocaleText): LocaleText =>
   value ?? { ru: '', kz: '', en: '' };
@@ -228,34 +226,6 @@ const AdminApp = () => {
   useEffect(() => {
     if (!isAuthed) return;
     let cancelled = false;
-    const tick = window.setInterval(() => {
-      void fetch('/api/admin/login/status', {
-        method: 'GET',
-        cache: 'no-store',
-      })
-        .then((res) => {
-          if (cancelled) return;
-          if (!res.ok) {
-            setIsAuthed(false);
-            return;
-          }
-
-        })
-        .catch(() => {
-          if (cancelled) return;
-          setIsAuthed(false);
-        });
-    }, 15_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(tick);
-    };
-  }, [isAuthed]);
-
-  useEffect(() => {
-    if (!isAuthed) return;
-    let cancelled = false;
 
     const load = async () => {
       setIsSyncing(true);
@@ -268,16 +238,13 @@ const AdminApp = () => {
         ]);
         if (cancelled) return;
 
-        setData((current) => {
-          const next: AdminData = {
-            ...current,
-            cars,
-            offers,
-            dealers,
-            leads,
-          };
-          return next;
-        });
+        setData((current) => ({
+          ...current,
+          cars,
+          offers,
+          dealers,
+          leads,
+        }));
 
         notify('Данные загружены из Neon', 'ОК');
       } catch (error) {
