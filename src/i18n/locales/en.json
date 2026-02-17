@@ -424,7 +424,9 @@
     "button": "Contact"
   },
   "availability": {
-    "inStock": "In stock"
+    "inStock": "In stock",
+    "incoming": "Incoming",
+    "preOrder": "Pre-order"
   },
   "lifestyle": {
     "title": "Beyond Driving",

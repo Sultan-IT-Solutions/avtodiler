@@ -421,7 +421,9 @@
     "button": "Связаться"
   },
   "availability": {
-    "inStock": "В наличии"
+    "inStock": "В наличии",
+    "incoming": "Ожидается",
+    "preOrder": "Предзаказ"
   },
   "lifestyle": {
     "title": "Больше чем вождение",

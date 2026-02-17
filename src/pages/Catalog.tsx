@@ -474,7 +474,13 @@ const CatalogCard = ({
               <div className="absolute top-4 left-4 bg-green-500/90 backdrop-blur-sm px-4 py-2 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span className="text-xs uppercase tracking-wider text-white font-semibold">
-                  {car.availability === 'inStock' ? t('availability.inStock') : car.availability}
+                  {car.availability === 'inStock'
+                    ? t('availability.inStock')
+                    : car.availability === 'incoming'
+                      ? t('availability.incoming')
+                      : car.availability === 'preOrder'
+                        ? t('availability.preOrder')
+                        : car.availability}
                 </span>
               </div>
             )}

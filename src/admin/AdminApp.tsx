@@ -616,11 +616,20 @@ const CarsSection = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">Статус</p>
-                <input
-                  value={state.draft.availability}
-                  onChange={(event) => state.setDraft({ ...state.draft!, availability: event.target.value })}
+                <select
+                  value={state.draft.availability ?? 'inStock'}
+                  onChange={(event) =>
+                    state.setDraft({
+                      ...state.draft!,
+                      availability: event.target.value as AdminCar['availability'],
+                    })
+                  }
                   className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
-                />
+                >
+                  <option value="inStock">В наличии</option>
+                  <option value="incoming">Ожидается</option>
+                  <option value="preOrder">Предзаказ</option>
+                </select>
               </div>
               <label className="flex items-center gap-3 text-sm text-white/70">
                 <input

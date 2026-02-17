@@ -424,7 +424,9 @@
     "button": "Байланысу"
   },
   "availability": {
-    "inStock": "Қолда бар"
+    "inStock": "Қолда бар",
+    "incoming": "Күтілуде",
+    "preOrder": "Тапсырыс бойынша"
   },
   "lifestyle": {
     "title": "Жүргізуден көп",
