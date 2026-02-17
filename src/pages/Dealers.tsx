@@ -4,6 +4,7 @@ import { MapPin, Phone, Clock, Navigation, ChevronRight } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { getAdminData } from '../utils/adminStorage';
+import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
 
@@ -11,7 +12,22 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Dealers = () => {
   const { t, i18n } = useTranslation();
-  const dealers = getAdminData().dealers;
+  const [dealers, setDealers] = useState(() => getAdminData().dealers);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .dealers()
+      .then((items) => {
+        if (!cancelled && items.length > 0) setDealers(items);
+      })
+      .catch(() => {
+        // fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const lang = i18n.language as 'ru' | 'kz' | 'en';
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({

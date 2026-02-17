@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { getSql } from '../_db.js';
 
 type VercelRequest = IncomingMessage & {
   method?: string;
@@ -87,28 +88,11 @@ const rateLimit = async (req: VercelRequest) => {
   return { ok: true as const, remaining: max - entry.n };
 };
 
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-const buildMessage = (lead: LeadPayload) => {
-  const lines: string[] = [];
-  lines.push(`<b>Новая заявка</b>`);
-  lines.push(`Тип: <b>${escapeHtml(lead.type || '-') }</b>`);
-  lines.push(`Имя: <b>${escapeHtml(lead.name || '-')}</b>`);
-  lines.push(`Телефон: <b>${escapeHtml(lead.phone || '-')}</b>`);
-
-  if (lead.car) lines.push(`Авто: ${escapeHtml(lead.car)}`);
-  if (lead.service) lines.push(`Услуга: ${escapeHtml(lead.service)}`);
-  if (lead.dealer) lines.push(`Дилер: ${escapeHtml(lead.dealer)}`);
-  if (lead.comment) lines.push(`Комментарий: ${escapeHtml(lead.comment)}`);
-  if (lead.pageUrl) lines.push(`Страница: ${escapeHtml(lead.pageUrl)}`);
-
-  const createdAt = lead.createdAt ? new Date(lead.createdAt) : new Date();
-  lines.push(`Время: ${escapeHtml(createdAt.toISOString())}`);
-  return lines.join('\n');
+const createId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+  return `lead_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -141,13 +125,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) {
-    json(res, 500, { ok: false, error: 'Server is not configured (missing TELEGRAM_ envs)' });
-    return;
-  }
-
   const body = (typeof req.body === 'string' ? JSON.parse(req.body) : req.body) as Partial<LeadPayload>;
 
   if (!body?.type || !body?.name || !body?.phone) {
@@ -167,22 +144,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     pageUrl: body.pageUrl ? String(body.pageUrl).slice(0, 300) : undefined,
   };
 
-  const telegramRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: buildMessage(payload),
-      parse_mode: 'HTML',
-      disable_web_page_preview: true,
-    }),
-  });
+  const sql = getSql();
+  const id = createId();
+  const createdAt = payload.createdAt ? new Date(payload.createdAt) : new Date();
+  const row = {
+    id,
+    type: payload.type,
+    name: payload.name,
+    phone: payload.phone,
+    car: payload.car,
+    service: payload.service,
+    dealer: payload.dealer,
+    comment: payload.comment,
+    createdAt: createdAt.toISOString(),
+    pageUrl: payload.pageUrl,
+  };
 
-  if (!telegramRes.ok) {
-    const text = await telegramRes.text();
-    json(res, 502, { ok: false, error: 'Telegram error', details: text.slice(0, 500) });
-    return;
-  }
+  await sql`insert into leads (id, data, created_at) values (${id}, ${row}::jsonb, ${createdAt.toISOString()}::timestamptz)`;
 
-  json(res, 200, { ok: true });
+  json(res, 200, { ok: true, id });
 }

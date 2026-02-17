@@ -2,12 +2,33 @@
 
 Современный лендинг для бренда Hongqi на Vite + React с локальной админ-панелью.
 
+## Neon (Postgres) backend 
+
+
+
 ## Возможности
 
+### 
+
+
+
 - Публичные страницы каталога, сервисного центра и тест-драйва.
+
+### Environment variables
+
+Copy `.env.example` 
 - Админ-панель на `/admin` для управления контентом.
-- Локальное хранение данных (LocalStorage) для CRUD-операций.
-- Формы заявок с сохранением и уведомлением в Telegram.
+
+### Schema
+
+The initial database schema is in `db/schema.sql`.
+
+Apply it in your Neon project (SQL Editor) before using the admin panel.
+
+### What is migrated
+
+- Admin **Cars / Offers / Dealers / Leads** sync to Neon tables via `/api/admin/*`.
+- Public pages fetch shared data from `/api/public/*` with LocalStorage fallback.
 
 ## Быстрый старт
 
@@ -20,36 +41,17 @@
 - Логин: `admin`
 - Пароль по умолчанию: `admin123` (можно переопределить переменной `VITE_ADMIN_PASSWORD`).
 
-## Telegram-уведомления
+## Leads (заявки)
 
-### Продакшен (рекомендуется)
+Формы сайта отправляют лиды на `POST /api/telegram/lead` (историческое имя эндпоинта), который сохраняет их в Neon Postgres (таблица `leads`). Telegram больше не используется.
 
-В продакшене **не храните Telegram токен во фронтенде**. Уведомления отправляются через serverless API:
+Дополнительные настройки:
 
-- `POST /api/telegram/lead`
-
-Переменные окружения (на стороне Vercel / серверной среды):
-
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
-- `ALLOWED_ORIGINS` (опционально, через запятую; если задано — запросы принимаются только с этих Origin)
-- `RATE_LIMIT_WINDOW_MS` (опционально, по умолчанию `60000`)
-- `RATE_LIMIT_MAX` (опционально, по умолчанию `10`)
-
-На фронте:
-
-- `VITE_API_BASE` (опционально). Если пусто — используется текущий домен. Если API на другом домене — укажите базовый URL.
-
-### Dev / быстрый тест (не рекомендуется для продакшена)
-
-Ранее можно было отправлять напрямую через Bot API из браузера:
-
-- `VITE_TELEGRAM_BOT_TOKEN`
-- `VITE_TELEGRAM_CHAT_ID`
-
-Но это небезопасно, поэтому по умолчанию проект отправляет заявки через серверный эндпоинт.
+- `ALLOWED_ORIGINS` (опционально, allowlist Origin)
+- `RATE_LIMIT_WINDOW_MS` (опционально)
+- `RATE_LIMIT_MAX` (опционально)
 
 ## Хранение данных
 
-Все данные админ-панели и заявки сохраняются в LocalStorage браузера. Это удобно для демо-режима, но для продакшена рекомендуется подключить серверную БД.
+Данные админ-панели и заявки сохраняются в Neon Postgres.
 

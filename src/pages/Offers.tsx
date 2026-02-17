@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { useEffect, useState } from 'react';
 import { getAdminData } from '../utils/adminStorage';
+import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
 
@@ -14,7 +16,22 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 
 export const Offers = () => {
   const { t, i18n } = useTranslation();
-  const offers = getAdminData().offers;
+  const [offers, setOffers] = useState(() => getAdminData().offers);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .offers()
+      .then((items) => {
+        if (!cancelled && items.length > 0) setOffers(items);
+      })
+      .catch(() => {
+        // fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const lang = i18n.language as 'ru' | 'kz' | 'en';
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({

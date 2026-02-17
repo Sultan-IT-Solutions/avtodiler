@@ -9,6 +9,7 @@ import { ArrowRight, SlidersHorizontal, X, Search, MessageCircle, Phone } from '
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { getAdminData } from '../utils/adminStorage';
+import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import type { AdminCar } from '../types/admin';
 
@@ -20,7 +21,22 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 /** Каталог только Hongqi — данные с [hongqi.ru](https://hongqi.ru) */
 export const Catalog = () => {
   const { t } = useTranslation();
-  const cars = getAdminData().cars;
+  const [cars, setCars] = useState<AdminCar[]>(() => getAdminData().cars);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .cars()
+      .then((items) => {
+        if (!cancelled && items.length > 0) setCars(items as unknown as AdminCar[]);
+      })
+      .catch(() => {
+        // fallback to local
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [yearRange, setYearRange] = useState<[number, number]>([2020, 2030]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [sortBy, setSortBy] = useState<SortOption>('priceLow');

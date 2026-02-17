@@ -8,7 +8,9 @@ import { ContactFormSection } from '../components/ContactFormSection';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getAdminData } from '../utils/adminStorage';
+import { publicApi } from '../utils/publicApi';
 import { formatPriceKzt } from '../utils/formatPrice';
+import type { AdminCar } from '../types/admin';
 import {
   Phone,
   MessageCircle,
@@ -86,7 +88,22 @@ const SpecBar = ({ label, value, delay }: { label: string; value: string; delay:
 export const CarDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
-  const cars = getAdminData().cars;
+  const [cars, setCars] = useState<AdminCar[]>(() => getAdminData().cars);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .cars()
+      .then((items) => {
+        if (!cancelled && items.length > 0) setCars(items as unknown as AdminCar[]);
+      })
+      .catch(() => {
+        // fallback
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const rawCar = cars.find((c) => c.id === id);
   const car = rawCar
     ? {
@@ -301,7 +318,7 @@ export const CarDetail = () => {
         {/* Image navigation dots — слева от списка моделей */}
         {car.images.length > 1 && (
           <div className="absolute right-6 lg:right-[11rem] top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3">
-            {car.images.map((_, index) => (
+            {car.images.map((_: string, index: number) => (
               <button
                 key={index}
                 onClick={() => { setCurrentImageIndex(index); setIsAutoplay(false); }}
@@ -671,7 +688,7 @@ export const CarDetail = () => {
               {/* Thumbnail strip */}
               {car.images.length > 1 && (
                 <div className="flex gap-2 mt-4">
-                  {car.images.map((img, index) => (
+                  {car.images.map((img: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => { setCurrentImageIndex(index); setIsAutoplay(false); }}
@@ -697,7 +714,7 @@ export const CarDetail = () => {
                   <span className="text-xs text-white/20">{selectedColor + 1}/{car.colors.length}</span>
                 </div>
                 <div className="space-y-1">
-                  {car.colors.map((color, index) => (
+                  {car.colors.map((color: AdminCar['colors'][number], index: number) => (
                     <motion.button
                       key={index}
                       onClick={() => setSelectedColor(index)}
@@ -741,7 +758,7 @@ export const CarDetail = () => {
                   <span className="text-xs text-white/20">{selectedInterior + 1}/{car.interiors.length}</span>
                 </div>
                 <div className="space-y-1">
-                  {car.interiors.map((interior, index) => (
+                  {car.interiors.map((interior: AdminCar['interiors'][number], index: number) => (
                     <motion.button
                       key={index}
                       onClick={() => setSelectedInterior(index)}
@@ -777,7 +794,7 @@ export const CarDetail = () => {
                   <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.wheels')}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {car.wheels.map((wheel, index) => (
+                  {car.wheels.map((wheel: AdminCar['wheels'][number], index: number) => (
                     <motion.button
                       key={index}
                       onClick={() => setSelectedWheels(index)}

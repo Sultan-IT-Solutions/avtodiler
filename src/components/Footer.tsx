@@ -119,7 +119,7 @@ export const Footer = () => {
               {t('footer.social')}
             </h4>
             <ul className="space-y-4">
-              {['Instagram', 'Facebook', 'YouTube', 'Telegram'].map((social) => (
+              {['Instagram', 'Facebook', 'YouTube'].map((social) => (
                 <li key={social}>
                   <a
                     href="#"

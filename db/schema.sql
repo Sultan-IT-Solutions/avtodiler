@@ -1,0 +1,66 @@
+-- Initial schema for Luxury Auto Kazakhstan admin backend (Neon Postgres)
+
+-- Optional extension (safe to ignore if not permitted)
+create extension if not exists pgcrypto;
+
+-- Auto-update updated_at on UPDATE
+create or replace function set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create table if not exists cars (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists cars_updated_at_idx on cars (updated_at desc);
+
+drop trigger if exists cars_set_updated_at on cars;
+create trigger cars_set_updated_at
+before update on cars
+for each row
+execute function set_updated_at();
+
+create table if not exists offers (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists offers_updated_at_idx on offers (updated_at desc);
+
+drop trigger if exists offers_set_updated_at on offers;
+create trigger offers_set_updated_at
+before update on offers
+for each row
+execute function set_updated_at();
+
+create table if not exists dealers (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists dealers_updated_at_idx on dealers (updated_at desc);
+
+drop trigger if exists dealers_set_updated_at on dealers;
+create trigger dealers_set_updated_at
+before update on dealers
+for each row
+execute function set_updated_at();
+
+create table if not exists leads (
+  id text primary key,
+  data jsonb not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists leads_created_at_idx on leads (created_at desc);

@@ -12,6 +12,7 @@ import type {
   OfferItem,
 } from '../types/admin';
 import { createId, getAdminData, saveAdminData } from '../utils/adminStorage';
+import { carsApi, dealersApi, leadsApi, offersApi } from '../utils/adminApi';
 
 const AUTH_STORAGE_KEY = 'admin_auth';
 const AUTH_TTL_MS = 1000 * 60 * 60 * 12;
@@ -240,6 +241,7 @@ const AdminApp = () => {
   const [activeSection, setActiveSection] = useState<AdminSectionKey>('cars');
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
   const [toast, setToast] = useState<ToastPayload | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const notify = (message: string, actionLabel = 'ОК', onAction?: () => void) => {
     setToast({ id: createId(), message, actionLabel, onAction });
@@ -251,6 +253,49 @@ const AdminApp = () => {
       if (!readAuthOk()) setIsAuthed(false);
     }, 10_000);
     return () => window.clearInterval(tick);
+  }, [isAuthed]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+    let cancelled = false;
+
+    const load = async () => {
+      setIsSyncing(true);
+      try {
+        const [cars, offers, dealers, leads] = await Promise.all([
+          carsApi.list(),
+          offersApi.list(),
+          dealersApi.list(),
+          leadsApi.list(),
+        ]);
+        if (cancelled) return;
+
+        setData((current) => {
+          const next: AdminData = {
+            ...current,
+            cars: cars.length > 0 ? cars : current.cars,
+            offers: offers.length > 0 ? offers : current.offers,
+            dealers: dealers.length > 0 ? dealers : current.dealers,
+            leads: leads.length > 0 ? leads : current.leads,
+          };
+          saveAdminData(next);
+          return next;
+        });
+
+        notify('Данные загружены из Neon', 'ОК');
+      } catch (error) {
+        if (!cancelled) {
+          notify(`Не удалось загрузить из Neon: ${(error as Error).message}`, 'ОК');
+        }
+      } finally {
+        if (!cancelled) setIsSyncing(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthed]);
 
   const updateData = (updater: (current: AdminData) => AdminData) => {
@@ -320,7 +365,16 @@ const AdminApp = () => {
               title={activeLabel}
               items={data.cars}
               onChange={(items) => updateData((current) => ({ ...current, cars: items }))}
+              onPersist={async (car, mode) => {
+                try {
+                  if (mode === 'delete') await carsApi.remove(car.id);
+                  else await carsApi.upsert(car);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
               notify={notify}
+              syncing={isSyncing}
             />
           )}
           {activeSection === 'offers' && (
@@ -328,7 +382,16 @@ const AdminApp = () => {
               title={activeLabel}
               items={data.offers}
               onChange={(items) => updateData((current) => ({ ...current, offers: items }))}
+              onPersist={async (item, mode) => {
+                try {
+                  if (mode === 'delete') await offersApi.remove(item.id);
+                  else await offersApi.upsert(item);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
               notify={notify}
+              syncing={isSyncing}
             />
           )}
           {activeSection === 'dealers' && (
@@ -336,7 +399,16 @@ const AdminApp = () => {
               title={activeLabel}
               items={data.dealers}
               onChange={(items) => updateData((current) => ({ ...current, dealers: items }))}
+              onPersist={async (item, mode) => {
+                try {
+                  if (mode === 'delete') await dealersApi.remove(item.id);
+                  else await dealersApi.upsert(item);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
               notify={notify}
+              syncing={isSyncing}
             />
           )}
           {activeSection === 'leads' && (
@@ -349,7 +421,15 @@ const AdminApp = () => {
                   leads: current.leads.filter((lead) => lead.id !== id),
                 }))
               }
+              onPersistDelete={async (id) => {
+                try {
+                  await leadsApi.remove(id);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
               notify={notify}
+              syncing={isSyncing}
             />
           )}
         </main>
@@ -404,12 +484,16 @@ const CarsSection = ({
   title,
   items,
   onChange,
+  onPersist,
   notify,
+  syncing,
 }: {
   title: string;
   items: AdminCar[];
   onChange: (items: AdminCar[]) => void;
+  onPersist: (car: AdminCar, mode: 'upsert' | 'delete') => Promise<void>;
   notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
 }) => {
   const ensureCarShape = (car: AdminCar): AdminCar => {
     return {
@@ -489,6 +573,7 @@ const CarsSection = ({
       ? [...normalizedItems, draft]
       : normalizedItems.map((item) => (item.id === draft.id ? draft : item));
     onChange(next);
+    void onPersist(draft, 'upsert');
     notify(state.isNew ? 'Автомобиль добавлен' : 'Изменения сохранены', 'ОК');
     state.setIsNew(false);
     state.setSelectedId(draft.id);
@@ -498,6 +583,8 @@ const CarsSection = ({
     if (!window.confirm('Удалить запись?')) return;
     const next = normalizedItems.filter((item) => item.id !== id);
     onChange(next);
+    const deleted = normalizedItems.find((item) => item.id === id);
+    if (deleted) void onPersist(deleted, 'delete');
     notify('Автомобиль удалён', 'ОК');
     state.setSelectedId(next[0]?.id ?? null);
     state.setDraft(next[0] ?? null);
@@ -506,6 +593,11 @@ const CarsSection = ({
 
   return (
     <SectionLayout title={title} description="Полный список автомобилей с ценами и доступностью.">
+      {syncing ? (
+        <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+          Синхронизация с Neon…
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <div className="space-y-4">
           <button
@@ -837,12 +929,16 @@ const OffersSection = ({
   title,
   items,
   onChange,
+  onPersist,
   notify,
+  syncing,
 }: {
   title: string;
   items: OfferItem[];
   onChange: (items: OfferItem[]) => void;
+  onPersist: (item: OfferItem, mode: 'upsert' | 'delete') => Promise<void>;
   notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
 }) => {
   const state = useEntityState(items, () => ({
     id: createId(),
@@ -860,6 +956,7 @@ const OffersSection = ({
       ? [...items, state.draft]
       : items.map((item) => (item.id === state.draft?.id ? state.draft : item));
     onChange(next);
+  void onPersist(state.draft, 'upsert');
     notify(state.isNew ? 'Предложение добавлено' : 'Изменения сохранены', 'ОК');
     state.setIsNew(false);
     state.setSelectedId(state.draft.id);
@@ -869,6 +966,8 @@ const OffersSection = ({
     if (!window.confirm('Удалить запись?')) return;
     const next = items.filter((item) => item.id !== id);
     onChange(next);
+  const deleted = items.find((item) => item.id === id);
+  if (deleted) void onPersist(deleted, 'delete');
     notify('Предложение удалено', 'ОК');
     state.setSelectedId(next[0]?.id ?? null);
     state.setDraft(next[0] ?? null);
@@ -877,6 +976,11 @@ const OffersSection = ({
 
   return (
     <SectionLayout title={title} description="Акции и специальные предложения.">
+      {syncing ? (
+        <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+          Синхронизация с Neon…
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <div className="space-y-4">
           <button
@@ -956,12 +1060,16 @@ const DealersSection = ({
   title,
   items,
   onChange,
+  onPersist,
   notify,
+  syncing,
 }: {
   title: string;
   items: DealerItem[];
   onChange: (items: DealerItem[]) => void;
+  onPersist: (item: DealerItem, mode: 'upsert' | 'delete') => Promise<void>;
   notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
 }) => {
   const state = useEntityState(items, () => ({
     id: createId(),
@@ -981,6 +1089,7 @@ const DealersSection = ({
       ? [...items, state.draft]
       : items.map((item) => (item.id === state.draft?.id ? state.draft : item));
     onChange(next);
+  void onPersist(state.draft, 'upsert');
     notify(state.isNew ? 'Дилер добавлен' : 'Изменения сохранены', 'ОК');
     state.setIsNew(false);
     state.setSelectedId(state.draft.id);
@@ -990,6 +1099,8 @@ const DealersSection = ({
     if (!window.confirm('Удалить запись?')) return;
     const next = items.filter((item) => item.id !== id);
     onChange(next);
+  const deleted = items.find((item) => item.id === id);
+  if (deleted) void onPersist(deleted, 'delete');
     notify('Дилер удалён', 'ОК');
     state.setSelectedId(next[0]?.id ?? null);
     state.setDraft(next[0] ?? null);
@@ -998,6 +1109,11 @@ const DealersSection = ({
 
   return (
     <SectionLayout title={title} description="Дилерские центры и контакты.">
+      {syncing ? (
+        <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+          Синхронизация с Neon…
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
         <div className="space-y-4">
           <button
@@ -1118,14 +1234,23 @@ const LeadsSection = ({
   title,
   items,
   onDelete,
+  onPersistDelete,
   notify,
+  syncing,
 }: {
   title: string;
   items: LeadItem[];
   onDelete: (id: string) => void;
+  onPersistDelete: (id: string) => Promise<void>;
   notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
 }) => (
   <SectionLayout title={title} description="Все заявки с форм сайта.">
+    {syncing ? (
+      <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+        Синхронизация с Neon…
+      </div>
+    ) : null}
     {items.length === 0 ? (
       <EmptyState text="Пока нет заявок." />
     ) : (
@@ -1153,6 +1278,7 @@ const LeadsSection = ({
               onClick={() => {
                 if (!window.confirm('Удалить запись?')) return;
                 onDelete(lead.id);
+                void onPersistDelete(lead.id);
                 notify('Заявка удалена', 'ОК');
               }}
               className="self-start text-xs text-white/50 hover:text-white"

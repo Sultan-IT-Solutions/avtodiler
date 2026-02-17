@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+*.example
 
 # Design / local refs (not needed for build)
 screenshots/
@@ -29,3 +30,6 @@ write-pages.mjs
 *.sln
 *.sw?
 .vercel
+
+*README.md
+report.tex
