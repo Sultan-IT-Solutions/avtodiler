@@ -1,9 +1,5 @@
--- Initial schema for Luxury Auto Kazakhstan admin backend (Neon Postgres)
-
--- Optional extension (safe to ignore if not permitted)
 create extension if not exists pgcrypto;
 
--- Auto-update updated_at on UPDATE
 create or replace function set_updated_at()
 returns trigger as $$
 begin
