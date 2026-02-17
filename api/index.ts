@@ -30,21 +30,21 @@ const isMethodAllowed = (req: ApiRequest, methods: string[]) =>
   !!req.method && methods.includes(req.method.toUpperCase());
 
 const routes: Record<string, () => Promise<{ default: Handler }>> = {
-  '/admin/ping': () => import('../server/handlers/admin/ping'),
-  '/admin/auth': () => import('../server/handlers/admin/auth'),
-  '/admin/cars': () => import('../server/handlers/admin/cars'),
-  '/admin/dealers': () => import('../server/handlers/admin/dealers'),
-  '/admin/leads': () => import('../server/handlers/admin/leads'),
-  '/admin/offers': () => import('../server/handlers/admin/offers'),
-  '/admin/login/request': () => import('../server/handlers/admin/login/request'),
-  '/admin/login/status': () => import('../server/handlers/admin/login/status'),
-  '/admin/login/callback': () => import('../server/handlers/admin/login/callback'),
+  '/admin/ping': () => import('./_handlers/admin/ping'),
+  '/admin/auth': () => import('./_handlers/admin/auth'),
+  '/admin/cars': () => import('./_handlers/admin/cars'),
+  '/admin/dealers': () => import('./_handlers/admin/dealers'),
+  '/admin/leads': () => import('./_handlers/admin/leads'),
+  '/admin/offers': () => import('./_handlers/admin/offers'),
+  '/admin/login/request': () => import('./_handlers/admin/login/request'),
+  '/admin/login/status': () => import('./_handlers/admin/login/status'),
+  '/admin/login/callback': () => import('./_handlers/admin/login/callback'),
 
-  '/public/cars': () => import('../server/handlers/public/cars'),
-  '/public/dealers': () => import('../server/handlers/public/dealers'),
-  '/public/offers': () => import('../server/handlers/public/offers'),
+  '/public/cars': () => import('./_handlers/public/cars'),
+  '/public/dealers': () => import('./_handlers/public/dealers'),
+  '/public/offers': () => import('./_handlers/public/offers'),
 
-  '/telegram/lead': () => import('../server/handlers/telegram/lead'),
+  '/telegram/lead': () => import('./_handlers/telegram/lead'),
 };
 
 function getPath(req: ApiRequest) {
