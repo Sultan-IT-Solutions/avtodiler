@@ -1,5 +1,19 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
+import adminAuth from './_handlers/admin/auth';
+import adminCars from './_handlers/admin/cars';
+import adminDealers from './_handlers/admin/dealers';
+import adminLeads from './_handlers/admin/leads';
+import adminOffers from './_handlers/admin/offers';
+import adminPing from './_handlers/admin/ping';
+import adminLoginCallback from './_handlers/admin/login/callback';
+import adminLoginRequest from './_handlers/admin/login/request';
+import adminLoginStatus from './_handlers/admin/login/status';
+import publicCars from './_handlers/public/cars';
+import publicDealers from './_handlers/public/dealers';
+import publicOffers from './_handlers/public/offers';
+import telegramLead from './_handlers/telegram/lead';
+
 type ApiRequest = IncomingMessage & {
   method?: string;
   url?: string;
@@ -29,22 +43,22 @@ const methodNotAllowed: Handler = (req, res) => {
 const isMethodAllowed = (req: ApiRequest, methods: string[]) =>
   !!req.method && methods.includes(req.method.toUpperCase());
 
-const routes: Record<string, () => Promise<{ default: Handler }>> = {
-  '/admin/ping': () => import('./_handlers/admin/ping'),
-  '/admin/auth': () => import('./_handlers/admin/auth'),
-  '/admin/cars': () => import('./_handlers/admin/cars'),
-  '/admin/dealers': () => import('./_handlers/admin/dealers'),
-  '/admin/leads': () => import('./_handlers/admin/leads'),
-  '/admin/offers': () => import('./_handlers/admin/offers'),
-  '/admin/login/request': () => import('./_handlers/admin/login/request'),
-  '/admin/login/status': () => import('./_handlers/admin/login/status'),
-  '/admin/login/callback': () => import('./_handlers/admin/login/callback'),
+const routes: Record<string, Handler> = {
+  '/admin/ping': adminPing,
+  '/admin/auth': adminAuth,
+  '/admin/cars': adminCars,
+  '/admin/dealers': adminDealers,
+  '/admin/leads': adminLeads,
+  '/admin/offers': adminOffers,
+  '/admin/login/request': adminLoginRequest,
+  '/admin/login/status': adminLoginStatus,
+  '/admin/login/callback': adminLoginCallback,
 
-  '/public/cars': () => import('./_handlers/public/cars'),
-  '/public/dealers': () => import('./_handlers/public/dealers'),
-  '/public/offers': () => import('./_handlers/public/offers'),
+  '/public/cars': publicCars,
+  '/public/dealers': publicDealers,
+  '/public/offers': publicOffers,
 
-  '/telegram/lead': () => import('./_handlers/telegram/lead'),
+  '/telegram/lead': telegramLead,
 };
 
 function getPath(req: ApiRequest) {
@@ -68,7 +82,5 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   const loader = routes[path];
   if (!loader) return notFound(req, res);
-
-  const mod = await loader();
-  return mod.default(req, res);
+  return loader(req, res);
 }
