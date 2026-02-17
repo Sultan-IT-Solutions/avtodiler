@@ -30,6 +30,14 @@ const safeJsonParse = (value: unknown) => {
   }
 };
 
+const readRawBody = async (req: IncomingMessage) => {
+  let raw = '';
+  for await (const chunk of req) {
+    raw += typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk as Uint8Array);
+  }
+  return raw;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const guard = requireBasicAuth(req, res);
   if (!guard.ok) return;
@@ -47,7 +55,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const parsed = safeJsonParse(req.body);
+  const raw = typeof req.body === 'undefined' ? await readRawBody(req) : req.body;
+  const parsed = safeJsonParse(raw);
   if (!parsed.ok) {
     json(res, 400, { ok: false, error: 'Invalid JSON body' });
     return;

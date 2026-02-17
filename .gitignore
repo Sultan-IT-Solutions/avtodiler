@@ -28,3 +28,4 @@ write-pages.mjs
 *.njsproj
 *.sln
 *.sw?
+.vercel
