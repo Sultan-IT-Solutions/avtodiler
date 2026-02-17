@@ -1,3 +1,3 @@
-import { getSql } from '../../api/_internal/db';
+import { getSql } from '../_internal/db.js';
 
 export { getSql };

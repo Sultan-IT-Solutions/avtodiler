@@ -70,17 +70,35 @@ function getPath(req: ApiRequest) {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const path = getPath(req);
+  try {
+    const path = getPath(req);
 
-  if (path === '' || path === '/' || path === '/health') {
-    if (!isMethodAllowed(req, ['GET'])) return methodNotAllowed(req, res);
-    res.status(200);
+    if (path === '' || path === '/' || path === '/health') {
+      if (!isMethodAllowed(req, ['GET'])) return methodNotAllowed(req, res);
+      res.status(200);
+      res.setHeader('content-type', 'application/json; charset=utf-8');
+      res.end(JSON.stringify({ ok: true }));
+      return;
+    }
+
+    const loader = routes[path];
+    if (!loader) return notFound(req, res);
+    return await loader(req, res);
+  } catch (error) {
+    const isProd = process.env.NODE_ENV === 'production';
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+
+    console.error('[api] unhandled error', error);
+
+    res.status(500);
     res.setHeader('content-type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify({ ok: true }));
-    return;
+    res.end(
+      JSON.stringify({
+        error: 'Internal Server Error',
+        message,
+        ...(isProd ? null : { stack }),
+      })
+    );
   }
-
-  const loader = routes[path];
-  if (!loader) return notFound(req, res);
-  return loader(req, res);
 }
