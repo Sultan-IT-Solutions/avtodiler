@@ -13,15 +13,7 @@ import type {
 } from '../types/admin';
 import { createId, getAdminData, saveAdminData } from '../utils/adminStorage';
 
-const getAdminUsername = () => {
-  const value = import.meta.env.VITE_ADMIN_USERNAME as string | undefined;
-  return value?.trim() ? value.trim() : 'admin';
-};
-
-const getAdminPassword = () => {
-  const value = import.meta.env.VITE_ADMIN_PASSWORD as string | undefined;
-  return value?.trim() ? value.trim() : '';
-};
+const DEFAULT_ADMIN_USERNAME = 'admin';
 
 const AUTH_STORAGE_KEY = 'admin_auth';
 const AUTH_TTL_MS = 1000 * 60 * 60 * 12;
@@ -90,21 +82,35 @@ const AdminLogin = ({ onSuccess }: { onSuccess: () => void }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const expected = getAdminPassword();
-    if (!expected) {
-      setError('Админ-пароль не настроен');
-      return;
-    }
-  if (login === getAdminUsername() && password === expected) {
+    setError('');
+
+    try {
+      const response = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ username: login, password }),
+      });
+
+      if (!response.ok) {
+        setError('Неверный логин или пароль');
+        return;
+      }
+
+      const data = (await response.json()) as { ok?: boolean };
+      if (!data?.ok) {
+        setError('Неверный логин или пароль');
+        return;
+      }
+
       const at = Date.now();
       const exp = at + AUTH_TTL_MS;
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ ok: true, at, exp }));
       onSuccess();
-      return;
+    } catch {
+      setError('Ошибка входа. Попробуйте ещё раз.');
     }
-    setError('Неверный логин или пароль');
   };
 
   return (
@@ -145,7 +151,7 @@ const AdminLogin = ({ onSuccess }: { onSuccess: () => void }) => {
         >
           Войти
         </button>
-  <p className="mt-4 text-[11px] text-white/40 tracking-[0.2em]">Логин: {getAdminUsername()}</p>
+        <p className="mt-4 text-[11px] text-white/40 tracking-[0.2em]">Логин: {DEFAULT_ADMIN_USERNAME}</p>
       </form>
     </div>
   );
