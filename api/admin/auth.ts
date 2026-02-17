@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { requireBasicAuth } from './_guard';
+import { requireBasicAuth } from './_guard.js';
 
 type VercelRequest = IncomingMessage & {
   method?: string;
