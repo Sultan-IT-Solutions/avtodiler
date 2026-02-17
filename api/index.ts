@@ -1,18 +1,18 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
-import adminAuth from './_handlers/admin/auth';
-import adminCars from './_handlers/admin/cars';
-import adminDealers from './_handlers/admin/dealers';
-import adminLeads from './_handlers/admin/leads';
-import adminOffers from './_handlers/admin/offers';
-import adminPing from './_handlers/admin/ping';
-import adminLoginCallback from './_handlers/admin/login/callback';
-import adminLoginRequest from './_handlers/admin/login/request';
-import adminLoginStatus from './_handlers/admin/login/status';
-import publicCars from './_handlers/public/cars';
-import publicDealers from './_handlers/public/dealers';
-import publicOffers from './_handlers/public/offers';
-import telegramLead from './_handlers/telegram/lead';
+import adminAuth from './_handlers/admin/auth.js';
+import adminCars from './_handlers/admin/cars.js';
+import adminDealers from './_handlers/admin/dealers.js';
+import adminLeads from './_handlers/admin/leads.js';
+import adminOffers from './_handlers/admin/offers.js';
+import adminPing from './_handlers/admin/ping.js';
+import adminLoginCallback from './_handlers/admin/login/callback.js';
+import adminLoginRequest from './_handlers/admin/login/request.js';
+import adminLoginStatus from './_handlers/admin/login/status.js';
+import publicCars from './_handlers/public/cars.js';
+import publicDealers from './_handlers/public/dealers.js';
+import publicOffers from './_handlers/public/offers.js';
+import telegramLead from './_handlers/telegram/lead.js';
 
 type ApiRequest = IncomingMessage & {
   method?: string;
