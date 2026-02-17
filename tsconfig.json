@@ -20,6 +20,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "api"],
+  "exclude": ["middleware.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
+import i18n from '../i18n/config';
+import { localizedText } from '../utils/localizedText';
 import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, useInView, useScroll } from 'framer-motion';
 import { AnimatePresence } from 'framer-motion';
 import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { cars } from '../data/cars';
 import type { Car } from '../types/car';
 import { SITE_IMAGES } from '../data/siteImages';
+import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { getAdminData } from '../utils/adminStorage';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -79,7 +83,12 @@ const ParallaxImage = ({ src, alt, className = '', speed = 0.3, fallback = SITE_
    ================================================================ */
 export const Home = () => {
   const { t } = useTranslation();
-  const featuredCars = cars.filter(car => car.featured);
+  const cars = useMemo<Car[]>(() => {
+    return getAdminData().cars as unknown as Car[];
+  }, []);
+  const featuredCars = useMemo<Car[]>(() => {
+    return cars.filter((car) => car.featured);
+  }, []);
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
 
@@ -232,9 +241,9 @@ export const Home = () => {
               {/* Mini metrics */}
               <div className="hidden lg:flex items-center gap-8">
                 {[
-                  { val: '551', unit: 'л.с.', label: 'Мощность' },
-                  { val: '4.8', unit: 'с', label: '0-100 км/ч' },
-                  { val: '230', unit: 'км/ч', label: 'Макс.' },
+                  { val: '551', unit: t('homePage.units.hpShort'), label: t('homePage.heroMiniMetrics.power') },
+                  { val: '4.8', unit: t('homePage.units.secondsShort'), label: t('homePage.heroMiniMetrics.acceleration') },
+                  { val: '230', unit: t('homePage.units.kmhShort'), label: t('homePage.heroMiniMetrics.topSpeed') },
                 ].map((m, i) => (
                   <div key={i} className="flex items-baseline gap-1.5">
                     <span className="text-xl text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>{m.val}</span>
@@ -254,7 +263,7 @@ export const Home = () => {
           transition={{ duration: 1, delay: 2 }}
           className="absolute bottom-8 right-8 lg:right-16 z-[10] flex flex-col items-center gap-3"
         >
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/20 [writing-mode:vertical-lr]">Scroll</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-white/20 [writing-mode:vertical-lr]">{t('homePage.scroll')}</span>
           <div className="w-px h-16 bg-white/5 relative overflow-hidden">
             <motion.div
               className="absolute top-0 left-0 w-full bg-luxury-burgundy"
@@ -277,10 +286,10 @@ export const Home = () => {
         <div className="container mx-auto px-6 lg:px-16">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-16">
             {[
-              { num: 8, suf: '', label: 'Моделей' },
-              { num: 551, suf: '', label: 'Макс. л.с.' },
-              { num: 150, suf: '+', label: 'Клиентов' },
-              { num: 5, suf: '', label: 'Лет на рынке' },
+              { num: 8, suf: '', label: t('homePage.metricsBar.models') },
+              { num: 551, suf: '', label: t('homePage.metricsBar.maxHp') },
+              { num: 150, suf: '+', label: t('homePage.metricsBar.clients') },
+              { num: 5, suf: '', label: t('homePage.metricsBar.yearsOnMarket') },
             ].map((s, i) => (
               <motion.div
                 key={i}
@@ -325,7 +334,15 @@ export const Home = () => {
       {/* ============================================================
           SECTION: FEATURED MODELS — PRESENTATION CAROUSEL
           ============================================================ */}
-      <FeaturedModelsCarousel cars={featuredCars} />
+      {cars.length === 0 ? (
+        <section className="py-20 lg:py-28 border-b border-white/5">
+          <div className="container mx-auto px-6 lg:px-16">
+            <EmptyState />
+          </div>
+        </section>
+      ) : (
+        <FeaturedModelsCarousel cars={featuredCars.length ? featuredCars : cars} />
+      )}
 
       {/* ============================================================
           SECTION: HONGQI HERITAGE
@@ -359,13 +376,13 @@ export const Home = () => {
                   className="absolute bottom-8 left-8 right-8 grid grid-cols-2 gap-4"
                 >
                   <div className="bg-luxury-black/80 backdrop-blur-xl border border-white/10 p-5">
-                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">Основан</div>
+                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">{t('homePage.heritage.foundedLabel')}</div>
                     <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>1958</div>
                   </div>
                   <div className="bg-luxury-black/80 backdrop-blur-xl border border-white/10 p-5">
-                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">Наследие</div>
+                    <div className="text-luxury-red text-xs uppercase tracking-wider mb-1 font-semibold">{t('homePage.heritage.legacyLabel')}</div>
                     <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>65+</div>
-                    <div className="text-xs text-white/50">лет престижа</div>
+                    <div className="text-xs text-white/50">{t('homePage.heritage.legacyValue')}</div>
                   </div>
                 </motion.div>
               </div>
@@ -380,30 +397,27 @@ export const Home = () => {
             >
               <div className="flex items-center gap-3 mb-6">
                 <span className="w-12 h-px bg-luxury-red" />
-                <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">Наследие бренда</span>
+                <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">{t('homePage.heritage.eyebrow')}</span>
               </div>
               <h2 className="text-[clamp(36px,5vw,64px)] font-bold leading-[1.1] tracking-[-0.03em] text-white uppercase mb-8"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                Hongqi<br /><span className="text-luxury-red">Красное знамя</span>
+                {t('homePage.heritage.titleLine1')}<br /><span className="text-luxury-red">{t('homePage.heritage.titleLine2')}</span>
               </h2>
               <div className="space-y-6 mb-10">
                 <p className="text-lg text-white/90 font-light leading-relaxed max-w-lg">
-                  С 1958 года Hongqi создает автомобили для государственных лидеров Китая.
-                  Каждая модель — символ престижа и технологического совершенства.
+                  {t('homePage.heritage.p1')}
                 </p>
                 <p className="text-base text-white/70 font-light leading-relaxed max-w-lg">
-                  Входя в состав FAW — старейшей автомобильной корпорации Китая,
-                  Hongqi сочетает богатое наследие с инновационными технологиями будущего.
+                  {t('homePage.heritage.p2')}
                 </p>
                 <div className="border-l-2 border-luxury-red pl-6 py-2">
                   <p className="text-white/60 italic font-light">
-                    "Hongqi" переводится как "Красное знамя" —
-                    символ величия и национальной гордости Китая
+                    {t('homePage.heritage.quote')}
                   </p>
                 </div>
               </div>
               <Link to="/brands" className="group inline-flex items-center gap-3 px-8 py-4 bg-luxury-red hover:bg-luxury-redBright transition-all duration-400">
-                <span className="text-xs uppercase tracking-luxury text-white font-semibold">История бренда</span>
+                <span className="text-xs uppercase tracking-luxury text-white font-semibold">{t('homePage.heritage.button')}</span>
                 <ArrowRight size={18} className="text-white transition-transform group-hover:translate-x-1" />
               </Link>
             </motion.div>
@@ -417,10 +431,10 @@ export const Home = () => {
       <section className="relative py-32 lg:py-48">
         <div className="container mx-auto px-6 lg:px-16">
           <div className="text-center mb-16 gsap-reveal">
-            <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">Технологии безопасности</span>
+            <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{t('homePage.video.eyebrow')}</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              Тотальное<br /><span className="text-white/90">управление</span>
+              {t('homePage.video.titleLine1')}<br /><span className="text-white/90">{t('homePage.video.titleLine2')}</span>
             </h2>
           </div>
 
@@ -442,8 +456,8 @@ export const Home = () => {
             <div className="absolute bottom-0 left-0 right-0 p-8 lg:p-12 bg-gradient-to-t from-luxury-black via-luxury-black/60 to-transparent">
               <div className="flex items-end justify-between">
                 <div>
-                  <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-2">Hongqi Safety</span>
-                  <span className="text-xl lg:text-2xl text-white font-light">Смотреть о технологиях безопасности</span>
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-2">{t('homePage.video.cardEyebrow')}</span>
+                  <span className="text-xl lg:text-2xl text-white font-light">{t('homePage.video.cardTitle')}</span>
                 </div>
                 <ChevronRight className="text-white/30" size={24} />
               </div>
@@ -458,20 +472,24 @@ export const Home = () => {
       <section className="py-32 lg:py-48 bg-luxury-surface">
         <div className="container mx-auto px-6 lg:px-16">
           <div className="text-center mb-20 gsap-reveal">
-            <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">Модельный ряд</span>
+            <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">{t('homePage.modelsGrid.eyebrow')}</span>
             <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-              Найдите свой<br /><span className="text-white/90">Hongqi</span>
+              {t('homePage.modelsGrid.titleLine1')}<br /><span className="text-white/90">{t('homePage.modelsGrid.titleLine2')}</span>
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {cars.slice(0, 4).map((car, index) => (
-              <ModelGridCard key={car.id} car={car} index={index} />
-            ))}
-          </div>
+          {cars.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {cars.slice(0, 4).map((car, index) => (
+                <ModelGridCard key={car.id} car={car} index={index} />
+              ))}
+            </div>
+          )}
           <div className="mt-16 text-center gsap-reveal">
             <MagneticButton to="/catalog" className="btn-primary inline-flex items-center gap-3">
-              Все модели <ArrowRight size={16} />
+              {t('homePage.common.allModels')} <ArrowRight size={16} />
             </MagneticButton>
           </div>
         </div>
@@ -486,15 +504,15 @@ export const Home = () => {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <span className="w-10 h-px bg-luxury-burgundy" />
-                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Спецпредложения</span>
+                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('homePage.offers.eyebrow')}</span>
               </div>
               <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                Актуальные<br /><span className="text-white/90">акции</span>
+                {t('homePage.offers.titleLine1')}<br /><span className="text-white/90">{t('homePage.offers.titleLine2')}</span>
               </h2>
             </div>
             <Link to="/offers" className="hidden md:flex items-center gap-3 text-white/20 hover:text-white/60 transition-colors group">
-              <span className="text-[11px] uppercase tracking-[0.2em]">Все акции</span>
+              <span className="text-[11px] uppercase tracking-[0.2em]">{t('homePage.offers.allOffers')}</span>
               <span className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-all">
                 <ArrowRight size={14} />
               </span>
@@ -502,9 +520,9 @@ export const Home = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { title: 'Трейд-ин на E-HS9', desc: 'Скидка до 500 000 ₸ при сдаче старого авто', badge: 'Хит', image: cars[0]?.images[0] },
-              { title: 'Кредит от 0.01%', desc: 'Специальная ставка на весь модельный ряд', badge: 'Кредит', image: cars[1]?.images[0] },
-              { title: 'Бесплатное ТО', desc: '3 года бесплатного обслуживания при покупке H9', badge: 'Сервис', image: cars[2]?.images[0] },
+              { title: t('homePage.offers.cards.tradeIn.title'), desc: t('homePage.offers.cards.tradeIn.desc'), badge: t('homePage.offers.cards.tradeIn.badge'), image: cars[0]?.images[0] },
+              { title: t('homePage.offers.cards.credit.title'), desc: t('homePage.offers.cards.credit.desc'), badge: t('homePage.offers.cards.credit.badge'), image: cars[1]?.images[0] },
+              { title: t('homePage.offers.cards.service.title'), desc: t('homePage.offers.cards.service.desc'), badge: t('homePage.offers.cards.service.badge'), image: cars[2]?.images[0] },
             ].map((offer, i) => (
               <motion.div key={i}
                 initial={{ opacity: 0, y: 60 }}
@@ -580,24 +598,37 @@ export const Home = () => {
    FEATURED MODELS CAROUSEL - Presentation Style
    ================================================================ */
 const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const currentCar = cars[currentIndex];
+  const hasCars = cars.length > 0;
+  const currentCar = hasCars ? cars[currentIndex] : undefined;
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'KZT', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
-  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % cars.length);
-  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + cars.length) % cars.length);
+  const nextSlide = () => {
+    if (!hasCars) return;
+    setCurrentIndex((prev) => (prev + 1) % cars.length);
+  };
+  const prevSlide = () => {
+    if (!hasCars) return;
+    setCurrentIndex((prev) => (prev - 1 + cars.length) % cars.length);
+  };
 
   // Auto-advance every 5 seconds
   useEffect(() => {
+    if (!hasCars) return;
     if (isPaused) return;
     timerRef.current = setInterval(nextSlide, 5000);
     return () => clearInterval(timerRef.current);
-  }, [currentIndex, isPaused, cars.length]);
+  }, [currentIndex, isPaused, cars.length, hasCars]);
+
+  if (!hasCars || !currentCar) {
+    return null;
+  }
 
   return (
     <section
@@ -640,7 +671,7 @@ const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
               <div className="flex items-center gap-3 mb-6">
                 <span className="w-12 h-px bg-luxury-red" />
                 <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
-                  Модельный ряд
+                  {t('homePage.common.modelsRange')}
                 </span>
               </div>
 
@@ -650,26 +681,26 @@ const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
               </h2>
 
               <p className="text-xl text-white/70 font-light mb-8 max-w-lg leading-relaxed">
-                {currentCar.description}
+                {localizedText(('description' in currentCar ? currentCar.description : undefined), { lng: i18n.language, fallbackLng: 'ru' })}
               </p>
 
               {/* Specs */}
               <div className="grid grid-cols-3 gap-6 mb-10">
                 <div>
-                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">Мощность</div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">{t('homePage.common.power')}</div>
                   <div className="text-2xl text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
                     {currentCar.specifications.power.split(' ')[0]}
                   </div>
                   <div className="text-xs text-white/50">HP</div>
                 </div>
                 <div>
-                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">0-100 км/ч</div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">{t('homePage.common.acceleration')}</div>
                   <div className="text-2xl text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
                     {currentCar.specifications.acceleration}
                   </div>
                 </div>
                 <div>
-                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">Цена</div>
+                  <div className="text-luxury-red text-xs uppercase tracking-wider mb-2 font-semibold">{t('homePage.common.price')}</div>
                   <div className="text-lg text-white font-light" style={{ fontFamily: "'Space Grotesk', monospace" }}>
                     {formatPrice(currentCar.price)}
                   </div>
@@ -679,10 +710,10 @@ const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
               {/* CTA */}
               <div className="flex items-center gap-4">
                 <Link to={`/car/${currentCar.id}`} className="btn-primary inline-flex items-center gap-2">
-                  Подробнее <ArrowRight size={16} />
+                  {t('homePage.common.details')} <ArrowRight size={16} />
                 </Link>
                 <Link to="/catalog" className="btn-outline inline-flex items-center gap-2">
-                  Все модели
+                  {t('homePage.common.allModels')}
                 </Link>
               </div>
             </motion.div>
@@ -757,7 +788,7 @@ const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
 /* ================================================================
    MODEL GRID CARD
    ================================================================ */
-const ModelGridCard = ({ car, index }: { car: typeof cars[0]; index: number }) => {
+const ModelGridCard = ({ car, index }: { car: Car; index: number }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const formatPrice = (price: number) =>

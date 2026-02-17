@@ -1,13 +1,16 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatPriceKzt } from '../utils/formatPrice';
 import { Link } from 'react-router-dom';
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
-import { cars } from '../data/cars';
 import { SITE_IMAGES } from '../data/siteImages';
 import { ArrowRight, SlidersHorizontal, X, Search, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { getAdminData } from '../utils/adminStorage';
+import { EmptyState } from '../components/EmptyState';
+import type { AdminCar } from '../types/admin';
 
 type SortOption = 'newest' | 'priceHigh' | 'priceLow';
 
@@ -17,6 +20,7 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 /** Каталог только Hongqi — данные с [hongqi.ru](https://hongqi.ru) */
 export const Catalog = () => {
   const { t } = useTranslation();
+  const cars = getAdminData().cars;
   const [yearRange, setYearRange] = useState<[number, number]>([2020, 2030]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [sortBy, setSortBy] = useState<SortOption>('priceLow');
@@ -79,6 +83,8 @@ export const Catalog = () => {
     return filtered;
   }, [yearRange, priceRange, sortBy]);
 
+  const hasCars = filteredCars.length > 0;
+
   const resetFilters = () => {
     setYearRange([2020, 2030]);
     setPriceRange([0, 10000000]);
@@ -90,14 +96,7 @@ export const Catalog = () => {
     priceRange[0] !== 0 ||
     priceRange[1] !== 10000000;
 
-  /** Цены в рублях, как на hongqi.ru */
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
+  const formatPrice = (price: number) => formatPriceKzt(price);
 
   const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'newest', label: t('catalog.sortNewest') },
@@ -150,7 +149,7 @@ export const Catalog = () => {
               className="hero-line block text-[clamp(28px,4vw,56px)] font-bold leading-[1] tracking-[-0.03em] text-white/30 uppercase opacity-0"
               style={HEADING_FONT}
             >
-              Кроссоверы и седаны Hongqi
+              {t('catalogPage.hero.subline')}
             </span>
           </div>
 
@@ -163,9 +162,7 @@ export const Catalog = () => {
             </span>
             <div className="w-6 h-px bg-white/20" />
             <span className="text-white/30 text-sm font-light">
-              {filteredCars.length === 1
-                ? '\u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C'
-                : '\u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u0435\u0439'}
+              {t('catalogPage.carsCount', { count: filteredCars.length })}
             </span>
           </div>
         </motion.div>
@@ -174,6 +171,11 @@ export const Catalog = () => {
       {/* MAIN */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
+          {!hasCars && (
+            <div className="mb-10">
+              <EmptyState />
+            </div>
+          )}
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-16">
             {/* Sticky sidebar desktop */}
             <aside className="hidden lg:block lg:w-80 flex-shrink-0">
@@ -226,11 +228,11 @@ export const Catalog = () => {
                   <div className="flex items-center gap-2 mb-4">
                     <div className="w-8 h-px bg-luxury-red" />
                     <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
-                      Консультация
+                      {t('catalogPage.consultation.eyebrow')}
                     </span>
                   </div>
                   <p className="text-sm text-white/70 font-light mb-6 leading-relaxed">
-                    Наши эксперты помогут подобрать идеальный автомобиль
+                    {t('catalogPage.consultation.text')}
                   </p>
                   <div className="space-y-3">
                     <a
@@ -247,7 +249,7 @@ export const Catalog = () => {
                       className="group w-full px-4 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_25px_rgba(200,16,46,0.4)] transition-all duration-400"
                     >
                       <Phone size={16} strokeWidth={2.5} />
-                      <span className="text-xs uppercase tracking-luxury font-semibold">Позвонить</span>
+                      <span className="text-xs uppercase tracking-luxury font-semibold">{t('catalogPage.consultation.call')}</span>
                     </a>
                   </div>
                 </div>
@@ -288,9 +290,7 @@ export const Catalog = () => {
                     </motion.span>
                   </AnimatePresence>
                   <span className="text-white/40 font-light text-sm">
-                    {filteredCars.length === 1
-                      ? '\u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C'
-                      : '\u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u0435\u0439'}
+                    {t('catalogPage.carsCount', { count: filteredCars.length })}
                   </span>
                 </div>
                 {hasActiveFilters && (
@@ -335,10 +335,10 @@ export const Catalog = () => {
                     className="text-xl text-white/60 mb-3 font-bold uppercase tracking-[-0.03em]"
                     style={HEADING_FONT}
                   >
-                    {'\u0410\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u0438 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B'}
+                    {t('catalogPage.empty.title')}
                   </h3>
                   <p className="text-white/30 font-light mb-8 text-sm max-w-md mx-auto">
-                    {'\u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435 \u0438\u0437\u043C\u0435\u043D\u0438\u0442\u044C \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440\u044B \u0444\u0438\u043B\u044C\u0442\u0440\u0430'}
+                    {t('catalogPage.empty.text')}
                   </p>
                   <button
                     onClick={resetFilters}
@@ -412,7 +412,7 @@ export const Catalog = () => {
                     onClick={() => setShowFilters(false)}
                     className="flex-1 py-4 bg-luxury-burgundy text-white text-[11px] uppercase tracking-[0.25em] hover:bg-luxury-burgundyHover transition-colors duration-400"
                   >
-                    {'\u041F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C'}
+                    {t('catalogPage.filters.apply')}
                   </button>
                 </div>
               </div>
@@ -435,12 +435,13 @@ const CatalogCard = ({
   index,
   formatPrice,
 }: {
-  car: (typeof cars)[0];
+  car: AdminCar;
   index: number;
   formatPrice: (p: number) => string;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
+  const { t } = useTranslation();
 
   return (
     <motion.div
@@ -473,7 +474,7 @@ const CatalogCard = ({
               <div className="absolute top-4 left-4 bg-green-500/90 backdrop-blur-sm px-4 py-2 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 <span className="text-xs uppercase tracking-wider text-white font-semibold">
-                  {car.availability}
+                  {car.availability === 'inStock' ? t('availability.inStock') : car.availability}
                 </span>
               </div>
             )}
@@ -513,31 +514,31 @@ const CatalogCard = ({
             {/* Цена от + В кредит от 0,01% */}
             <div className="mb-4">
               <div className="text-lg text-white font-light tracking-tight" style={MONO_FONT}>
-                от {formatPrice(car.price)}
+                {t('catalogPage.card.priceFrom', { price: formatPrice(car.price) })}
               </div>
               <div className="inline-flex items-center gap-2 mt-1.5 px-3 py-1 border border-white/20 rounded-full">
-                <span className="text-xs text-white/70">В кредит</span>
-                <span className="text-xs font-medium text-white">от 0,01%</span>
+                <span className="text-xs text-white/70">{t('catalogPage.card.creditLabel')}</span>
+                <span className="text-xs font-medium text-white">{t('catalogPage.card.creditFrom')}</span>
               </div>
             </div>
 
             {/* Specs */}
             <div className="flex items-center gap-2 text-sm text-white/50 mb-5 font-light">
-              <span>{car.specifications.power.split(' ')[0]} л. с.</span>
+              <span>{t('catalogPage.card.power', { value: car.specifications.power.split(' ')[0] })}</span>
               <span>•</span>
               <span>{car.specifications.acceleration}</span>
               <span>•</span>
-              <span>{car.specifications.seats} мест</span>
+              <span>{t('catalogPage.card.seats', { count: car.specifications.seats })}</span>
             </div>
 
             {/* CTA */}
             <div className="flex items-center justify-end pt-5 border-t border-white/5">
               <div className="flex items-center gap-2 text-xs uppercase tracking-luxury text-luxury-red group-hover:text-luxury-redBright transition-colors font-semibold">
-                <span>Подробнее</span>
+                <span>{t('catalogPage.card.more')}</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </div>
               <div className="flex items-center gap-2 text-xs uppercase tracking-luxury text-luxury-red group-hover:text-luxury-redBright transition-colors font-semibold">
-                <span>Подробнее</span>
+                <span>{t('catalogPage.card.more')}</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </div>
             </div>

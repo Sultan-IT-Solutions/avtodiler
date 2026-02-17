@@ -2,12 +2,13 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { cars } from '../data/cars';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { getAdminData } from '../utils/adminStorage';
+import { formatPriceKzt } from '../utils/formatPrice';
 import {
   Phone,
   MessageCircle,
@@ -84,8 +85,32 @@ const SpecBar = ({ label, value, delay }: { label: string; value: string; delay:
 
 export const CarDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
-  const car = cars.find(c => c.id === id);
+  const { t, i18n } = useTranslation();
+  const cars = getAdminData().cars;
+  const rawCar = cars.find((c) => c.id === id);
+  const car = rawCar
+    ? {
+        ...rawCar,
+        title: rawCar.title ?? { ru: '', kz: '', en: '' },
+        description: rawCar.description ?? { ru: '', kz: '', en: '' },
+        images: Array.isArray(rawCar.images) ? rawCar.images : [],
+        image360: Array.isArray(rawCar.image360) ? rawCar.image360 : [],
+        colors: Array.isArray(rawCar.colors) ? rawCar.colors : [],
+        interiors: Array.isArray(rawCar.interiors) ? rawCar.interiors : [],
+        wheels: Array.isArray(rawCar.wheels) ? rawCar.wheels : [],
+        specifications: {
+          engine: rawCar.specifications?.engine ?? '',
+          power: rawCar.specifications?.power ?? '',
+          acceleration: rawCar.specifications?.acceleration ?? '',
+          topSpeed: rawCar.specifications?.topSpeed ?? '',
+          transmission: rawCar.specifications?.transmission ?? '',
+          drivetrain: rawCar.specifications?.drivetrain ?? '',
+          fuelType: rawCar.specifications?.fuelType ?? '',
+          consumption: rawCar.specifications?.consumption ?? '',
+          seats: rawCar.specifications?.seats ?? 5,
+        },
+      }
+    : undefined;
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedColor, setSelectedColor] = useState(0);
@@ -175,31 +200,35 @@ export const CarDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-luxury-black">
         <div className="text-center">
-          <h2 className="text-h2 font-display text-white mb-6">Автомобиль не найден</h2>
-          <Link to="/catalog" className="btn-primary">Вернуться в каталог</Link>
+          <h2 className="text-h2 font-display text-white mb-6">{t('empty.title')}</h2>
+          <Link to="/catalog" className="btn-primary">{t('nav.catalog')}</Link>
         </div>
       </div>
     );
   }
 
+
   const similarCars = cars.filter(c => c.id !== car.id && c.brand === car.brand).slice(0, 3);
 
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
+  const formatPrice = (price: number) => formatPriceKzt(price);
 
   // Extract numeric for animated specs
   const heroSpecs = [
-    { label: 'Мощность', value: car.specifications.power.split(/\s/)[0], unit: '' },
-    { label: 'Разгон', value: car.specifications.acceleration.replace(/\s*сек$/i, '').replace('s', ''), unit: 'с' },
-    { label: 'Макс. скорость', value: car.specifications.topSpeed.replace(/[^\d]/g, ''), unit: 'км/ч' },
-    { label: 'Привод', value: car.specifications.drivetrain, unit: '' },
+    { label: t('carDetail.specs.power'), value: (car.specifications.power || '').split(/\s/)[0] || '-', unit: '' },
+    {
+      label: t('carDetail.specs.acceleration'),
+      value: (car.specifications.acceleration || '').replace(/\s*сек$/i, '').replace('s', '') || '-',
+      unit: 'с',
+    },
+    { label: t('carDetail.specs.topSpeed'), value: (car.specifications.topSpeed || '').replace(/[^\d]/g, '') || '-', unit: 'км/ч' },
+    { label: t('carDetail.specs.drivetrain'), value: car.specifications.drivetrain || '-', unit: '' },
   ];
 
   const sections = [
-    { id: 'overview', label: 'Обзор' },
-    { id: 'specs', label: 'Характеристики' },
-    { id: 'config', label: 'Конфигуратор' },
-    { id: 'gallery', label: 'Галерея' },
+    { id: 'overview', label: t('carDetail.overview') },
+    { id: 'specs', label: t('carDetail.specifications') },
+    { id: 'config', label: t('carDetail.configure') },
+    { id: 'gallery', label: t('carDetail.gallery') },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -265,7 +294,7 @@ export const CarDetail = () => {
             <span className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 group-hover:bg-white/5 transition-all duration-500">
               <ArrowLeft size={16} />
             </span>
-            <span className="text-xs uppercase tracking-[0.2em] hidden lg:block">Каталог</span>
+            <span className="text-xs uppercase tracking-[0.2em] hidden lg:block">{t('carDetail.backToCatalog')}</span>
           </Link>
         </motion.div>
 
@@ -370,7 +399,7 @@ export const CarDetail = () => {
                       от {formatPrice(car.price)}
                     </div>
                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 border border-white/20 rounded-full">
-                      <span className="text-xs text-white/70">В кредит</span>
+                      <span className="text-xs text-white/70">{t('carDetail.credit')}</span>
                       <span className="text-xs font-medium text-white">от 0,01%</span>
                     </div>
                   </div>
@@ -389,11 +418,11 @@ export const CarDetail = () => {
                       className="group px-6 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
                     >
                       <Phone size={18} strokeWidth={2.5} />
-                      <span className="text-xs uppercase tracking-luxury font-semibold">Позвонить</span>
+                      <span className="text-xs uppercase tracking-luxury font-semibold">{t('contactForm.call')}</span>
                     </a>
                     <Link to="/test-drive" className="btn-outline !py-3 !px-6 text-xs whitespace-nowrap">
                       <Calendar size={14} className="inline mr-2" />
-                      Тест-драйв
+                      {t('carDetail.testDrive')}
                     </Link>
                   </div>
                 </div>
@@ -458,15 +487,15 @@ export const CarDetail = () => {
             >
               <div className="flex items-center gap-3 mb-8">
                 <span className="w-12 h-px bg-luxury-burgundy" />
-                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Философия</span>
+                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.philosophy')}</span>
               </div>
               {car.description && (
                 <p className="text-[clamp(24px,3.5vw,48px)] font-light leading-[1.3] text-white/90 tracking-[-0.01em]">
-                  {car.description}
+                  {car.description[i18n.language as 'ru' | 'kz' | 'en'] || car.description.ru}
                 </p>
               )}
               <div className="mt-12 flex items-center gap-2 text-white/20 text-xs uppercase tracking-[0.15em]">
-                <span>Прокрутите для деталей</span>
+                <span>{t('carDetail.scrollForDetails')}</span>
                 <ArrowRight size={12} />
               </div>
             </motion.div>
@@ -481,10 +510,10 @@ export const CarDetail = () => {
             >
               <div className="space-y-8">
                 {[
-                  { label: 'Двигатель', value: car.specifications.engine },
-                  { label: 'Мощность', value: car.specifications.power },
-                  { label: 'Трансмиссия', value: car.specifications.transmission },
-                  { label: 'Привод', value: car.specifications.drivetrain },
+                  { label: t('carDetail.specs.engine'), value: car.specifications.engine },
+                  { label: t('carDetail.specs.power'), value: car.specifications.power },
+                  { label: t('carDetail.specs.transmission'), value: car.specifications.transmission },
+                  { label: t('carDetail.specs.drivetrain'), value: car.specifications.drivetrain },
                 ].map((item, i) => (
                   <div key={i} className="flex justify-between items-end pb-6 border-b border-white/5">
                     <span className="text-[11px] uppercase tracking-[0.2em] text-white/30">{item.label}</span>
@@ -513,14 +542,14 @@ export const CarDetail = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-12 h-px bg-luxury-burgundy" />
-              <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Спецификации</span>
+              <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.specsEyebrow')}</span>
             </div>
             <h2
               className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              Каждая деталь<br />
-              <span className="text-white/90">имеет значение</span>
+              {t('carDetail.specsHeadlineLine1')}<br />
+              <span className="text-white/90">{t('carDetail.specsHeadlineLine2')}</span>
             </h2>
           </motion.div>
 
@@ -573,14 +602,14 @@ export const CarDetail = () => {
           >
             <div className="flex items-center gap-3 mb-6">
               <span className="w-12 h-px bg-luxury-burgundy" />
-              <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Персонализация</span>
+              <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.personalization')}</span>
             </div>
             <h2
               className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              Ваш стиль<br />
-              <span className="text-white/90">ваш автомобиль</span>
+              {t('carDetail.yourStyle')}<br />
+              <span className="text-white/90">{t('carDetail.yourCar')}</span>
             </h2>
           </motion.div>
 
@@ -592,7 +621,7 @@ export const CarDetail = () => {
                   <motion.img
                     key={`${currentImageIndex}-${selectedColor}`}
                     src={car.images[currentImageIndex]}
-                    alt={`${car.brand} ${car.model} — ${car.colors[selectedColor].name}`}
+                    alt={`${car.brand} ${car.model}`}
                     className="w-full h-full object-cover"
                     initial={{ opacity: 0, scale: 1.03 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -603,10 +632,14 @@ export const CarDetail = () => {
                 </AnimatePresence>
 
                 {/* Color reflection glow */}
-                <div
-                  className="absolute inset-0 opacity-10 transition-colors duration-1000"
-                  style={{ background: `radial-gradient(circle at 30% 70%, ${car.colors[selectedColor].hex}, transparent 70%)` }}
-                />
+                {car.colors.length > 0 ? (
+                  <div
+                    className="absolute inset-0 opacity-10 transition-colors duration-1000"
+                    style={{
+                      background: `radial-gradient(circle at 30% 70%, ${car.colors[Math.min(selectedColor, car.colors.length - 1)].hex}, transparent 70%)`,
+                    }}
+                  />
+                ) : null}
                 <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/40 via-transparent to-transparent" />
 
                 {/* Fullscreen button */}
@@ -620,10 +653,19 @@ export const CarDetail = () => {
                 </button>
 
                 {/* Selected config label */}
-                <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full border border-white/30" style={{ backgroundColor: car.colors[selectedColor].hex }} />
-                  <span className="text-xs text-white/50">{car.colors[selectedColor].name}</span>
-                </div>
+                {car.colors.length > 0 ? (
+                  <div className="absolute bottom-4 left-4 flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full border border-white/30"
+                      style={{
+                        backgroundColor: car.colors[Math.min(selectedColor, car.colors.length - 1)].hex,
+                      }}
+                    />
+                    <span className="text-xs text-white/50">
+                      {car.colors[Math.min(selectedColor, car.colors.length - 1)].name}
+                    </span>
+                  </div>
+                ) : null}
               </div>
 
               {/* Thumbnail strip */}
@@ -651,7 +693,7 @@ export const CarDetail = () => {
               {/* Colors */}
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">Цвет кузова</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.exterior')}</span>
                   <span className="text-xs text-white/20">{selectedColor + 1}/{car.colors.length}</span>
                 </div>
                 <div className="space-y-1">
@@ -695,7 +737,7 @@ export const CarDetail = () => {
               {/* Interior */}
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">Интерьер</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.interior')}</span>
                   <span className="text-xs text-white/20">{selectedInterior + 1}/{car.interiors.length}</span>
                 </div>
                 <div className="space-y-1">
@@ -732,7 +774,7 @@ export const CarDetail = () => {
               {/* Wheels */}
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">Диски</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.wheels')}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {car.wheels.map((wheel, index) => (
@@ -768,31 +810,31 @@ export const CarDetail = () => {
               {/* Summary */}
               <div className="config-item pt-6 border-t border-white/5">
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/60">Итого</span>
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-white/60">{t('carDetail.total')}</span>
                   <span className="text-2xl text-white font-light tracking-tight" style={{ fontFamily: "'Space Grotesk', monospace" }}>
                     {formatPrice(car.price)}
                   </span>
                 </div>
                 <div className="space-y-3">
                   <a
-                    href={`https://wa.me/77001234567?text=${encodeURIComponent(`Хочу забронировать ${car.brand} ${car.model} ${car.year}`)}`}
+                    href={`https://wa.me/77001234567?text=${encodeURIComponent(`${t('carDetail.wantReserveMessage')} ${car.brand} ${car.model} ${car.year}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group w-full px-6 py-4 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] transition-all duration-400"
                   >
                     <MessageCircle size={18} strokeWidth={2.5} />
-                    <span className="text-label uppercase tracking-luxury font-semibold">Забронировать в WhatsApp</span>
+                    <span className="text-label uppercase tracking-luxury font-semibold">{t('carDetail.reserveWhatsApp')}</span>
                   </a>
                   <a
                     href="tel:+77001234567"
                     className="group w-full px-6 py-4 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
                   >
                     <Phone size={18} strokeWidth={2.5} />
-                    <span className="text-label uppercase tracking-luxury font-semibold">Позвонить</span>
+                    <span className="text-label uppercase tracking-luxury font-semibold">{t('contactForm.call')}</span>
                   </a>
                   <Link to="/test-drive" className="btn-outline w-full flex items-center justify-center gap-2 !py-4">
                     <Calendar size={16} />
-                    Тест-драйв
+                    {t('carDetail.testDrive')}
                   </Link>
                 </div>
               </div>
@@ -816,20 +858,20 @@ export const CarDetail = () => {
                 <div>
                   <div className="flex items-center gap-3 mb-6">
                     <span className="w-12 h-px bg-luxury-burgundy" />
-                    <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Рекомендации</span>
+                    <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.similarCars')}</span>
                   </div>
                   <h2
                     className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    Другие модели
+                    {t('carDetail.similarCars')}
                   </h2>
                 </div>
                 <Link
                   to="/catalog"
                   className="hidden lg:flex items-center gap-3 text-white/30 hover:text-white transition-colors duration-500 group"
                 >
-                  <span className="text-xs uppercase tracking-[0.2em]">Весь каталог</span>
+                  <span className="text-xs uppercase tracking-[0.2em]">{t('nav.catalog')}</span>
                   <span className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 group-hover:bg-white/5 transition-all duration-500">
                     <ArrowRight size={14} />
                   </span>
