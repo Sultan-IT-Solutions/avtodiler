@@ -17,6 +17,7 @@ dist-ssr
 # Design / local refs (not needed for build)
 screenshots/
 .claude/
+CLAUDE.md
 design-tokens.json
 write-pages.mjs
 
