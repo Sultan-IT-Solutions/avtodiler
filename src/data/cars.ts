@@ -8,7 +8,7 @@ export const cars: Car[] = [
     model: 'HS3',
     modelDisplay: 'HS3',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 2870000,
     mileage: 0,
     images: [
@@ -48,7 +48,7 @@ export const cars: Car[] = [
     model: 'HS5',
     modelDisplay: 'НОВЫЙ HS5',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 4040000,
     mileage: 0,
     images: [
@@ -88,7 +88,7 @@ export const cars: Car[] = [
     model: 'HS7',
     modelDisplay: 'НОВЫЙ HS7',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 5140000,
     mileage: 0,
     images: [
@@ -128,7 +128,7 @@ export const cars: Car[] = [
     model: 'H5',
     modelDisplay: 'H5',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 3990000,
     mileage: 0,
     images: [
@@ -168,7 +168,7 @@ export const cars: Car[] = [
     model: 'H6',
     modelDisplay: 'НОВЫЙ H6',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 4270000,
     mileage: 0,
     images: [
@@ -208,7 +208,7 @@ export const cars: Car[] = [
     model: 'H9',
     modelDisplay: 'H9',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 5780000,
     mileage: 0,
     images: [
@@ -248,7 +248,7 @@ export const cars: Car[] = [
     model: 'HQ9',
     modelDisplay: 'HQ9',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 6400000,
     mileage: 0,
     images: [
@@ -288,7 +288,7 @@ export const cars: Car[] = [
     model: 'E-HS9',
     modelDisplay: 'E-HS9',
     year: 2025,
-  availability: 'inStock' as const,
+    availability: 'В наличии' as const,
     price: 6490000,
     mileage: 0,
     images: [

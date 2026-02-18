@@ -3,46 +3,55 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { MapPin, Phone, Clock, Navigation, ChevronRight } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
-import { publicApi } from '../utils/publicApi';
-import { EmptyState } from '../components/EmptyState';
-import { useTranslation } from 'react-i18next';
+
+const dealers = [
+  {
+    id: 1,
+    name: 'Luxury Auto — Аль-Фараби',
+    address: 'ул. Аль-Фараби, 77, Алматы',
+    phone: '+7 (700) 123-45-67',
+    hours: 'Пн–Сб: 09:00–20:00, Вс: 10:00–17:00',
+    lat: 43.222,
+    lng: 76.8512,
+    services: ['Продажа', 'Сервис', 'Тест-драйв'],
+  },
+  {
+    id: 2,
+    name: 'Luxury Auto — Назарбаева',
+    address: 'пр. Назарбаева, 120, Алматы',
+    phone: '+7 (700) 234-56-78',
+    hours: 'Пн–Сб: 09:00–20:00, Вс: 10:00–17:00',
+    lat: 43.238,
+    lng: 76.945,
+    services: ['Продажа', 'Тест-драйв'],
+  },
+  {
+    id: 3,
+    name: 'Luxury Auto — Астана',
+    address: 'пр. Мангилик Ел, 54, Астана',
+    phone: '+7 (700) 345-67-89',
+    hours: 'Пн–Сб: 09:00–19:00, Вс: выходной',
+    lat: 51.09,
+    lng: 71.418,
+    services: ['Продажа', 'Сервис', 'Тест-драйв'],
+  },
+];
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Dealers = () => {
-  const { t, i18n } = useTranslation();
-  const [dealers, setDealers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.dealers>>);
-
-  useEffect(() => {
-    let cancelled = false;
-    void publicApi
-      .dealers()
-      .then((items) => {
-        if (!cancelled && items.length > 0) setDealers(items);
-      })
-      .catch(() => {
-        // no local fallback by requirement
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const lang = i18n.language as 'ru' | 'kz' | 'en';
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ['start start', 'end start'],
   });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
-  const [selectedDealer, setSelectedDealer] = useState<(typeof dealers)[number] | undefined>(dealers[0]);
+  const [selectedDealer, setSelectedDealer] = useState(dealers[0]);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!selectedDealer && dealers.length > 0) setSelectedDealer(dealers[0]);
-  }, [dealers, selectedDealer]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -54,20 +63,18 @@ export const Dealers = () => {
     }
 
     const script = document.createElement('script');
-    const apiKey = (import.meta.env.VITE_YANDEX_MAPS_API_KEY as string | undefined) ?? '';
-    const keyQuery = apiKey.trim() ? `apikey=${encodeURIComponent(apiKey.trim())}&` : '';
-    script.src = `https://api-maps.yandex.ru/2.1/?${keyQuery}lang=ru_RU`;
+    script.src = 'https://api-maps.yandex.ru/2.1/?apikey=none&lang=ru_RU';
     script.async = true;
     script.onload = () => {
       const ym = (window as unknown as Record<string, unknown>).ymaps as { ready: (cb: () => void) => void };
       if (ym) ym.ready(initMap);
     };
     document.head.appendChild(script);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initMap = () => {
     if (!mapRef.current || mapLoaded) return;
-    if (dealers.length === 0 || !selectedDealer) return;
 
     const ymaps = (window as unknown as Record<string, unknown>).ymaps as Record<string, unknown>;
     if (!ymaps) return;
@@ -87,7 +94,7 @@ export const Dealers = () => {
     const map = new MapConstructor(
       mapRef.current,
       {
-        center: [selectedDealer.lat ?? 0, selectedDealer.lng ?? 0],
+        center: [selectedDealer.lat, selectedDealer.lng],
         zoom: 14,
         controls: ['zoomControl'],
       },
@@ -97,13 +104,12 @@ export const Dealers = () => {
     );
 
     dealers.forEach((dealer) => {
-      if (typeof dealer.lat !== 'number' || typeof dealer.lng !== 'number') return;
       const placemark = new PlacemarkConstructor(
-        [dealer.lat!, dealer.lng!],
+        [dealer.lat, dealer.lng],
         {
-          balloonContentHeader: dealer.name[lang] || dealer.name.ru,
-          balloonContentBody: `${dealer.address[lang] || dealer.address.ru}<br>${dealer.phone}`,
-          hintContent: dealer.name[lang] || dealer.name.ru,
+          balloonContentHeader: dealer.name,
+          balloonContentBody: `${dealer.address}<br>${dealer.phone}`,
+          hintContent: dealer.name,
         },
         {
           preset: 'islands#redDotIcon',
@@ -121,7 +127,7 @@ export const Dealers = () => {
     const map = (window as unknown as Record<string, unknown>).__luxuryMap as Record<string, unknown> | undefined;
     if (map) {
       (map.setCenter as (coords: number[], zoom: number, opts: Record<string, unknown>) => void)(
-        [dealer.lat ?? 0, dealer.lng ?? 0],
+        [dealer.lat, dealer.lng],
         15,
         { duration: 500 }
       );
@@ -143,7 +149,9 @@ export const Dealers = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-luxury-black/60 via-luxury-black/20 to-luxury-black" />
         </motion.div>
+
         <motion.div
+          style={{ opacity: heroOpacity }}
           className="relative z-10 container mx-auto px-6 lg:px-16 h-full flex flex-col justify-end pb-20 lg:pb-32"
         >
           <motion.div
@@ -164,7 +172,7 @@ export const Dealers = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy"
               >
-                {t('dealersPage.hero.eyebrow')}
+                Дилеры
               </motion.span>
             </div>
             <h1
@@ -177,7 +185,7 @@ export const Dealers = () => {
                 transition={{ duration: 1, delay: 0.2, ease }}
                 className="block"
               >
-                {t('dealersPage.hero.titleLine1')}
+                Найти
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
@@ -185,7 +193,7 @@ export const Dealers = () => {
                 transition={{ duration: 1, delay: 0.35, ease }}
                 className="block text-white/90"
               >
-                {t('dealersPage.hero.titleLine2')}
+                дилера
               </motion.span>
             </h1>
           </motion.div>
@@ -212,136 +220,133 @@ export const Dealers = () => {
             className="mb-16"
           >
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-5">
-              {t('dealersPage.centers.eyebrow')}
+              Наши центры
             </span>
             <h2
               className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              {t('dealersPage.centers.titleLine1')}
+              Дилерские
               <br />
-              <span className="text-white/90">{t('dealersPage.centers.titleLine2')}</span>
+              <span className="text-white/90">центры</span>
             </h2>
           </motion.div>
 
-          {dealers.length === 0 || !selectedDealer ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Dealers List */}
-              <div className="lg:col-span-1 space-y-4">
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-[11px] uppercase tracking-[0.25em] text-white/40">
-                    {t('dealersPage.list.totalCenters')}
-                  </span>
-                  <span
-                    className="text-luxury-burgundy text-lg font-medium"
-                    style={{ fontFamily: "'Space Grotesk', monospace" }}
-                  >
-                    {dealers.length}
-                  </span>
-                </div>
-
-                {dealers.map((dealer, i) => (
-                  <motion.button
-                    key={dealer.id}
-                    onClick={() => focusDealer(dealer)}
-                    initial={{ opacity: 0, x: -30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: i * 0.1 }}
-                    whileHover={{ x: 4 }}
-                    className={`w-full text-left bg-luxury-elevated border p-6 lg:p-8 transition-all duration-400 relative overflow-hidden ${
-                      selectedDealer.id === dealer.id
-                        ? 'border-luxury-burgundy bg-luxury-burgundy/5'
-                        : 'border-white/5 hover:border-white/10 hover:bg-luxury-hover'
-                    }`}
-                  >
-                    {selectedDealer.id === dealer.id && (
-                      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/60 to-luxury-burgundy/0" />
-                    )}
-                    <h3
-                      className="text-[13px] font-bold text-white uppercase tracking-[0.05em] mb-4 flex items-center justify-between"
-                      style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
-                    >
-                      {dealer.name[lang] || dealer.name.ru}
-                      <ChevronRight
-                        size={16}
-                        className={`transition-colors duration-400 ${
-                          selectedDealer.id === dealer.id ? 'text-luxury-burgundy' : 'text-white/20'
-                        }`}
-                      />
-                    </h3>
-
-                    <div className="space-y-3 text-[14px]">
-                      <div className="flex items-start gap-3 text-white/40">
-                        <MapPin size={14} className="mt-0.5 flex-shrink-0" />
-                        <span className="font-light">{dealer.address[lang] || dealer.address.ru}</span>
-                      </div>
-                      <div className="flex items-start gap-3 text-white/40">
-                        <Phone size={14} className="mt-0.5 flex-shrink-0" />
-                        <a
-                          href={`tel:${dealer.phone.replace(/\D/g, '')}`}
-                          className="font-light hover:text-white transition-colors duration-400"
-                        >
-                          {dealer.phone}
-                        </a>
-                      </div>
-                      <div className="flex items-start gap-3 text-white/40">
-                        <Clock size={14} className="mt-0.5 flex-shrink-0" />
-                        <span className="font-light">{dealer.hours}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/5">
-                      {dealer.services.map((s) => (
-                        <span
-                          key={s}
-                          className="text-[10px] uppercase tracking-[0.2em] text-white/40 border border-white/10 px-3 py-1.5"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </motion.button>
-                ))}
-
-                <a
-                  href={`https://yandex.ru/maps/?rtext=~${selectedDealer.lat},${selectedDealer.lng}&rtt=auto`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary w-full flex items-center justify-center gap-3 mt-4"
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Dealers List */}
+            <div className="lg:col-span-1 space-y-4">
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-[11px] uppercase tracking-[0.25em] text-white/40">
+                  Всего центров
+                </span>
+                <span
+                  className="text-luxury-burgundy text-lg font-medium"
+                  style={{ fontFamily: "'Space Grotesk', monospace" }}
                 >
-                  <Navigation size={16} />
-                  {t('dealersPage.list.buildRoute')}
-                </a>
+                  {dealers.length}
+                </span>
               </div>
 
-              {/* Map */}
-              <div className="lg:col-span-2">
-                <div
-                  ref={mapRef}
-                  className="w-full h-[400px] lg:h-[650px] bg-luxury-surface border border-white/5 relative"
-                  style={{ minHeight: '400px' }}
+              {dealers.map((dealer, i) => (
+                <motion.button
+                  key={dealer.id}
+                  onClick={() => focusDealer(dealer)}
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                  whileHover={{ x: 4 }}
+                  className={`w-full text-left bg-luxury-elevated border p-6 lg:p-8 transition-all duration-400 relative overflow-hidden ${
+                    selectedDealer.id === dealer.id
+                      ? 'border-luxury-burgundy bg-luxury-burgundy/5'
+                      : 'border-white/5 hover:border-white/10 hover:bg-luxury-hover'
+                  }`}
                 >
-                  {!mapLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center"
-                      >
-                        <div className="w-16 h-16 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                          <MapPin size={28} className="text-luxury-burgundy" />
-                        </div>
-                        <p className="text-white/40 font-light text-[15px]">{t('dealersPage.list.mapLoading')}</p>
-                      </motion.div>
-                    </div>
+                  {selectedDealer.id === dealer.id && (
+                    <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/60 to-luxury-burgundy/0" />
                   )}
-                </div>
+
+                  <h3
+                    className="text-[13px] font-bold text-white uppercase tracking-[0.05em] mb-4 flex items-center justify-between"
+                    style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
+                  >
+                    {dealer.name}
+                    <ChevronRight
+                      size={16}
+                      className={`transition-colors duration-400 ${
+                        selectedDealer.id === dealer.id ? 'text-luxury-burgundy' : 'text-white/20'
+                      }`}
+                    />
+                  </h3>
+
+                  <div className="space-y-3 text-[14px]">
+                    <div className="flex items-start gap-3 text-white/40">
+                      <MapPin size={14} className="mt-0.5 flex-shrink-0" />
+                      <span className="font-light">{dealer.address}</span>
+                    </div>
+                    <div className="flex items-start gap-3 text-white/40">
+                      <Phone size={14} className="mt-0.5 flex-shrink-0" />
+                      <a
+                        href={`tel:${dealer.phone.replace(/\D/g, '')}`}
+                        className="font-light hover:text-white transition-colors duration-400"
+                      >
+                        {dealer.phone}
+                      </a>
+                    </div>
+                    <div className="flex items-start gap-3 text-white/40">
+                      <Clock size={14} className="mt-0.5 flex-shrink-0" />
+                      <span className="font-light">{dealer.hours}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-5 pt-5 border-t border-white/5">
+                    {dealer.services.map((s) => (
+                      <span
+                        key={s}
+                        className="text-[10px] uppercase tracking-[0.2em] text-white/40 border border-white/10 px-3 py-1.5"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </motion.button>
+              ))}
+
+              <a
+                href={`https://yandex.ru/maps/?rtext=~${selectedDealer.lat},${selectedDealer.lng}&rtt=auto`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary w-full flex items-center justify-center gap-3 mt-4"
+              >
+                <Navigation size={16} />
+                Построить маршрут
+              </a>
+            </div>
+
+            {/* Map */}
+            <div className="lg:col-span-2">
+              <div
+                ref={mapRef}
+                className="w-full h-[400px] lg:h-[650px] bg-luxury-surface border border-white/5 relative"
+                style={{ minHeight: '400px' }}
+              >
+                {!mapLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center"
+                    >
+                      <div className="w-16 h-16 border border-white/10 flex items-center justify-center mx-auto mb-6">
+                        <MapPin size={28} className="text-luxury-burgundy" />
+                      </div>
+                      <p className="text-white/40 font-light text-[15px]">Загрузка карты...</p>
+                    </motion.div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -355,10 +360,11 @@ export const Dealers = () => {
             transition={{ duration: 0.8 }}
           >
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-5">
-              {t('dealersPage.banner.eyebrow')}
+              Официальный представитель
             </span>
             <p className="text-white/40 font-light text-lg leading-relaxed max-w-2xl mx-auto">
-              {t('dealersPage.banner.text')}
+              Все дилерские центры Luxury Auto являются официальными представителями бренда Hongqi в Казахстане
+              и предоставляют полный спектр услуг.
             </p>
           </motion.div>
         </div>

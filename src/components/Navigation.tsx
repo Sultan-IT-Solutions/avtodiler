@@ -38,10 +38,10 @@ export const Navigation = () => {
   const navLinks = [
     { path: '/', label: t('nav.home') },
     { path: '/catalog', label: t('nav.catalog') },
-    { path: '/brands', label: t('nav.brands') },
-    { path: '/service', label: t('nav.service') },
-    { path: '/offers', label: t('nav.offers') },
-    { path: '/dealers', label: t('nav.dealers') },
+    { path: '/brands', label: 'Бренд' },
+    { path: '/service', label: 'Сервис' },
+    { path: '/offers', label: 'Акции' },
+    { path: '/dealers', label: 'Дилеры' },
     { path: '/contact', label: t('nav.contact') },
   ];
 

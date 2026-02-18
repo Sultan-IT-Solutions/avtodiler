@@ -5,33 +5,64 @@ import { Link } from 'react-router-dom';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
-import { useEffect, useState } from 'react';
-import { publicApi } from '../utils/publicApi';
-import { EmptyState } from '../components/EmptyState';
-import { useTranslation } from 'react-i18next';
 
 const HEADING_FONT = { fontFamily: "'Montserrat', system-ui, sans-serif" };
 const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 
-export const Offers = () => {
-  const { t, i18n } = useTranslation();
-  const [offers, setOffers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.offers>>);
+const offers = [
+  {
+    id: 1,
+    title: '\u0421\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u044B\u0435 \u0443\u0441\u043B\u043E\u0432\u0438\u044F \u043D\u0430 Hongqi E-HS9',
+    description:
+      '\u042D\u043B\u0435\u043A\u0442\u0440\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u0444\u043B\u0430\u0433\u043C\u0430\u043D \u043F\u043E \u0432\u044B\u0433\u043E\u0434\u043D\u043E\u0439 \u0446\u0435\u043D\u0435. \u0422\u0440\u0435\u0439\u0434-\u0438\u043D \u043F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0430 \u2014 \u0441\u043A\u0438\u0434\u043A\u0430 \u0434\u043E 500 000 \u20B8 \u043F\u0440\u0438 \u0441\u0434\u0430\u0447\u0435 \u0441\u0442\u0430\u0440\u043E\u0433\u043E \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044F.',
+    image:
+      'https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/297/19297/01jaz17hfkatcmvsxywakv7ggd.jpg',
+    badge: '\u0425\u0438\u0442',
+    validUntil: '31 \u043C\u0430\u0440\u0442\u0430 2025',
+  },
+  {
+    id: 2,
+    title: '\u041A\u0440\u0435\u0434\u0438\u0442 \u043E\u0442 0.01% \u043D\u0430 \u0432\u0435\u0441\u044C \u043C\u043E\u0434\u0435\u043B\u044C\u043D\u044B\u0439 \u0440\u044F\u0434',
+    description:
+      '\u041E\u0444\u043E\u0440\u043C\u0438\u0442\u0435 \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C Hongqi \u0432 \u043A\u0440\u0435\u0434\u0438\u0442 \u043F\u043E \u0441\u043F\u0435\u0446\u0438\u0430\u043B\u044C\u043D\u043E\u0439 \u0441\u0442\u0430\u0432\u043A\u0435. \u041F\u0435\u0440\u0432\u043E\u043D\u0430\u0447\u0430\u043B\u044C\u043D\u044B\u0439 \u0432\u0437\u043D\u043E\u0441 \u043E\u0442 20%. \u0421\u0440\u043E\u043A \u0434\u043E 7 \u043B\u0435\u0442.',
+    image:
+      'https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/19/856/19856/01jqdpmr8bngv811xjr27qk8w7.jpg',
+    badge: '\u041A\u0440\u0435\u0434\u0438\u0442',
+    validUntil: '28 \u0444\u0435\u0432\u0440\u0430\u043B\u044F 2025',
+  },
+  {
+    id: 3,
+    title: '\u0411\u0435\u0441\u043F\u043B\u0430\u0442\u043D\u043E\u0435 \u0422\u041E \u043F\u0440\u0438 \u043F\u043E\u043A\u0443\u043F\u043A\u0435 H9',
+    description:
+      '\u041F\u0440\u0438 \u043F\u043E\u043A\u0443\u043F\u043A\u0435 Hongqi H9 \u2014 3 \u0433\u043E\u0434\u0430 \u0431\u0435\u0441\u043F\u043B\u0430\u0442\u043D\u043E\u0433\u043E \u0442\u0435\u0445\u043D\u0438\u0447\u0435\u0441\u043A\u043E\u0433\u043E \u043E\u0431\u0441\u043B\u0443\u0436\u0438\u0432\u0430\u043D\u0438\u044F \u0432 \u043E\u0444\u0438\u0446\u0438\u0430\u043B\u044C\u043D\u043E\u043C \u0441\u0435\u0440\u0432\u0438\u0441\u043D\u043E\u043C \u0446\u0435\u043D\u0442\u0440\u0435.',
+    image:
+      'https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/1/470/1470/01j0bsdmd342djpxh9a0hbsdqh.jpg',
+    badge: '\u0421\u0435\u0440\u0432\u0438\u0441',
+    validUntil: '15 \u0430\u043F\u0440\u0435\u043B\u044F 2025',
+  },
+  {
+    id: 4,
+    title: '\u0417\u0438\u043C\u043D\u0438\u0435 \u0448\u0438\u043D\u044B \u0432 \u043F\u043E\u0434\u0430\u0440\u043E\u043A',
+    description:
+      '\u041F\u0440\u0438 \u043F\u043E\u043A\u0443\u043F\u043A\u0435 \u043B\u044E\u0431\u043E\u0433\u043E \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044F Hongqi \u0434\u043E \u043A\u043E\u043D\u0446\u0430 \u0444\u0435\u0432\u0440\u0430\u043B\u044F \u2014 \u043A\u043E\u043C\u043F\u043B\u0435\u043A\u0442 \u043F\u0440\u0435\u043C\u0438\u0430\u043B\u044C\u043D\u044B\u0445 \u0437\u0438\u043C\u043D\u0438\u0445 \u0448\u0438\u043D \u0432 \u043F\u043E\u0434\u0430\u0440\u043E\u043A.',
+    image:
+      'https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/22/443/22443/01k3pbpxbtz8zsf92kp8esmjd8.jpg',
+    badge: '\u041F\u043E\u0434\u0430\u0440\u043E\u043A',
+    validUntil: '28 \u0444\u0435\u0432\u0440\u0430\u043B\u044F 2025',
+  },
+  {
+    id: 5,
+    title: '\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043C\u0430 \u043B\u043E\u044F\u043B\u044C\u043D\u043E\u0441\u0442\u0438 \u0434\u043B\u044F \u0432\u043B\u0430\u0434\u0435\u043B\u044C\u0446\u0435\u0432',
+    description:
+      '\u0421\u043A\u0438\u0434\u043A\u0430 15% \u043D\u0430 \u0432\u0441\u0435 \u0443\u0441\u043B\u0443\u0433\u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u043D\u043E\u0433\u043E \u0446\u0435\u043D\u0442\u0440\u0430 \u0434\u043B\u044F \u0434\u0435\u0439\u0441\u0442\u0432\u0443\u044E\u0449\u0438\u0445 \u0432\u043B\u0430\u0434\u0435\u043B\u044C\u0446\u0435\u0432 \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u0435\u0439 Hongqi.',
+    image:
+      'https://cdn.hongqi.ru/storage/carmodel/image_with_background/0/22/316/22316/01k2phgvm20tey34x8x6ccz27a.jpg',
+    badge: '\u041B\u043E\u044F\u043B\u044C\u043D\u043E\u0441\u0442\u044C',
+    validUntil: '\u0411\u0435\u0441\u0441\u0440\u043E\u0447\u043D\u043E',
+  },
+];
 
-  useEffect(() => {
-    let cancelled = false;
-    void publicApi
-      .offers()
-      .then((items) => {
-        if (!cancelled && items.length > 0) setOffers(items);
-      })
-      .catch(() => {
-        // no local fallback by requirement
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const lang = i18n.language as 'ru' | 'kz' | 'en';
+export const Offers = () => {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -72,7 +103,7 @@ export const Offers = () => {
             <div className="flex items-center gap-4 mb-8">
               <div className="w-16 h-px bg-luxury-burgundy" />
               <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">
-                {t('offersPage.hero.eyebrow')}
+                {'\u0421\u043F\u0435\u0446\u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F'}
               </span>
             </div>
             <div className="overflow-hidden mb-1">
@@ -80,7 +111,7 @@ export const Offers = () => {
                 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                 style={HEADING_FONT}
               >
-                {t('offersPage.hero.titleLine1')}
+                {'\u041F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F'}
               </h1>
             </div>
             <div className="overflow-hidden">
@@ -88,7 +119,7 @@ export const Offers = () => {
                 className="block text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white/80 uppercase"
                 style={HEADING_FONT}
               >
-                {t('offersPage.hero.titleLine2')}
+                {'\u0438 \u0430\u043A\u0446\u0438\u0438'}
               </span>
             </div>
             <div className="mt-10 flex items-center gap-3">
@@ -97,7 +128,7 @@ export const Offers = () => {
               </span>
               <div className="w-6 h-px bg-white/20" />
               <span className="text-white/30 text-sm font-light">
-                {t('offersPage.hero.activeCountLabel')}
+                {'\u0430\u043A\u0442\u0438\u0432\u043D\u044B\u0445 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u0439'}
               </span>
             </div>
           </motion.div>
@@ -107,10 +138,7 @@ export const Offers = () => {
       {/* ====== OFFERS LIST ====== */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
-          {offers.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="space-y-10 lg:space-y-14">
+          <div className="space-y-10 lg:space-y-14">
             {offers.map((offer, i) => (
               <motion.div
                 key={offer.id}
@@ -130,7 +158,7 @@ export const Offers = () => {
                     <div className="lg:col-span-2 relative aspect-[16/10] lg:aspect-auto lg:min-h-[320px] overflow-hidden">
                       <img
                         src={offer.image}
-                        alt={offer.title[lang] || offer.title.ru}
+                        alt={offer.title}
                         className="w-full h-full object-cover transition-transform duration-[1.5s] ease-luxury group-hover:scale-110"
                         loading="lazy"
                         onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }}
@@ -142,7 +170,7 @@ export const Offers = () => {
                       <div className="absolute top-4 left-4 bg-luxury-burgundy px-4 py-1.5">
                         <span className="text-[11px] uppercase tracking-[0.25em] text-white flex items-center gap-2">
                           <Tag size={12} />
-                          {offer.badge[lang] || offer.badge.ru}
+                          {offer.badge}
                         </span>
                       </div>
 
@@ -163,11 +191,11 @@ export const Offers = () => {
                         className="text-xl lg:text-2xl font-bold text-white mb-4 group-hover:text-luxury-burgundy transition-colors duration-400 uppercase tracking-[-0.02em]"
                         style={HEADING_FONT}
                       >
-                        {offer.title[lang] || offer.title.ru}
+                        {offer.title}
                       </h3>
 
                       <p className="text-white/40 font-light leading-relaxed mb-8 max-w-xl">
-                        {offer.description[lang] || offer.description.ru}
+                        {offer.description}
                       </p>
 
                       <div className="h-px bg-white/5 mb-6" />
@@ -176,7 +204,7 @@ export const Offers = () => {
                         <div className="flex items-center gap-2 text-white/30">
                           <Clock size={14} className="text-luxury-burgundy" />
                           <span className="text-sm font-light">
-                            {t('offersPage.card.validUntilLabel')}{' '}
+                            {'\u0414\u0435\u0439\u0441\u0442\u0432\u0443\u0435\u0442 \u0434\u043E: '}
                             <span style={MONO_FONT}>{offer.validUntil}</span>
                           </span>
                         </div>
@@ -185,7 +213,7 @@ export const Offers = () => {
                           className="inline-flex items-center gap-2 text-luxury-burgundy hover:text-luxury-burgundyHover transition-colors group/link"
                         >
                           <span className="text-[11px] uppercase tracking-[0.25em]">
-                            {t('offersPage.card.more')}
+                            {'\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435'}
                           </span>
                           <ArrowRight
                             size={14}
@@ -198,8 +226,7 @@ export const Offers = () => {
                 </div>
               </motion.div>
             ))}
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -215,7 +242,7 @@ export const Offers = () => {
             <div className="flex items-center justify-center gap-4 mb-8">
               <div className="w-8 h-px bg-luxury-burgundy" />
               <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">
-                {t('offersPage.cta.eyebrow')}
+                {'\u041A\u043E\u043D\u0442\u0430\u043A\u0442\u044B'}
               </span>
               <div className="w-8 h-px bg-luxury-burgundy" />
             </div>
@@ -224,22 +251,22 @@ export const Offers = () => {
               className="text-[clamp(28px,4vw,56px)] font-bold leading-[1.1] tracking-[-0.03em] text-white uppercase mb-6"
               style={HEADING_FONT}
             >
-              {t('offersPage.cta.titleLine1')}
+              {'\u041D\u0435 \u043D\u0430\u0448\u043B\u0438 \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0449\u0435\u0435'}
               <br />
               <span className="text-white/90">
-                {t('offersPage.cta.titleLine2')}
+                {'\u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u0435?'}
               </span>
             </h2>
 
             <p className="text-white/40 font-light mb-12 max-w-lg mx-auto text-base leading-relaxed">
-              {t('offersPage.cta.subtitle')}
+              {'\u0421\u0432\u044F\u0436\u0438\u0442\u0435\u0441\u044C \u0441 \u043D\u0430\u043C\u0438 \u2014 \u043C\u044B \u043F\u043E\u0434\u0433\u043E\u0442\u043E\u0432\u0438\u043C \u0438\u043D\u0434\u0438\u0432\u0438\u0434\u0443\u0430\u043B\u044C\u043D\u043E\u0435 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u0435'}
             </p>
 
             <Link
               to="/contact"
               className="inline-flex items-center gap-3 px-10 py-4 bg-luxury-burgundy text-white text-[11px] uppercase tracking-[0.25em] hover:bg-luxury-burgundyHover transition-colors duration-400"
             >
-              {t('offersPage.cta.button')}
+              {'\u0421\u0432\u044F\u0437\u0430\u0442\u044C\u0441\u044F \u0441 \u043D\u0430\u043C\u0438'}
               <ArrowRight size={16} />
             </Link>
           </motion.div>

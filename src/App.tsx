@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
 import gsap from 'gsap';
@@ -16,40 +16,6 @@ import { Service } from './pages/Service';
 import { TestDrive } from './pages/TestDrive';
 import { Offers } from './pages/Offers';
 import { Dealers } from './pages/Dealers';
-import AdminApp from './admin/AdminApp';
-
-class RouteErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: unknown }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false, error: undefined };
-  }
-
-  static getDerivedStateFromError(error: unknown) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: unknown) {
-    if (!import.meta.env.PROD) {
-      console.error('RouteErrorBoundary', error);
-    }
-  }
-
-  render() {
-    if (!this.state.hasError) return this.props.children;
-    return (
-      <div className="min-h-screen bg-luxury-black text-white flex items-center justify-center px-6">
-        <div className="max-w-lg w-full border border-white/10 bg-luxury-elevated p-8">
-          <p className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy mb-3">Ошибка</p>
-          <h1 className="text-xl font-semibold">Страница упала</h1>
-          <p className="mt-3 text-sm text-white/60">Попробуйте обновить страницу или вернуться назад.</p>
-        </div>
-      </div>
-    );
-  }
-}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -287,30 +253,11 @@ function AnimatedRoutes() {
           <Route path="/dealers" element={<Dealers />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
-          <Route path="/admin/*" element={<AdminApp />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
   );
 }
-
-const AppShell = () => {
-  const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
-
-  return (
-    <RouteErrorBoundary>
-      <div className="min-h-screen bg-luxury-black noise-overlay">
-        {!isAdmin && <CustomCursor />}
-        {!isAdmin && <Navigation />}
-        {!isAdmin && <FloatingWhatsApp />}
-        <main>
-          <AnimatedRoutes />
-        </main>
-      </div>
-    </RouteErrorBoundary>
-  );
-};
 
 /* ===== MAIN APP ===== */
 function App() {
@@ -359,7 +306,14 @@ function App() {
       {!isLoading && (
         <Router>
           <ScrollToTop />
-          <AppShell />
+          <div className="min-h-screen bg-luxury-black noise-overlay">
+            <CustomCursor />
+            <Navigation />
+            <FloatingWhatsApp />
+            <main>
+              <AnimatedRoutes />
+            </main>
+          </div>
         </Router>
       )}
     </>
