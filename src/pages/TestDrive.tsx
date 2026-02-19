@@ -4,6 +4,7 @@ import { Send, Calendar, MapPin, Car } from 'lucide-react';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { submitLead } from '../utils/leads';
 
 const dealers = [
   { id: 1, name: 'Luxury Auto — Аль-Фараби', address: 'ул. Аль-Фараби, 77, Алматы' },
@@ -53,9 +54,24 @@ export const TestDrive = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await submitLead({
+      type: 'test-drive',
+      name: formData.name,
+      phone: formData.phone,
+      car: formData.car,
+      dealer: formData.dealer,
+      comment: formData.comment,
+    });
     setIsSubmitted(true);
+    setFormData({
+      name: '',
+      phone: '',
+      car: '',
+      dealer: '',
+      comment: '',
+    });
     setTimeout(() => setIsSubmitted(false), 5000);
   };
 

@@ -29,10 +29,10 @@ export const Footer = () => {
         >
           <div>
             <span className="text-micro uppercase tracking-ultra text-luxury-red block mb-4 font-semibold">
-              Свяжитесь с нами
+              {t('footerCta.eyebrow')}
             </span>
             <h2 className="text-h1 font-display text-white font-light leading-tight">
-              Начните свое<br />путешествие
+              {t('footerCta.titleLine1')}<br />{t('footerCta.titleLine2')}
             </h2>
           </div>
           <Link
@@ -40,7 +40,7 @@ export const Footer = () => {
             className="group flex items-center gap-4"
           >
             <span className="text-label uppercase tracking-luxury text-luxury-subtle group-hover:text-white transition-colors">
-              Связаться
+              {t('footerCta.button')}
             </span>
             <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy transition-all duration-400">
               <ArrowUpRight size={24} className="text-white transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
@@ -116,10 +116,10 @@ export const Footer = () => {
           {/* Social */}
           <div>
             <h4 className="text-micro uppercase tracking-ultra text-white mb-6">
-              Соцсети
+              {t('footer.social')}
             </h4>
             <ul className="space-y-4">
-              {['Instagram', 'Facebook', 'YouTube', 'Telegram'].map((social) => (
+              {['Instagram', 'Facebook', 'YouTube'].map((social) => (
                 <li key={social}>
                   <a
                     href="#"

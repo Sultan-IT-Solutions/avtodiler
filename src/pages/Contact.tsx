@@ -1,42 +1,45 @@
 import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Footer } from '../components/Footer';
+import { submitLead } from '../utils/leads';
 
 const contactMethods = [
   {
     icon: Phone,
-    label: 'Телефон',
+    labelKey: 'contactPage.methods.phone.label',
     value: '+7 (700) 123-45-67',
     href: 'tel:+77001234567',
-    description: 'Звоните нам в рабочие часы',
+    descriptionKey: 'contactPage.methods.phone.description',
   },
   {
     icon: MessageCircle,
-    label: 'WhatsApp',
+    labelKey: 'contactPage.methods.whatsapp.label',
     value: '+7 (700) 123-45-67',
     href: 'https://wa.me/77001234567',
-    description: 'Напишите в WhatsApp 24/7',
+    descriptionKey: 'contactPage.methods.whatsapp.description',
   },
   {
     icon: Mail,
-    label: 'Email',
+    labelKey: 'contactPage.methods.email.label',
     value: 'info@luxuryauto.kz',
     href: 'mailto:info@luxuryauto.kz',
-    description: 'Ответим в течение 24 часов',
+    descriptionKey: 'contactPage.methods.email.description',
   },
   {
     icon: MapPin,
-    label: 'Адрес',
+    labelKey: 'contactPage.methods.address.label',
     value: 'ул. Аль-Фараби, 77',
     href: 'https://maps.google.com',
-    description: 'Алматы, Казахстан',
+    descriptionKey: 'contactPage.methods.address.description',
   },
 ];
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Contact = () => {
+  const { t } = useTranslation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -56,9 +59,23 @@ export const Contact = () => {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await submitLead({
+      type: 'contact',
+      name: formData.name,
+      phone: formData.phone,
+      car: formData.model,
+      comment: formData.message,
+    });
     setIsSubmitted(true);
+    setFormData({
+      name: '',
+      phone: '',
+      email: '',
+      model: '',
+      message: '',
+    });
     setTimeout(() => setIsSubmitted(false), 3000);
   };
 
@@ -100,7 +117,7 @@ export const Contact = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy"
               >
-                Контакты
+                {t('contactPage.hero.eyebrow')}
               </motion.span>
             </div>
             <h1
@@ -113,7 +130,7 @@ export const Contact = () => {
                 transition={{ duration: 1, delay: 0.2, ease }}
                 className="block"
               >
-                Свяжитесь
+                {t('contactPage.hero.titleLine1')}
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
@@ -121,7 +138,7 @@ export const Contact = () => {
                 transition={{ duration: 1, delay: 0.35, ease }}
                 className="block text-white/90"
               >
-                с нами
+                {t('contactPage.hero.titleLine2')}
               </motion.span>
             </h1>
           </motion.div>
@@ -148,22 +165,22 @@ export const Contact = () => {
             className="mb-16"
           >
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-5">
-              Как связаться
+              {t('contactPage.methodsSection.eyebrow')}
             </span>
             <h2
               className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              Выберите удобный
+              {t('contactPage.methodsSection.titleLine1')}
               <br />
-              <span className="text-white/90">способ связи</span>
+              <span className="text-white/90">{t('contactPage.methodsSection.titleLine2')}</span>
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactMethods.map((method, i) => (
               <motion.a
-                key={method.label}
+                key={method.labelKey}
                 href={method.href}
                 target={method.href.startsWith('http') ? '_blank' : undefined}
                 rel={method.href.startsWith('http') ? 'noopener noreferrer' : undefined}
@@ -182,11 +199,11 @@ export const Contact = () => {
                   className="text-[13px] font-bold text-white uppercase tracking-[0.15em] mb-2 flex items-center gap-2"
                   style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                 >
-                  {method.label}
+                  {t(method.labelKey)}
                   <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity text-luxury-burgundy" />
                 </h3>
                 <p className="text-lg text-white font-light mb-2">{method.value}</p>
-                <p className="text-white/40 text-[13px] font-light">{method.description}</p>
+                <p className="text-white/40 text-[13px] font-light">{t(method.descriptionKey)}</p>
               </motion.a>
             ))}
           </div>
@@ -205,19 +222,18 @@ export const Contact = () => {
               transition={{ duration: 1, ease }}
             >
               <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-6">
-                Запишитесь
+                {t('contactPage.consultation.eyebrow')}
               </span>
               <h2
                 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-8"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
               >
-                Персональная
+                {t('contactPage.consultation.titleLine1')}
                 <br />
-                <span className="text-white/90">консультация</span>
+                <span className="text-white/90">{t('contactPage.consultation.titleLine2')}</span>
               </h2>
               <p className="text-white/40 font-light text-lg leading-relaxed mb-12 max-w-md">
-                Заполните форму, и наш специалист свяжется с вами для подбора идеального автомобиля.
-                Мы подготовим индивидуальное предложение.
+                {t('contactPage.consultation.description')}
               </p>
 
               {/* Working Hours Card */}
@@ -230,20 +246,20 @@ export const Contact = () => {
                     className="text-[11px] uppercase tracking-[0.25em] text-white font-bold"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    Часы работы
+                    {t('contactPage.hours.title')}
                   </span>
                 </div>
                 <div className="space-y-3 text-white/40 font-light text-[15px]">
                   <div className="flex justify-between gap-8">
-                    <span>Пн — Пт</span>
+                    <span>{t('contactPage.hours.weekdays')}</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>09:00 — 20:00</span>
                   </div>
                   <div className="flex justify-between gap-8">
-                    <span>Сб</span>
+                    <span>{t('contactPage.hours.sat')}</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>10:00 — 18:00</span>
                   </div>
                   <div className="flex justify-between gap-8">
-                    <span>Вс</span>
+                    <span>{t('contactPage.hours.sun')}</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>11:00 — 17:00</span>
                   </div>
                 </div>
@@ -271,10 +287,10 @@ export const Contact = () => {
                     className="text-[clamp(24px,3vw,36px)] font-bold text-white uppercase tracking-[-0.03em] mb-4"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    Заявка отправлена
+                    {t('contactPage.form.successTitle')}
                   </h3>
                   <p className="text-white/40 font-light text-lg">
-                    Мы свяжемся с вами в ближайшее время
+                    {t('contactPage.form.successText')}
                   </p>
                 </motion.div>
               ) : (
@@ -282,7 +298,7 @@ export const Contact = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                        Имя *
+                        {t('contactPage.form.nameLabel')}
                       </label>
                       <input
                         type="text"
@@ -290,12 +306,12 @@ export const Contact = () => {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="input-luxury"
-                        placeholder="Ваше имя"
+                        placeholder={t('contactPage.form.namePlaceholder')}
                       />
                     </div>
                     <div>
                       <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                        Телефон *
+                        {t('contactPage.form.phoneLabel')}
                       </label>
                       <input
                         type="tel"
@@ -303,34 +319,34 @@ export const Contact = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="input-luxury"
-                        placeholder="+7 (___) ___-__-__"
+                        placeholder={t('contactPage.form.phonePlaceholder')}
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Email
+                      {t('contactPage.form.emailLabel')}
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="input-luxury"
-                      placeholder="your@email.com"
+                      placeholder={t('contactPage.form.emailPlaceholder')}
                     />
                   </div>
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Интересующая модель
+                      {t('contactPage.form.modelLabel')}
                     </label>
                     <select
                       value={formData.model}
                       onChange={(e) => setFormData({ ...formData, model: e.target.value })}
                       className="input-luxury"
                     >
-                      <option value="">Выберите модель</option>
+                      <option value="">{t('contactPage.form.modelPlaceholder')}</option>
                       <option value="E-HS9">Hongqi E-HS9</option>
                       <option value="HQ9">Hongqi HQ9</option>
                       <option value="H9">Hongqi H9</option>
@@ -344,13 +360,13 @@ export const Contact = () => {
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Сообщение
+                      {t('contactPage.form.messageLabel')}
                     </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       className="input-luxury h-32 py-4 resize-none"
-                      placeholder="Расскажите о ваших пожеланиях..."
+                      placeholder={t('contactPage.form.messagePlaceholder')}
                     />
                   </div>
 
@@ -358,12 +374,12 @@ export const Contact = () => {
                     type="submit"
                     className="btn-primary w-full flex items-center justify-center gap-3"
                   >
-                    Отправить заявку
+                    {t('contactPage.form.submit')}
                     <Send size={18} />
                   </button>
 
                   <p className="text-[11px] text-white/30 text-center tracking-[0.15em]">
-                    Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+                    {t('contactPage.form.privacyNote')}
                   </p>
                 </form>
               )}
@@ -389,10 +405,10 @@ export const Contact = () => {
               className="text-[clamp(24px,3vw,36px)] font-bold text-white uppercase tracking-[-0.03em] mb-3"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              Наш шоурум
+              {t('contactPage.map.title')}
             </h3>
             <p className="text-white/40 font-light text-lg mb-6">
-              ул. Аль-Фараби, 77, Алматы, Казахстан
+              {t('contactPage.map.address')}
             </p>
             <a
               href="https://maps.google.com"
@@ -400,7 +416,7 @@ export const Contact = () => {
               rel="noopener noreferrer"
               className="btn-outline inline-flex items-center gap-3"
             >
-              Открыть на карте
+              {t('contactPage.map.open')}
               <ArrowUpRight size={16} />
             </a>
           </motion.div>

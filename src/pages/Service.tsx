@@ -3,55 +3,58 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { submitLead } from '../utils/leads';
+import { useTranslation } from 'react-i18next';
 
 const services = [
   {
     id: 1,
     icon: Wrench,
-    title: 'Техническое обслуживание',
-    description: 'Регулярное ТО по регламенту производителя. Замена масла, фильтров, проверка всех систем автомобиля.',
-    price: 'от 45 000 ₸',
+    titleKey: 'servicePage.services.maintenance.title',
+    descriptionKey: 'servicePage.services.maintenance.description',
+    priceKey: 'servicePage.services.maintenance.price',
   },
   {
     id: 2,
     icon: ShieldCheck,
-    title: 'Диагностика',
-    description: 'Полная компьютерная диагностика всех систем автомобиля. Выявление неисправностей и рекомендации.',
-    price: 'от 15 000 ₸',
+    titleKey: 'servicePage.services.diagnostics.title',
+    descriptionKey: 'servicePage.services.diagnostics.description',
+    priceKey: 'servicePage.services.diagnostics.price',
   },
   {
     id: 3,
     icon: Cog,
-    title: 'Ремонт двигателя',
-    description: 'Капитальный и текущий ремонт двигателя с использованием оригинальных запчастей.',
-    price: 'по запросу',
+    titleKey: 'servicePage.services.engineRepair.title',
+    descriptionKey: 'servicePage.services.engineRepair.description',
+    priceKey: 'servicePage.services.engineRepair.price',
   },
   {
     id: 4,
     icon: Paintbrush,
-    title: 'Кузовной ремонт',
-    description: 'Восстановление кузова, покраска, полировка. Работаем с оригинальными материалами.',
-    price: 'по запросу',
+    titleKey: 'servicePage.services.bodyRepair.title',
+    descriptionKey: 'servicePage.services.bodyRepair.description',
+    priceKey: 'servicePage.services.bodyRepair.price',
   },
   {
     id: 5,
     icon: Zap,
-    title: 'Электрика и электроника',
-    description: 'Диагностика и ремонт электрических систем, обновление ПО, калибровка датчиков.',
-    price: 'от 20 000 ₸',
+    titleKey: 'servicePage.services.electrics.title',
+    descriptionKey: 'servicePage.services.electrics.description',
+    priceKey: 'servicePage.services.electrics.price',
   },
   {
     id: 6,
     icon: CarFront,
-    title: 'Шиномонтаж и балансировка',
-    description: 'Сезонная замена шин, балансировка, хранение колёс. Работаем с премиальными брендами.',
-    price: 'от 8 000 ₸',
+    titleKey: 'servicePage.services.tires.title',
+    descriptionKey: 'servicePage.services.tires.description',
+    priceKey: 'servicePage.services.tires.price',
   },
 ];
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Service = () => {
+  const { t } = useTranslation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -69,9 +72,23 @@ export const Service = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const selectedService = services.find((s) => s.id.toString() === formData.service);
+    await submitLead({
+      type: 'service',
+      name: formData.name,
+      phone: formData.phone,
+      service: selectedService ? t(selectedService.titleKey) : formData.service,
+      comment: formData.comment,
+    });
     setIsSubmitted(true);
+    setFormData({
+      name: '',
+      phone: '',
+      service: '',
+      comment: '',
+    });
     setTimeout(() => setIsSubmitted(false), 4000);
   };
 
@@ -113,7 +130,7 @@ export const Service = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy"
               >
-                Сервис
+                {t('servicePage.hero.eyebrow')}
               </motion.span>
             </div>
             <h1
@@ -126,7 +143,7 @@ export const Service = () => {
                 transition={{ duration: 1, delay: 0.2, ease }}
                 className="block"
               >
-                Сервисный
+                {t('servicePage.hero.titleLine1')}
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
@@ -134,7 +151,7 @@ export const Service = () => {
                 transition={{ duration: 1, delay: 0.35, ease }}
                 className="block text-white"
               >
-                центр
+                {t('servicePage.hero.titleLine2')}
               </motion.span>
             </h1>
           </motion.div>
@@ -163,25 +180,25 @@ export const Service = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-px bg-luxury-red" />
               <span className="text-micro uppercase tracking-ultra text-luxury-red font-semibold">
-                Связаться с сервисом
+                {t('servicePage.contact.eyebrow')}
               </span>
             </div>
             <h2 className="text-h2 font-display text-white mb-8">
-              Свяжитесь с нами прямо сейчас
+              {t('servicePage.contact.title')}
             </h2>
             <p className="text-body text-white/70 mb-10">
-              Наши специалисты ответят на все ваши вопросы и помогут записаться на сервис
+              {t('servicePage.contact.subtitle')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <a
-                href="https://wa.me/77001234567?text=Здравствуйте!%20У%20меня%20вопрос%20по%20сервису%20Hongqi"
+                href={`https://wa.me/77001234567?text=${encodeURIComponent(t('servicePage.contact.whatsappMessage'))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group px-8 py-5 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-3 hover:shadow-[0_0_40px_rgba(34,197,94,0.5)] transition-all duration-400"
               >
                 <MessageCircle size={22} strokeWidth={2.5} />
                 <span className="text-label uppercase tracking-luxury font-semibold">
-                  Написать в WhatsApp
+                  {t('servicePage.contact.whatsapp')}
                 </span>
               </a>
               <a
@@ -190,7 +207,7 @@ export const Service = () => {
               >
                 <Phone size={22} strokeWidth={2.5} />
                 <span className="text-label uppercase tracking-luxury font-semibold">
-                  Позвонить
+                  {t('contactForm.call')}
                 </span>
               </a>
             </div>
@@ -243,10 +260,10 @@ export const Service = () => {
                     className="text-[15px] font-bold text-white uppercase tracking-[0.05em] mb-4"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    {s.title}
+                    {t(s.titleKey)}
                   </h3>
                   <p className="text-white/40 font-light text-[15px] leading-relaxed mb-6">
-                    {s.description}
+                    {t(s.descriptionKey)}
                   </p>
 
                   <div className="pt-6 border-t border-white/5">
@@ -254,7 +271,7 @@ export const Service = () => {
                       className="text-luxury-burgundy text-lg font-medium"
                       style={{ fontFamily: "'Space Grotesk', monospace" }}
                     >
-                      {s.price}
+                      {t(s.priceKey)}
                     </span>
                   </div>
                 </div>
@@ -276,18 +293,18 @@ export const Service = () => {
               transition={{ duration: 1, ease }}
             >
               <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-6">
-                Запись
+                {t('servicePage.booking.eyebrow')}
               </span>
               <h2
                 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase mb-8"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
               >
-                Запишитесь
+                {t('servicePage.booking.titleLine1')}
                 <br />
-                <span className="text-white/90">на сервис</span>
+                <span className="text-white/90">{t('servicePage.booking.titleLine2')}</span>
               </h2>
               <p className="text-white/40 font-light text-lg leading-relaxed mb-12 max-w-md">
-                Заполните форму и наш специалист свяжется с вами для подтверждения записи.
+                {t('servicePage.booking.subtitle')}
               </p>
 
               {/* Working Hours */}
@@ -300,20 +317,20 @@ export const Service = () => {
                     className="text-[11px] uppercase tracking-[0.25em] text-white font-bold"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    Часы работы сервиса
+                    {t('servicePage.booking.hoursTitle')}
                   </span>
                 </div>
                 <div className="space-y-3 text-white/40 font-light text-[15px]">
                   <div className="flex justify-between gap-8">
-                    <span>Пн — Пт</span>
+                    <span>{t('servicePage.booking.hoursWeekdays')}</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>08:00 — 20:00</span>
                   </div>
                   <div className="flex justify-between gap-8">
-                    <span>Сб</span>
+                    <span>{t('servicePage.booking.hoursSaturday')}</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>09:00 — 18:00</span>
                   </div>
                   <div className="flex justify-between gap-8">
-                    <span>Вс</span>
+                    <span>{t('servicePage.booking.hoursSunday')}</span>
                     <span className="text-white/40" style={{ fontFamily: "'Space Grotesk', monospace" }}>выходной</span>
                   </div>
                 </div>
@@ -341,17 +358,17 @@ export const Service = () => {
                     className="text-[clamp(24px,3vw,36px)] font-bold text-white uppercase tracking-[-0.03em] mb-4"
                     style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                   >
-                    Заявка отправлена
+                    {t('servicePage.booking.successTitle')}
                   </h3>
                   <p className="text-white/40 font-light text-lg">
-                    С вами свяжутся в течение рабочего времени
+                    {t('servicePage.booking.successSubtitle')}
                   </p>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Имя *
+                      {t('contactForm.name')} *
                     </label>
                     <input
                       type="text"
@@ -359,13 +376,13 @@ export const Service = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="input-luxury"
-                      placeholder="Ваше имя"
+                      placeholder={t('contactForm.namePlaceholder')}
                     />
                   </div>
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Телефон *
+                      {t('contactForm.phone')} *
                     </label>
                     <input
                       type="tel"
@@ -379,17 +396,17 @@ export const Service = () => {
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Услуга
+                      {t('servicePage.booking.serviceLabel')}
                     </label>
                     <select
                       value={formData.service}
                       onChange={(e) => setFormData({ ...formData, service: e.target.value })}
                       className="input-luxury"
                     >
-                      <option value="">Выберите услугу</option>
+                      <option value="">{t('servicePage.booking.servicePlaceholder')}</option>
                       {services.map((s) => (
-                        <option key={s.id} value={s.title}>
-                          {s.title}
+                        <option key={s.id} value={s.id.toString()}>
+                          {t(s.titleKey)}
                         </option>
                       ))}
                     </select>
@@ -397,13 +414,13 @@ export const Service = () => {
 
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Комментарий
+                      {t('servicePage.booking.commentLabel')}
                     </label>
                     <textarea
                       value={formData.comment}
                       onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                       className="input-luxury h-32 py-4 resize-none"
-                      placeholder="Опишите проблему..."
+                      placeholder={t('servicePage.booking.commentPlaceholder')}
                     />
                   </div>
 
@@ -411,12 +428,12 @@ export const Service = () => {
                     type="submit"
                     className="btn-primary w-full flex items-center justify-center gap-3"
                   >
-                    Записаться
+                    {t('servicePage.booking.submit')}
                     <Send size={18} />
                   </button>
 
                   <p className="text-[11px] text-white/30 text-center tracking-[0.15em]">
-                    Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+                    {t('servicePage.booking.privacyNote')}
                   </p>
                 </form>
               )}
