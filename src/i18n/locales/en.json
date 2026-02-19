@@ -21,6 +21,80 @@
     "title": "Featured Collection",
     "subtitle": "Handpicked masterpieces for discerning connoisseurs"
   },
+  "homePage": {
+    "scroll": "Scroll",
+    "units": {
+      "hpShort": "hp",
+      "secondsShort": "s",
+      "kmhShort": "km/h"
+    },
+    "heroMiniMetrics": {
+      "power": "Power",
+      "acceleration": "0-100 km/h",
+      "topSpeed": "Top"
+    },
+    "metricsBar": {
+      "models": "Models",
+      "maxHp": "Max hp",
+      "clients": "Clients",
+      "yearsOnMarket": "Years on market"
+    },
+    "heritage": {
+      "foundedLabel": "Founded",
+      "legacyLabel": "Heritage",
+      "legacyValue": "years of prestige",
+      "eyebrow": "Brand heritage",
+      "titleLine1": "Hongqi",
+      "titleLine2": "Red Flag",
+      "p1": "Since 1958, Hongqi has built vehicles for China's state leaders. Each model is a symbol of prestige and technological excellence.",
+      "p2": "As part of FAW — China's oldest automotive corporation — Hongqi blends rich heritage with the innovations of tomorrow.",
+      "quote": "\"Hongqi\" translates as \"Red Flag\" — a symbol of greatness and national pride of China",
+      "button": "Brand history"
+    },
+    "video": {
+      "eyebrow": "Safety technologies",
+      "titleLine1": "Total",
+      "titleLine2": "control",
+      "cardEyebrow": "Hongqi Safety",
+      "cardTitle": "Watch about safety technologies"
+    },
+    "modelsGrid": {
+      "eyebrow": "Model range",
+      "titleLine1": "Find your",
+      "titleLine2": "Hongqi"
+    },
+    "offers": {
+      "eyebrow": "Special offers",
+      "titleLine1": "Latest",
+      "titleLine2": "offers",
+      "allOffers": "All offers",
+      "cards": {
+        "tradeIn": {
+          "title": "Trade-in for E-HS9",
+          "desc": "Discount up to ₸500,000 when you trade in your current car",
+          "badge": "Top"
+        },
+        "credit": {
+          "title": "Financing from 0.01%",
+          "desc": "Special rate across the entire lineup",
+          "badge": "Finance"
+        },
+        "service": {
+          "title": "Free maintenance",
+          "desc": "3 years of free service with an H9 purchase",
+          "badge": "Service"
+        }
+      }
+    },
+    "common": {
+      "allModels": "All models",
+      "modelsRange": "Model range",
+      "power": "Power",
+      "acceleration": "0-100 km/h",
+      "price": "Price",
+      "details": "Details"
+    }
+  },
   "catalog": {
     "title": "Complete Collection",
     "subtitle": "Explore our curated selection of luxury vehicles",
@@ -42,10 +116,15 @@
     "viewDetails": "View Details",
     "price": "Price on request"
   },
+  "empty": {
+    "title": "Nothing here yet",
+    "subtitle": "Content will appear here soon."
+  },
   "carDetail": {
     "overview": "Overview",
     "specifications": "Specifications",
     "configure": "Configure",
+    "gallery": "Gallery",
     "contact": "Contact Us",
     "testDrive": "Book Test Drive",
     "call": "Call Now",
@@ -54,6 +133,20 @@
     "interior": "Interior",
     "wheels": "Wheels",
     "similarCars": "Similar Vehicles",
+    "specsEyebrow": "Specifications",
+    "specsHeadlineLine1": "Every detail",
+    "specsHeadlineLine2": "matters",
+    "backToCatalog": "Catalog",
+    "scrollForDetails": "Scroll for details",
+    "philosophy": "Philosophy",
+    "personalization": "Personalization",
+    "yourStyle": "Your style",
+    "yourCar": "your vehicle",
+    "total": "Total",
+    "reserveWhatsApp": "Reserve on WhatsApp",
+    "wantReserveMessage": "I want to reserve",
+    "payFrom": "from",
+    "credit": "Financing",
     "specs": {
       "engine": "Engine",
       "power": "Power",
@@ -65,6 +158,275 @@
       "consumption": "Consumption",
       "seats": "Seats"
     }
+  },
+  "contactForm": {
+    "eyebrow": "Contact",
+    "title": "Leave a request",
+    "subtitle": "Leave your contact details — we'll call you back and answer your questions",
+    "whatsapp": "Message on WhatsApp",
+    "call": "Call",
+    "name": "Name",
+    "phone": "Phone",
+    "namePlaceholder": "Your name",
+    "phonePlaceholder": "+7 (___) __-__-__",
+    "submit": "Send request"
+  },
+  "servicePage": {
+    "hero": {
+      "eyebrow": "Service",
+      "titleLine1": "Service",
+      "titleLine2": "center"
+    },
+    "contact": {
+      "eyebrow": "Contact service",
+      "title": "Get in touch right now",
+      "subtitle": "Our specialists will answer your questions and help you book a service visit",
+      "whatsapp": "Message on WhatsApp",
+      "whatsappMessage": "Hello! I have a question about Hongqi service"
+    },
+    "services": {
+      "maintenance": {
+        "title": "Maintenance",
+        "description": "Scheduled maintenance per manufacturer regulations. Oil and filter changes, and a full vehicle systems check.",
+        "price": "from ₸45,000"
+      },
+      "diagnostics": {
+        "title": "Diagnostics",
+        "description": "Full computer diagnostics of all vehicle systems. Fault detection and recommendations.",
+        "price": "from ₸15,000"
+      },
+      "engineRepair": {
+        "title": "Engine repair",
+        "description": "Major and minor engine repairs using genuine parts.",
+        "price": "on request"
+      },
+      "bodyRepair": {
+        "title": "Body repair",
+        "description": "Body restoration, painting, and polishing. We use premium-grade materials.",
+        "price": "on request"
+      },
+      "electrics": {
+        "title": "Electrics & electronics",
+        "description": "Diagnostics and repair of electrical systems, software updates, and sensor calibration.",
+        "price": "from ₸20,000"
+      },
+      "tires": {
+        "title": "Tire service & balancing",
+        "description": "Seasonal tire change, balancing, and wheel storage. We work with premium brands.",
+        "price": "from ₸8,000"
+      }
+    },
+    "booking": {
+      "eyebrow": "Booking",
+      "titleLine1": "Book",
+      "titleLine2": "a service visit",
+      "subtitle": "Fill in the form and our specialist will contact you to confirm your appointment.",
+      "hoursTitle": "Service hours",
+      "hoursWeekdays": "Mon — Fri",
+      "hoursSaturday": "Sat",
+      "hoursSunday": "Sun",
+      "successTitle": "Request sent",
+      "successSubtitle": "We'll contact you during business hours",
+      "serviceLabel": "Service",
+      "servicePlaceholder": "Select a service",
+      "commentLabel": "Comment",
+      "commentPlaceholder": "Describe the issue...",
+      "submit": "Book",
+      "privacyNote": "By clicking the button, you agree to the privacy policy"
+    }
+  },
+  "dealersPage": {
+    "hero": {
+      "eyebrow": "Dealers",
+      "titleLine1": "Find",
+      "titleLine2": "a dealer"
+    },
+    "centers": {
+      "eyebrow": "Our centers",
+      "titleLine1": "Dealer",
+      "titleLine2": "centers"
+    },
+    "list": {
+      "totalCenters": "Total centers",
+      "buildRoute": "Build route",
+      "mapLoading": "Loading map..."
+    },
+    "banner": {
+      "eyebrow": "Official representative",
+      "text": "All Luxury Auto dealer centers are official representatives of the Hongqi brand in Kazakhstan and provide a full range of services."
+    }
+  },
+  "brandsPage": {
+    "hero": {
+      "eyebrow": "Brand",
+      "scroll": "Scroll"
+    },
+    "brand": {
+      "tagline": "China's flagship automotive brand",
+      "origin": "Changchun, China",
+      "philosophy": "Hongqi (红旗, “Red Flag”) is one of China's most prestigious automotive brands. Since its foundation in 1958, Hongqi has symbolized national pride, advanced engineering, and uncompromising quality.",
+      "description": "Today, Hongqi is a modern luxury marque that blends the heritage of Chinese craftsmanship with cutting-edge technology. Every vehicle is built with meticulous attention to detail, delivering outstanding comfort and safety."
+    },
+    "philosophy": {
+      "eyebrow": "Philosophy",
+      "titleLine1": "More than",
+      "titleLine2": "a car",
+      "foundedLabel": "Founded"
+    },
+    "values": {
+      "eyebrow": "Values",
+      "titleLine1": "What defines",
+      "heritage": {
+        "title": "Heritage",
+        "text": "Over 65 years of history. Hongqi served state leaders and became a symbol of prestige in China."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "text": "Advanced electrification, autonomous driving, and artificial intelligence technologies."
+      },
+      "craftsmanship": {
+        "title": "Craftsmanship",
+        "text": "Hand-assembled key components, premium materials, and attention to every detail."
+      },
+      "safety": {
+        "title": "Safety",
+        "text": "Hongqi Total Safety Management is a number-one priority."
+      }
+    },
+    "video": {
+      "eyebrow": "Video",
+      "titleLine1": "Story",
+      "cardTitle": "The Hongqi brand story"
+    },
+    "timeline": {
+      "eyebrow": "Timeline",
+      "titleLine1": "Key",
+      "titleLine2": "milestones"
+    },
+    "milestones": {
+      "1958": "Hongqi is founded. The first CA72 model is released.",
+      "1981": "Hongqi becomes an official ceremonial vehicle for state events.",
+      "2018": "Brand relaunch with a new design strategy and lineup.",
+      "2020": "International expansion. Launch of the E-HS9 electric lineup.",
+      "2023": "Hongqi enters Kazakhstan. Luxury Auto becomes an official dealer.",
+      "2024": "Lineup expands to 8 models. Record sales."
+    },
+    "cta": {
+      "title": "Explore the lineup",
+      "subtitle": "Choose your ideal Hongqi from our collection",
+      "primary": "Browse catalog",
+      "secondary": "Contact us"
+    }
+  },
+  "offersPage": {
+    "hero": {
+      "eyebrow": "Special offers",
+      "titleLine1": "Offers",
+      "titleLine2": "and deals",
+      "activeCountLabel": "active offers"
+    },
+    "card": {
+      "validUntilLabel": "Valid until:",
+      "more": "Learn more"
+    },
+    "cta": {
+      "eyebrow": "Contact",
+      "titleLine1": "Didn't find a suitable",
+      "titleLine2": "offer?",
+      "subtitle": "Get in touch — we'll prepare a personalized offer",
+      "button": "Contact us"
+    }
+  },
+  "contactPage": {
+    "hero": {
+      "eyebrow": "Contact",
+      "titleLine1": "Get in touch",
+      "titleLine2": "with us"
+    },
+    "methodsSection": {
+      "eyebrow": "How to reach us",
+      "titleLine1": "Choose a convenient",
+      "titleLine2": "way to contact"
+    },
+    "methods": {
+      "phone": { "label": "Phone", "description": "Call us during business hours" },
+      "whatsapp": { "label": "WhatsApp", "description": "Message us on WhatsApp 24/7" },
+      "email": { "label": "Email", "description": "We'll reply within 24 hours" },
+      "address": { "label": "Address", "description": "Almaty, Kazakhstan" }
+    },
+    "consultation": {
+      "eyebrow": "Book",
+      "titleLine1": "Personal",
+      "titleLine2": "consultation",
+      "description": "Fill in the form and our specialist will contact you to help choose the perfect vehicle. We'll prepare a personalized offer."
+    },
+    "hours": {
+      "title": "Working hours",
+      "weekdays": "Mon — Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "form": {
+      "successTitle": "Request sent",
+      "successText": "We'll contact you shortly",
+      "nameLabel": "Name *",
+      "namePlaceholder": "Your name",
+      "phoneLabel": "Phone *",
+      "phonePlaceholder": "+7 (___) ___-__-__",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "modelLabel": "Model of interest",
+      "modelPlaceholder": "Select a model",
+      "messageLabel": "Message",
+      "messagePlaceholder": "Tell us about your preferences...",
+      "submit": "Send request",
+      "privacyNote": "By clicking the button, you agree to the privacy policy"
+    },
+    "map": {
+      "title": "Our showroom",
+      "address": "77 Al-Farabi Ave, Almaty, Kazakhstan",
+      "open": "Open on map"
+    }
+  },
+  "catalogPage": {
+    "hero": {
+      "subline": "Hongqi crossovers and sedans"
+    },
+    "carsCount_one": "car",
+    "carsCount_other": "cars",
+    "consultation": {
+      "eyebrow": "Consultation",
+      "text": "Our experts will help you choose the perfect vehicle",
+      "call": "Call"
+    },
+    "empty": {
+      "title": "No cars found",
+      "text": "Try adjusting the filters"
+    },
+    "filters": {
+      "apply": "Apply"
+    },
+      "social": "Social",
+    "card": {
+      "priceFrom": "from {{price}}",
+      "creditLabel": "On credit",
+      "creditFrom": "from 0.01%",
+      "power": "{{value}} hp",
+      "seats_one": "{{count}} seat",
+      "seats_other": "{{count}} seats",
+      "more": "Learn more"
+    }
+  },
+  "footerCta": {
+    "eyebrow": "GET IN TOUCH",
+    "titleLine1": "Start your",
+    "titleLine2": "journey",
+    "button": "Contact"
+  },
+  "availability": {
+    "inStock": "In stock",
+    "incoming": "Incoming",
+    "preOrder": "Pre-order"
   },
   "lifestyle": {
     "title": "Beyond Driving",
