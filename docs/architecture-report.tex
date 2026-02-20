@@ -1,0 +1,403 @@
+% !TEX TS-program = xelatex
+% Project architecture report for avtodiler-3
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\usepackage{polyglossia}
+\setmainlanguage{russian}
+\setotherlanguage{english}
+
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{minted}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.multipart,fit}
+\usepackage{caption}
+\usepackage{csquotes}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=blue!55!black,
+  citecolor=blue!55!black,
+  pdftitle={Отчёт по проекту avtodiler (avtodiler-3)},
+  pdfauthor={Sultan-IT-Solutions},
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{avtodiler-3}
+\rhead{Архитектурный отчёт}
+\cfoot{\thepage}
+
+\title{\textbf{Подробный отчёт по проекту \texttt{avtodiler-3}}\\[4pt]
+\large Архитектура, модули, потоки данных, деплой и локальная разработка}
+\author{Репозиторий: \texttt{Sultan-IT-Solutions/avtodiler}\\Ветка: \texttt{feat/admincrud}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Краткое описание проекта}
+\subsection{Назначение}
+Проект \texttt{avtodiler-3} --- это веб-приложение автодилера (премиальный сегмент), построенное как Single Page Application (SPA) на React/Vite и дополненное набором серверных API эндпоинтов для чтения/записи данных в PostgreSQL (Neon).
+
+Сайт содержит публичную часть (каталог, карточка авто, предложения, дилеры, сервис, контакт и т.д.) и админ-панель для управления контентом (авто, дилеры, акции, заявки).
+
+\subsection{Ключевые требования и принятые решения}
+Особенность этого репозитория (и важное требование) --- \textbf{никакого localStorage}: приложение всегда работает с данными из БД через API. Это устраняет расхождение данных между устройствами и обеспечивает единый источник истины (single source of truth) --- Neon Postgres.
+
+Также проект учитывает ограничения Vercel Hobby по количеству serverless functions: серверная часть сконцентрирована в \textbf{одной точке входа} \texttt{api/index.ts}, а маршрутизация выполняется внутри.
+
+\subsection{Границы системы (что входит и что не входит)}
+	extbf{Входит:}
+\begin{itemize}[leftmargin=18pt]
+  \item Публичный сайт (SPA) с каталогом, акциями, дилерами, услугами и страницами контактов.
+  \item Админ-панель для управления контентом и заявками (CRUD для cars/offers/dealers/leads).
+  \item API-уровень на Vercel (единая serverless функция), обеспечивающий доступ к БД Neon Postgres.
+  \item Telegram webhook для приёма лидов (\texttt{/api/telegram/lead}).
+\end{itemize}
+
+	extbf{Не входит (осознанно):}
+\begin{itemize}[leftmargin=18pt]
+  \item Server-side сессионное хранилище (Redis/KV) и централизованный отзыв токенов.
+  \item RBAC/мульти-админы/аудит лог действий.
+  \item Строгая схемная валидация JSONB на API (возможное улучшение: zod).
+\end{itemize}
+
+\section{Технологический стек}
+\subsection{Frontend}
+\begin{itemize}[leftmargin=18pt]
+  \item \textbf{React 18} + \textbf{TypeScript}
+  \item \textbf{Vite 5} (dev сервер и сборка)
+  \item \textbf{React Router} --- маршрутизация SPA
+  \item \textbf{TailwindCSS} --- стили
+  \item \textbf{framer-motion}, \textbf{GSAP}, \textbf{Lenis} --- анимации/скролл
+  \item \textbf{i18next/react-i18next} --- локализация (RU/KZ/EN)
+\end{itemize}
+
+\subsection{Backend/API}
+\begin{itemize}[leftmargin=18pt]
+  \item Vercel Serverless Function (Node.js, ESM)
+  \item Роутер: \texttt{api/index.ts} (единая функция)
+  \item Драйвер БД: \texttt{@neondatabase/serverless}
+\end{itemize}
+
+\subsection{База данных}
+\begin{itemize}[leftmargin=18pt]
+  \item \textbf{Neon Postgres} (managed PostgreSQL)
+  \item Таблицы: \texttt{cars}, \texttt{offers}, \texttt{dealers}, \texttt{leads}
+  \item Формат хранения доменных объектов: \textbf{JSONB} в поле \texttt{data}
+\end{itemize}
+
+\subsection{Скрипты и команды}
+Скрипты из \texttt{package.json}:
+\begin{minted}[fontsize=\small]{json}
+{
+  "dev": "vite",
+  "dev:api": "node --loader ts-node/esm dev/api-server.mjs",
+  "build": "tsc && vite build",
+  "preview": "vite preview",
+  "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
+}
+\end{minted}
+
+\section{Структура репозитория}
+Ниже --- смысловая структура каталогов (упрощённо):
+
+\begin{longtable}{@{}p{0.22\textwidth}p{0.72\textwidth}@{}}
+\toprule
+\textbf{Путь} & \textbf{Роль} \\
+\midrule
+\texttt{src/} & Frontend SPA: страницы, компоненты, i18n, утилиты API-клиентов \\
+\texttt{src/admin/} & Админ-панель (React), CRUD UI \\
+\texttt{api/} & Серверная часть для Vercel: единый entrypoint + handlers \\
+\texttt{api/_handlers/} & Реализация отдельных эндпоинтов (admin/public/telegram) \\
+\texttt{api/_internal/} & Внутренние модули (подключение к БД и т.п.) \\
+\texttt{db/schema.sql} & SQL схема (таблицы + индексы + триггеры) \\
+\texttt{dev/api-server.mjs} & Локальный HTTP-сервер для разработки API \\
+\texttt{vercel.json} & Конфигурация деплоя (rewrites + single function) \\
+\bottomrule
+\end{longtable}
+
+\section{Архитектура на высоком уровне}
+\subsection{Компоненты системы}
+На уровне компонентов решение можно представить так:
+
+\begin{center}
+\begin{tikzpicture}[node distance=10mm, font=\small]
+  \tikzset{
+    box/.style={draw, rounded corners, align=center, minimum width=35mm, minimum height=10mm},
+    small/.style={draw, rounded corners, align=center, minimum width=30mm, minimum height=8mm},
+    arrow/.style={-Latex, thick}
+  }
+
+  \node[box] (browser) {Браузер\\React SPA};
+  \node[box, right=28mm of browser] (vercel) {Vercel\\Single Serverless\\\texttt{/api}};
+  \node[box, right=28mm of vercel] (neon) {Neon Postgres\\(JSONB)};
+  \node[small, below=14mm of vercel] (tg) {Telegram webhook\\\texttt{/api/telegram/lead}};
+
+  \draw[arrow] (browser) -- node[above]{HTTP(S) \texttt{/api/public/*} / \texttt{/api/admin/*}} (vercel);
+  \draw[arrow] (vercel) -- node[above]{SQL over HTTPS driver} (neon);
+  \draw[arrow] (browser) |- node[left]{формы лидов} (tg);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Маршрутизация API и ограничение Vercel}
+Vercel на Hobby тарифе ограничивает число serverless functions. Поэтому в проекте используется подход: \textbf{один entrypoint}.
+
+\paragraph{vercel.json}
+\begin{minted}[fontsize=\small]{json}
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+\end{minted}
+
+То есть любые запросы вида \texttt{/api/...} физически попадают в одну функцию \texttt{/api} (файл \texttt{api/index.ts}), а дальше роутятся вручную.
+
+\subsection{Контракт взаимодействия (мини-спецификация)}
+\begin{itemize}[leftmargin=18pt]
+  \item \textbf{Transport:} HTTPS, JSON.
+  \item \textbf{Базовый префикс API:} \texttt{/api}.
+  \item \textbf{Публичные эндпоинты:} без авторизации, только чтение.
+  \item \textbf{Админские эндпоинты:} защищены cookie-сессией (HttpOnly) + опционально HTTP Basic Auth.
+  \item \textbf{Кэш:} для \texttt{/admin/*} всегда \texttt{Cache-Control: no-store}.
+\end{itemize}
+
+\subsection{API Router (api/index.ts)}
+Точка входа сервера:
+\begin{itemize}[leftmargin=18pt]
+  \item вычисляет path (отрезает \texttt{/api} и query)
+  \item включает \textbf{no-store} кэширование для \texttt{/admin/*}
+  \item выбирает handler из таблицы \texttt{routes}
+  \item единый обработчик ошибок возвращает JSON 500
+\end{itemize}
+
+\subsection{Матрица эндпоинтов (путь \textrightarrow роль)}
+Фактический роутинг описан как словарь \texttt{routes} в \texttt{api/index.ts}. Ниже --- практичная матрица (упрощённо по назначению):
+
+\begin{longtable}{@{}p{0.40\textwidth}p{0.50\textwidth}@{}}
+	oprule
+	extbf{Path} & \textbf{Назначение} \\
+\midrule
+	exttt{/admin/ping} & Быстрый health-check для админской зоны \\
+	exttt{/admin/auth} & Логин (проверка username/password и установка cookie) \\
+	exttt{/admin/login/status} & Проверка валидности cookie-сессии \\
+	exttt{/admin/cars} & CRUD авто (требует сессию) \\
+	exttt{/admin/offers} & CRUD акций (требует сессию) \\
+	exttt{/admin/dealers} & CRUD дилеров (требует сессию) \\
+	exttt{/admin/leads} & Чтение/управление заявками (требует сессию) \\
+	exttt{/public/cars} & Публичная выдача авто \\
+	exttt{/public/offers} & Публичная выдача акций \\
+	exttt{/public/dealers} & Публичная выдача дилеров \\
+	exttt{/telegram/lead} & Приём лида из Telegram \\
+\bottomrule
+\end{longtable}
+
+\section{Данные и модель хранения}
+\subsection{Почему JSONB}
+В таблицах (cars/offers/dealers/leads) доменная структура хранится как \texttt{data jsonb}. Это:
+\begin{itemize}[leftmargin=18pt]
+  \item резко упрощает добавление новых полей без миграций
+  \item удобнее для прототипирования/контентных проектов
+  \item снижает связность UI-модели и физической схемы
+\end{itemize}
+Минусы:
+\begin{itemize}[leftmargin=18pt]
+  \item более сложные запросы по полям внутри JSON
+  \item меньше гарантий на уровне БД (валидация типов/NOT NULL на вложенных полях)
+\end{itemize}
+
+\subsection{Схема БД (db/schema.sql)}
+Основная идея: таблицы с \texttt{id} и \texttt{data}, плюс служебные даты.
+
+\begin{minted}[fontsize=\small]{sql}
+create table if not exists cars (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists cars_updated_at_idx on cars (updated_at desc);
+
+create trigger cars_set_updated_at
+before update on cars
+for each row
+execute function set_updated_at();
+\end{minted}
+
+Аналогично устроены \texttt{offers}, \texttt{dealers}. У \texttt{leads} нет \texttt{updated_at}, так как это append-only сущности.
+
+\section{Frontend: страницы, компоненты и потоки}
+\subsection{Маршруты SPA}
+На уровне SPA маршруты определены в \texttt{src/App.tsx}. Типовой набор:
+\begin{itemize}[leftmargin=18pt]
+  \item \texttt{/} --- Home
+  \item \texttt{/catalog} --- Catalog
+  \item \texttt{/car/:id} --- CarDetail
+  \item \texttt{/offers}, \texttt{/dealers}, \texttt{/about}, \texttt{/service}, etc.
+  \item \texttt{/admin} --- AdminApp (админ-панель)
+\end{itemize}
+
+\subsection{HTTP клиенты}
+Frontend общается с API через лёгкие утилиты:
+\begin{itemize}[leftmargin=18pt]
+  \item \texttt{src/utils/publicApi.ts} --- публичные эндпоинты
+  \item \texttt{src/utils/adminApi.ts} --- админские эндпоинты
+\end{itemize}
+
+\subsection{Публичный каталог}
+Страница \texttt{Catalog} загружает список авто через \texttt{/api/public/cars}. Так как записи могут быть частично заполнены, фильтры должны быть устойчивы к отсутствию некоторых числовых полей (например, year/price).
+
+\section{Админ-панель и безопасность}
+\subsection{Проблема localStorage и правильная альтернатива}
+По требованию проекта localStorage запрещён. Это означает:
+\begin{itemize}[leftmargin=18pt]
+  \item нельзя хранить токен/флаг авторизации в браузере через localStorage
+  \item для персистентной авторизации требуется \textbf{cookie-based session}
+\end{itemize}
+
+\subsection{Текущий механизм авторизации}
+\paragraph{Шаг 1: Login}
+\texttt{POST /api/admin/auth} получает \texttt{username/password}, сверяет с \texttt{ADMIN\_USERNAME/ADMIN\_PASSWORD} из окружения и при успехе:
+\begin{itemize}[leftmargin=18pt]
+  \item ставит \textbf{HttpOnly cookie} \texttt{admin\_session}
+\end{itemize}
+
+\subsection{Cookie-session: устройство и свойства безопасности}
+Реализация сессий расположена в \texttt{api/\_handlers/admin/\_session.ts}. Подход: \textbf{подписанный токен} без server-side хранилища.
+
+	extbf{Формат токена (концептуально):}
+\begin{quote}
+	exttt{v1.<expMs>.<nonce>.<sig>}
+\end{quote}
+\begin{itemize}[leftmargin=18pt]
+  \item \texttt{expMs} --- timestamp истечения (ms), TTL по умолчанию 12 часов.
+  \item \texttt{nonce} --- случайная строка для уникальности.
+  \item \texttt{sig} --- HMAC-SHA256 подпись от payload.
+\end{itemize}
+
+	extbf{Cookie attributes:}
+\begin{itemize}[leftmargin=18pt]
+  \item \texttt{HttpOnly} --- JS не может прочитать cookie.
+  \item \texttt{SameSite=Lax} --- снижает риск CSRF в большинстве сценариев.
+  \item \texttt{Secure} --- включается в production (только HTTPS).
+  \item \texttt{Max-Age} --- задаёт срок жизни на клиенте.
+\end{itemize}
+
+	extbf{Секрет подписи:} рекомендуется задать \texttt{ADMIN\_SESSION\_SECRET}. Без него используется fallback, но для production это нежелательно.
+
+\paragraph{Шаг 2: Session check}
+\texttt{GET /api/admin/login/status} возвращает \texttt{200 \{ok:true, authed:true\}} если cookie валидна, иначе 401.
+
+\paragraph{Шаг 3: CRUD protection}
+CRUD эндпоинты внутри \texttt{api/_handlers/admin/*} дополнены проверкой сессии.
+
+\subsection{Дополнительная защита: Basic Auth}
+В проекте есть дополнительный слой защиты (опционально): если задать \texttt{ADMIN\_BASIC\_USER} и \texttt{ADMIN\_BASIC\_PASS}, то все admin handlers потребуют HTTP Basic Auth (см. \texttt{api/_handlers/admin/_guard.ts}). Это полезно как быстрый firewall на админку.
+
+\section{Локальная разработка}
+\subsection{Vite + локальный API сервер}
+В dev-режиме фронтенд поднимается Vite (обычно \texttt{http://localhost:5173}), а API --- отдельным Node скриптом \texttt{dev/api-server.mjs}.
+
+Обычно Vite проксирует \texttt{/api} запросы на локальный API.
+
+\subsection{Vite proxy (vite.config.ts)}
+Чтобы frontend-слой всегда обращался к \texttt{/api}, а не к отдельному порту, используется proxy:
+\begin{minted}[fontsize=\small]{ts}
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8787',
+      changeOrigin: true,
+    },
+  },
+},
+\end{minted}
+
+\subsection{Переменные окружения}
+В локальной разработке используется \texttt{.env.local} (не коммитится). Важно:
+\begin{itemize}[leftmargin=18pt]
+  \item \texttt{DATABASE\_URL} --- строка подключения к Neon
+  \item \texttt{ADMIN\_PASSWORD} --- пароль админа (иначе /admin/auth возвращает 500)
+  \item (опционально) \texttt{ADMIN\_USERNAME}
+  \item (рекомендуется) \texttt{ADMIN\_SESSION\_SECRET} --- секрет для подписи cookie-сессий
+\end{itemize}
+
+\section{Деплой на Vercel}
+\subsection{Почему single serverless function}
+Из-за ограничений лимита функций (Hobby plan) проект не разворачивает каждую \texttt{api/*.ts} как отдельную функцию. Вместо этого:
+\begin{itemize}[leftmargin=18pt]
+  \item переадресация всех \texttt{/api/*} на \texttt{/api}
+  \item ручная маршрутизация в \texttt{api/index.ts}
+\end{itemize}
+
+\subsection{Кэширование}
+Для admin-endpoints принудительно выставляется \texttt{Cache-Control: no-store}. Это предотвращает неожиданные 304 и уменьшает риск получения устаревших ответов на защищённых запросах.
+
+\section{Наблюдаемость и обработка ошибок}
+\subsection{Единый обработчик ошибок API}
+\texttt{api/index.ts} оборачивает handler вызов в try/catch и возвращает JSON 500 с описанием. В dev-режиме может добавляться stacktrace.
+
+\subsection{Почему \texttt{no-store} важно для админ-ручек}
+Админские запросы завязаны на валидность cookie-сессии. Кэширование (даже браузерное) может приводить к неожиданным \texttt{304 Not Modified} и усложнять диагностику.
+Поэтому в \texttt{api/index.ts} для \texttt{/admin/*} принудительно выставляется \texttt{Cache-Control: no-store}.
+
+\subsection{Клиентские уведомления}
+Админка показывает Toast уведомления для успешных/ошибочных операций синхронизации с Neon.
+
+\section{Риски и \textit{next steps}}
+\subsection{Технические риски}
+\begin{itemize}[leftmargin=18pt]
+  \item \textbf{JSONB без валидации схемы} --- полезно добавить runtime-валидацию (например, zod) на API.
+  \item \textbf{Сессии без server-side хранения} (подписанный токен) --- хорошо, но при необходимости "logout everywhere" потребуется хранение в БД/kv.
+  \item \textbf{Большой bundle} (Vite warning > 500kb) --- можно улучшить code splitting.
+\end{itemize}
+
+\subsection{Рекомендуемые улучшения}
+\begin{enumerate}[leftmargin=18pt]
+  \item Добавить \texttt{/api/admin/logout} для явного сброса cookie.
+  \item Добавить e2e тесты Playwright на потоки: login \textrightarrow CRUD \textrightarrow refresh \textrightarrow still authed.
+  \item Добавить мониторинг (Sentry) и метрики.
+\end{enumerate}
+
+\section{Как собрать PDF}
+Этот файл рассчитан на компиляцию через \textbf{XeLaTeX} (для кириллицы) и использует \textbf{minted} (требует \texttt{-shell-escape}).
+
+\textbf{Пример команды:}
+\begin{minted}[fontsize=\small]{bash}
+# из корня репозитория
+xelatex -shell-escape -output-directory=docs docs/architecture-report.tex
+xelatex -shell-escape -output-directory=docs docs/architecture-report.tex
+\end{minted}
+
+Если \texttt{minted} не нужен, его можно заменить на \texttt{verbatim} или \texttt{listings} (без shell-escape).
+
+\subsection{Частая ошибка: сборка через pdfLaTeX}
+Этот документ использует \texttt{fontspec}, поэтому \textbf{pdflatex не подходит}. Если собрать не тем движком, появится ошибка:
+\begin{quote}
+	exttt{Fatal Package fontspec Error: The fontspec package requires either XeTeX or LuaTeX}
+\end{quote}
+Используйте \texttt{xelatex} или \texttt{lualatex}.
+
+\end{document}

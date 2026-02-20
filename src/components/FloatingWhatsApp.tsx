@@ -21,7 +21,7 @@ export const FloatingWhatsApp = () => {
     return () => { tl.kill(); };
   }, []);
 
-  const whatsappNumber = '+77010000000';
+  const whatsappNumber = '+77753813839';
   const whatsappMessage = encodeURIComponent('Здравствуйте! Интересуют автомобили Hongqi.');
   const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\D/g, '')}?text=${whatsappMessage}`;
 

@@ -9,15 +9,15 @@ const contactMethods = [
   {
     icon: Phone,
     labelKey: 'contactPage.methods.phone.label',
-    value: '+7 (700) 123-45-67',
-    href: 'tel:+77001234567',
+  value: '+7 (775) 381-38-39',
+  href: 'tel:+77753813839',
     descriptionKey: 'contactPage.methods.phone.description',
   },
   {
     icon: MessageCircle,
     labelKey: 'contactPage.methods.whatsapp.label',
-    value: '+7 (700) 123-45-67',
-    href: 'https://wa.me/77001234567',
+  value: '+7 (775) 381-38-39',
+  href: 'https://wa.me/77753813839',
     descriptionKey: 'contactPage.methods.whatsapp.description',
   },
   {

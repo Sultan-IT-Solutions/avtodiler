@@ -191,7 +191,7 @@ export const Service = () => {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <a
-                href={`https://wa.me/77001234567?text=${encodeURIComponent(t('servicePage.contact.whatsappMessage'))}`}
+                href={`https://wa.me/77753813839?text=${encodeURIComponent(t('servicePage.contact.whatsappMessage'))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group px-8 py-5 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-3 hover:shadow-[0_0_40px_rgba(34,197,94,0.5)] transition-all duration-400"
@@ -202,7 +202,7 @@ export const Service = () => {
                 </span>
               </a>
               <a
-                href="tel:+77001234567"
+                href="tel:+77753813839"
                 className="group px-8 py-5 bg-luxury-burgundy text-white flex items-center justify-center gap-3 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
               >
                 <Phone size={22} strokeWidth={2.5} />

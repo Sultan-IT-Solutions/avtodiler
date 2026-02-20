@@ -24,10 +24,12 @@ export const ContactFormSection = () => {
     setTimeout(() => setIsSubmitted(false), 4000);
   };
 
-  const whatsappNumber = '+77010000000'; // Замените на реальный номер
-  const whatsappMessage = encodeURIComponent(`Здравствуйте! Меня зовут ${name || '[Имя]'}. Интересуют автомобили Hongqi.`);
+  const whatsappNumber = '77753813839';
+  const whatsappMessage = encodeURIComponent(
+    `Здравствуйте! Меня зовут ${name || '[Имя]'}. Интересуют автомобили Hongqi.`
+  );
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
-  const phoneNumber = '+77001234567'; // Замените на реальный номер
+  const phoneNumber = '+77753813839';
 
   return (
     <section className="py-20 lg:py-28 border-t border-white/5">

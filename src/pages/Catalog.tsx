@@ -275,7 +275,7 @@ export const Catalog = () => {
                   </p>
                   <div className="space-y-3">
                     <a
-                      href="https://wa.me/77001234567?text=Здравствуйте!%20Хочу%20получить%20консультацию%20по%20автомобилям%20Hongqi"
+                      href="https://wa.me/77753813839?text=Здравствуйте!%20Хочу%20получить%20консультацию%20по%20автомобилям%20Hongqi"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group w-full px-4 py-3 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all duration-400"
@@ -284,7 +284,7 @@ export const Catalog = () => {
                       <span className="text-xs uppercase tracking-luxury font-semibold">WhatsApp</span>
                     </a>
                     <a
-                      href="tel:+77001234567"
+                      href="tel:+77753813839"
                       className="group w-full px-4 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_25px_rgba(200,16,46,0.4)] transition-all duration-400"
                     >
                       <Phone size={16} strokeWidth={2.5} />

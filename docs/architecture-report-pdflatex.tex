@@ -1,0 +1,87 @@
+% Project architecture report (pdflatex-friendly)
+% This version avoids fontspec/polyglossia/minted so it can be built with pdflatex.
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian,english]{babel}
+
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  urlcolor=blue!55!black,
+  citecolor=blue!55!black,
+  pdftitle={Отчёт по проекту avtodiler (avtodiler-3)},
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{avtodiler-3}
+\rhead{Архитектурный отчёт (pdflatex)}
+\cfoot{\thepage}
+
+\title{\textbf{Отчёт по проекту \texttt{avtodiler-3}}\\[4pt]
+\large Pdflatex-совместимая версия (без minted/fontspec)}
+\author{Репозиторий: \texttt{Sultan-IT-Solutions/avtodiler}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Краткое описание}
+Проект \texttt{avtodiler-3} --- SPA (React/Vite) + API на Vercel (единая serverless функция) + Neon Postgres (JSONB).
+Ключевое требование: \textbf{никакого localStorage}, все данные читаются/пишутся в БД через API.
+
+\section{Стек}
+\begin{itemize}[leftmargin=18pt]
+  \item Frontend: React 18, TypeScript, Vite, React Router, TailwindCSS, i18next.
+  \item Backend: Vercel Serverless Function (Node.js ESM), роутер \texttt{api/index.ts}.
+  \item DB: Neon Postgres, таблицы \texttt{cars/offers/dealers/leads} с \texttt{data jsonb}.
+\end{itemize}
+
+\section{Ограничение Vercel и единая функция}
+В \texttt{vercel.json} настроены rewrites, чтобы \texttt{/api/*} попадало в один entrypoint \texttt{/api}.
+
+\begin{verbatim}
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+\end{verbatim}
+
+\section{Сессия админа без localStorage}
+Авторизация реализована через HttpOnly cookie \texttt{admin\_session} (подписанный токен). Проверка сессии: \texttt{GET /api/admin/login/status}.
+
+\section{Как собрать PDF}
+\begin{verbatim}
+# pdflatex
+pdflatex -output-directory=docs docs/architecture-report-pdflatex.tex
+pdflatex -output-directory=docs docs/architecture-report-pdflatex.tex
+\end{verbatim}
+
+\textit{Примечание:} эта версия нарочно короче и без подсветки кода. Полная версия отчёта: \texttt{docs/architecture-report.tex} (XeLaTeX).
+
+\end{document}

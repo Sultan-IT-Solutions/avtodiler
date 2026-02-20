@@ -99,9 +99,9 @@ export const Footer = () => {
                 <span>{t('footer.address')}</span>
               </li>
               <li>
-                <a href="tel:+77001234567" className="flex items-start gap-3 text-luxury-muted hover:text-white transition-colors">
+                <a href="tel:+77753813839" className="flex items-start gap-3 text-luxury-muted hover:text-white transition-colors">
                   <Phone size={16} className="mt-0.5 flex-shrink-0" />
-                  <span>+7 (700) 123-45-67</span>
+                  <span>+7 (775) 381-38-39</span>
                 </a>
               </li>
               <li>

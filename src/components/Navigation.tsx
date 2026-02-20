@@ -284,7 +284,7 @@ export const Navigation = () => {
                 className="absolute bottom-12 left-12 right-12 flex justify-between items-end text-luxury-muted text-micro tracking-ultra"
               >
                 <span>info@luxuryauto.kz</span>
-                <span>+7 (700) 123-45-67</span>
+                <span>+7 (775) 381-38-39</span>
               </motion.div>
             </div>
           </motion.div>

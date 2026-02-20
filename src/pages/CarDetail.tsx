@@ -420,7 +420,7 @@ export const CarDetail = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <a
-                      href={`https://wa.me/77001234567?text=${encodeURIComponent(`Интересует ${car.brand} ${car.model} ${car.year}`)}`}
+                      href={`https://wa.me/77753813839?text=${encodeURIComponent(`Интересует ${car.brand} ${car.model} ${car.year}`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group px-6 py-3 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transition-all duration-400"
@@ -429,7 +429,7 @@ export const CarDetail = () => {
                       <span className="text-xs uppercase tracking-luxury font-semibold">WhatsApp</span>
                     </a>
                     <a
-                      href="tel:+77001234567"
+                      href="tel:+77753813839"
                       className="group px-6 py-3 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
                     >
                       <Phone size={18} strokeWidth={2.5} />
@@ -832,7 +832,7 @@ export const CarDetail = () => {
                 </div>
                 <div className="space-y-3">
                   <a
-                    href={`https://wa.me/77001234567?text=${encodeURIComponent(`${t('carDetail.wantReserveMessage')} ${car.brand} ${car.model} ${car.year}`)}`}
+                    href={`https://wa.me/77753813839?text=${encodeURIComponent(`${t('carDetail.wantReserveMessage')} ${car.brand} ${car.model} ${car.year}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group w-full px-6 py-4 bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center gap-2 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] transition-all duration-400"
@@ -841,7 +841,7 @@ export const CarDetail = () => {
                     <span className="text-label uppercase tracking-luxury font-semibold">{t('carDetail.reserveWhatsApp')}</span>
                   </a>
                   <a
-                    href="tel:+77001234567"
+                    href="tel:+77753813839"
                     className="group w-full px-6 py-4 bg-luxury-burgundy text-white flex items-center justify-center gap-2 hover:bg-luxury-burgundyHover hover:shadow-[0_0_30px_rgba(200,16,46,0.4)] transition-all duration-400"
                   >
                     <Phone size={18} strokeWidth={2.5} />
