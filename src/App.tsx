@@ -1,11 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Lenis from 'lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Navigation } from './components/Navigation';
-import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { CarDetail } from './pages/CarDetail';
@@ -17,6 +10,17 @@ import { TestDrive } from './pages/TestDrive';
 import { Offers } from './pages/Offers';
 import { Dealers } from './pages/Dealers';
 import AdminApp from './admin/AdminApp';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Navigation } from './components/Navigation';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { publicApi } from './utils/publicApi';
+import { localizedText } from './utils/localizedText';
+import type { SeoItem } from './types/admin';
 
 class RouteErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -252,6 +256,124 @@ const CustomCursor = () => {
   );
 };
 
+const useSeoMeta = () => {
+  const location = useLocation();
+  const { i18n } = useTranslation();
+  const [items, setItems] = useState<SeoItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    publicApi
+      .seo()
+      .then((data) => {
+        if (active) setItems(data);
+      })
+      .catch(() => {
+        if (active) setItems([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) return;
+
+    const lang = (i18n.language as 'ru' | 'kz' | 'en') ?? 'ru';
+    const path = location.pathname || '/';
+
+    const exact = items.find((item) => item.slug === path);
+    const wildcard = items.find((item) => item.slug === '/car/*' && path.startsWith('/car/'));
+    const fallback = items.find((item) => item.slug === '*') ?? items.find((item) => item.slug === 'global');
+    const selected = exact ?? wildcard ?? fallback;
+    if (!selected) return;
+
+    const title = localizedText(selected.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' });
+    const description = localizedText(selected.description, {
+      lng: lang,
+      fallbackLng: 'ru',
+      emptyFallback: '',
+    });
+    const keywords = localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' });
+
+    if (title) document.title = title;
+    if (description) {
+      const meta = document.querySelector('meta[name="description"]') ?? document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      meta.setAttribute('content', description);
+      if (!meta.parentElement) document.head.appendChild(meta);
+    }
+    if (keywords) {
+      const meta = document.querySelector('meta[name="keywords"]') ?? document.createElement('meta');
+      meta.setAttribute('name', 'keywords');
+      meta.setAttribute('content', keywords);
+      if (!meta.parentElement) document.head.appendChild(meta);
+    }
+
+    const robots = document.querySelector('meta[name="robots"]') ?? document.createElement('meta');
+    robots.setAttribute('name', 'robots');
+    robots.setAttribute('content', 'index,follow');
+    if (!robots.parentElement) document.head.appendChild(robots);
+
+    const localeMap: Record<string, string> = { ru: 'ru_RU', kz: 'kk_KZ', en: 'en_US' };
+    const ogLocale = localeMap[lang] ?? 'ru_RU';
+    const ogUrl = `${window.location.origin}${path}`;
+
+    const ogTitle = document.querySelector('meta[property="og:title"]') ?? document.createElement('meta');
+    ogTitle.setAttribute('property', 'og:title');
+    ogTitle.setAttribute('content', title || document.title);
+    if (!ogTitle.parentElement) document.head.appendChild(ogTitle);
+
+    const ogDescription =
+      document.querySelector('meta[property="og:description"]') ?? document.createElement('meta');
+    ogDescription.setAttribute('property', 'og:description');
+    ogDescription.setAttribute('content', description || '');
+    if (!ogDescription.parentElement) document.head.appendChild(ogDescription);
+
+    const ogType = document.querySelector('meta[property="og:type"]') ?? document.createElement('meta');
+    ogType.setAttribute('property', 'og:type');
+    ogType.setAttribute('content', 'website');
+    if (!ogType.parentElement) document.head.appendChild(ogType);
+
+    const ogUrlMeta = document.querySelector('meta[property="og:url"]') ?? document.createElement('meta');
+    ogUrlMeta.setAttribute('property', 'og:url');
+    ogUrlMeta.setAttribute('content', ogUrl);
+    if (!ogUrlMeta.parentElement) document.head.appendChild(ogUrlMeta);
+
+    const ogLocaleMeta =
+      document.querySelector('meta[property="og:locale"]') ?? document.createElement('meta');
+    ogLocaleMeta.setAttribute('property', 'og:locale');
+    ogLocaleMeta.setAttribute('content', ogLocale);
+    if (!ogLocaleMeta.parentElement) document.head.appendChild(ogLocaleMeta);
+
+    const twitterCard =
+      document.querySelector('meta[name="twitter:card"]') ?? document.createElement('meta');
+    twitterCard.setAttribute('name', 'twitter:card');
+    twitterCard.setAttribute('content', 'summary_large_image');
+    if (!twitterCard.parentElement) document.head.appendChild(twitterCard);
+
+    const twitterTitle =
+      document.querySelector('meta[name="twitter:title"]') ?? document.createElement('meta');
+    twitterTitle.setAttribute('name', 'twitter:title');
+    twitterTitle.setAttribute('content', title || document.title);
+    if (!twitterTitle.parentElement) document.head.appendChild(twitterTitle);
+
+    const twitterDescription =
+      document.querySelector('meta[name="twitter:description"]') ?? document.createElement('meta');
+    twitterDescription.setAttribute('name', 'twitter:description');
+    twitterDescription.setAttribute('content', description || '');
+    if (!twitterDescription.parentElement) document.head.appendChild(twitterDescription);
+
+    const canonicalUrl = `${window.location.origin}${path}`;
+    const canonical = document.querySelector('link[rel="canonical"]') ?? document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    canonical.setAttribute('href', canonicalUrl);
+    if (!canonical.parentElement) document.head.appendChild(canonical);
+
+    document.documentElement.lang = lang;
+  }, [items, location.pathname, i18n.language]);
+};
+
 /* ===== SCROLL TO TOP ===== */
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -297,6 +419,8 @@ function AnimatedRoutes() {
 const AppShell = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+
+  useSeoMeta();
 
   return (
     <RouteErrorBoundary>
@@ -350,12 +474,10 @@ function App() {
 
   return (
     <>
-      {/* Preloader */}
       <AnimatePresence>
         {isLoading && <Preloader onComplete={handlePreloaderComplete} />}
       </AnimatePresence>
 
-      {/* Main App */}
       {!isLoading && (
         <Router>
           <ScrollToTop />

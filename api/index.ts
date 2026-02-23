@@ -5,6 +5,7 @@ import adminCars from './_handlers/admin/cars.js';
 import adminDealers from './_handlers/admin/dealers.js';
 import adminLeads from './_handlers/admin/leads.js';
 import adminOffers from './_handlers/admin/offers.js';
+import adminSeo from './_handlers/admin/seo.js';
 import adminPing from './_handlers/admin/ping.js';
 import adminLoginCallback from './_handlers/admin/login/callback.js';
 import adminLoginRequest from './_handlers/admin/login/request.js';
@@ -12,6 +13,7 @@ import adminLoginStatus from './_handlers/admin/login/status.js';
 import publicCars from './_handlers/public/cars.js';
 import publicDealers from './_handlers/public/dealers.js';
 import publicOffers from './_handlers/public/offers.js';
+import publicSeo from './_handlers/public/seo.js';
 import telegramLead from './_handlers/telegram/lead.js';
 
 type ApiRequest = IncomingMessage & {
@@ -50,6 +52,7 @@ const routes: Record<string, Handler> = {
   '/admin/dealers': adminDealers,
   '/admin/leads': adminLeads,
   '/admin/offers': adminOffers,
+  '/admin/seo': adminSeo,
   '/admin/login/request': adminLoginRequest,
   '/admin/login/status': adminLoginStatus,
   '/admin/login/callback': adminLoginCallback,
@@ -57,6 +60,7 @@ const routes: Record<string, Handler> = {
   '/public/cars': publicCars,
   '/public/dealers': publicDealers,
   '/public/offers': publicOffers,
+  '/public/seo': publicSeo,
 
   '/telegram/lead': telegramLead,
 };

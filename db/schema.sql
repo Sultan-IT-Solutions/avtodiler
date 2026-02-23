@@ -60,3 +60,18 @@ create table if not exists leads (
 );
 
 create index if not exists leads_created_at_idx on leads (created_at desc);
+
+create table if not exists seo (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists seo_updated_at_idx on seo (updated_at desc);
+
+drop trigger if exists seo_set_updated_at on seo;
+create trigger seo_set_updated_at
+before update on seo
+for each row
+execute function set_updated_at();

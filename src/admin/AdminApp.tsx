@@ -9,9 +9,10 @@ import type {
   LeadItem,
   LocaleText,
   OfferItem,
+  SeoItem,
 } from '../types/admin';
 import { createId } from '../utils/adminStorage';
-import { carsApi, dealersApi, leadsApi, offersApi } from '../utils/adminApi';
+import { carsApi, dealersApi, leadsApi, offersApi, seoApi } from '../utils/adminApi';
 
 const readAuthOk = () => false;
 
@@ -158,6 +159,36 @@ const LocaleFields = ({
   </div>
 );
 
+const LocaleTextAreas = ({
+  label,
+  value,
+  onChange,
+  rows = 3,
+}: {
+  label: string;
+  value: LocaleText;
+  onChange: (next: LocaleText) => void;
+  rows?: number;
+}) => (
+  <div>
+    <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+      {label}
+    </p>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      {(['ru', 'kz', 'en'] as const).map((locale) => (
+        <textarea
+          key={locale}
+          rows={rows}
+          value={value[locale]}
+          onChange={(event) => onChange({ ...value, [locale]: event.target.value })}
+          placeholder={locale.toUpperCase()}
+          className="min-h-[90px] bg-luxury-surface border border-white/10 px-3 py-2 text-sm text-white"
+        />
+      ))}
+    </div>
+  </div>
+);
+
 const SectionLayout = ({
   title,
   description,
@@ -213,7 +244,13 @@ const EmptyState = ({ text }: { text: string }) => (
 type SectionInfo = { key: AdminSectionKey; label: string };
 
 const AdminApp = () => {
-  const [data, setData] = useState<AdminData>(() => ({ cars: [], offers: [], dealers: [], leads: [] }));
+  const [data, setData] = useState<AdminData>(() => ({
+    cars: [],
+    offers: [],
+    dealers: [],
+    leads: [],
+    seo: [],
+  }));
   const [activeSection, setActiveSection] = useState<AdminSectionKey>('cars');
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
   const [toast, setToast] = useState<ToastPayload | null>(null);
@@ -249,11 +286,12 @@ const AdminApp = () => {
     const load = async () => {
       setIsSyncing(true);
       try {
-        const [cars, offers, dealers, leads] = await Promise.all([
+        const [cars, offers, dealers, leads, seo] = await Promise.all([
           carsApi.list(),
           offersApi.list(),
           dealersApi.list(),
           leadsApi.list(),
+          seoApi.list(),
         ]);
         if (cancelled) return;
 
@@ -263,6 +301,7 @@ const AdminApp = () => {
           offers,
           dealers,
           leads,
+          seo,
         }));
 
         notify('Данные загружены из Neon', 'ОК');
@@ -297,6 +336,7 @@ const AdminApp = () => {
       { key: 'offers', label: 'Предложения / акции' },
       { key: 'dealers', label: 'Дилерские центры' },
       { key: 'leads', label: 'Заявки' },
+      { key: 'seo', label: 'SEO' },
     ],
     []
   );
@@ -410,6 +450,23 @@ const AdminApp = () => {
               onPersistDelete={async (id) => {
                 try {
                   await leadsApi.remove(id);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
+              notify={notify}
+              syncing={isSyncing}
+            />
+          )}
+          {activeSection === 'seo' && (
+            <SeoSection
+              title={activeLabel}
+              items={data.seo}
+              onChange={(items) => updateData((current) => ({ ...current, seo: items }))}
+              onPersist={async (item, mode) => {
+                try {
+                  if (mode === 'delete') await seoApi.remove(item.id);
+                  else await seoApi.upsert(item);
                 } catch (error) {
                   notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
                 }
@@ -1210,6 +1267,140 @@ const DealersSection = ({
           </div>
         ) : (
           <EmptyState text="Добавьте дилерский центр." />
+        )}
+      </div>
+    </SectionLayout>
+  );
+};
+
+const SeoSection = ({
+  title,
+  items,
+  onChange,
+  onPersist,
+  notify,
+  syncing,
+}: {
+  title: string;
+  items: SeoItem[];
+  onChange: (items: SeoItem[]) => void;
+  onPersist: (item: SeoItem, mode: 'upsert' | 'delete') => Promise<void>;
+  notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
+}) => {
+  const ensureSeoShape = (item: SeoItem): SeoItem => ({
+    ...item,
+    slug: item.slug ?? '',
+    title: item.title ?? localeField(),
+    description: item.description ?? localeField(),
+    keywords: item.keywords ?? localeField(),
+  });
+
+  const normalizedItems = useMemo(() => items.map(ensureSeoShape), [items]);
+
+  const state = useEntityState(normalizedItems, () => ({
+    id: createId(),
+    slug: '/',
+    title: localeField(),
+    description: localeField(),
+    keywords: localeField(),
+  }));
+
+  const handleSave = () => {
+    if (!state.draft) return;
+    if (!window.confirm('Сохранить изменения?')) return;
+    const draft = ensureSeoShape(state.draft);
+    const next = state.isNew
+      ? [...normalizedItems, draft]
+      : normalizedItems.map((item) => (item.id === draft.id ? draft : item));
+    onChange(next);
+    void onPersist(draft, 'upsert');
+    notify(state.isNew ? 'SEO запись добавлена' : 'Изменения сохранены', 'ОК');
+    state.setIsNew(false);
+    state.setSelectedId(draft.id);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm('Удалить запись?')) return;
+    const next = normalizedItems.filter((item) => item.id !== id);
+    onChange(next);
+    const deleted = normalizedItems.find((item) => item.id === id);
+    if (deleted) void onPersist(deleted, 'delete');
+    notify('SEO запись удалена', 'ОК');
+    state.setSelectedId(next[0]?.id ?? null);
+    state.setDraft(next[0] ?? null);
+    state.setIsNew(false);
+  };
+
+  return (
+    <SectionLayout
+      title={title}
+      description="Поиск по ключевым словам и meta-теги. Используйте slug страницы (например, /catalog, /offers, /car/* или * для общего)."
+    >
+      {syncing ? (
+        <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+          Синхронизация с Neon…
+        </div>
+      ) : null}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <div className="space-y-4">
+          <button onClick={state.createNew} className="btn-primary w-full justify-center">
+            <Plus size={16} />
+            Добавить SEO
+          </button>
+          <EntityList
+            items={normalizedItems}
+            selectedId={state.selectedId}
+            onSelect={state.selectItem}
+            getLabel={(item) => item.slug || item.title.ru || 'Без названия'}
+          />
+        </div>
+        {state.draft ? (
+          <div className="bg-luxury-elevated border border-white/10 p-6 space-y-5">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">Slug / путь страницы</p>
+              <input
+                value={state.draft.slug}
+                onChange={(event) => state.setDraft({ ...state.draft!, slug: event.target.value })}
+                placeholder="/catalog"
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+            </div>
+            <LocaleFields
+              label="Title"
+              value={state.draft.title}
+              onChange={(titleValue) => state.setDraft({ ...state.draft!, title: titleValue })}
+            />
+            <LocaleTextAreas
+              label="Description"
+              value={state.draft.description}
+              onChange={(description) => state.setDraft({ ...state.draft!, description })}
+              rows={3}
+            />
+            <LocaleTextAreas
+              label="Keywords (через запятую)"
+              value={state.draft.keywords}
+              onChange={(keywords) => state.setDraft({ ...state.draft!, keywords })}
+              rows={2}
+            />
+            <div className="flex items-center gap-3">
+              <button onClick={handleSave} className="btn-primary flex items-center gap-2">
+                <Save size={16} />
+                Сохранить
+              </button>
+              {!state.isNew && (
+                <button
+                  onClick={() => handleDelete(state.draft!.id)}
+                  className="btn-outline text-white/70 border-white/20"
+                >
+                  <Trash2 size={16} />
+                  Удалить
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <EmptyState text="Добавьте SEO запись." />
         )}
       </div>
     </SectionLayout>

@@ -1,4 +1,4 @@
-import type { AdminCar, DealerItem, LeadItem, OfferItem } from '../types/admin';
+import type { AdminCar, DealerItem, LeadItem, OfferItem, SeoItem } from '../types/admin';
 
 type ApiResult<T> = { ok: true } & T;
 type ApiError = { ok: false; error?: string };
@@ -123,6 +123,35 @@ export const leadsApi = {
 
   async remove(id: string): Promise<void> {
     const res = await fetch(`/api/admin/leads?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    await ensureOk(res);
+    const body = (await res.json()) as ApiResult<Record<string, never>> | ApiError;
+    if (!body.ok) throw new Error(body.error ?? 'Unknown error');
+  },
+};
+
+export const seoApi = {
+  async list(): Promise<SeoItem[]> {
+    const res = await fetch('/api/admin/seo', { method: 'GET', cache: 'no-store' });
+    await ensureOk(res);
+    const body = (await res.json()) as ApiResult<{ items: { id: string; data: SeoItem }[] }>;
+    return (body.items ?? []).map((row) => row.data);
+  },
+
+  async upsert(item: SeoItem): Promise<void> {
+    const res = await fetch('/api/admin/seo', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id: item.id, data: item }),
+    });
+    await ensureOk(res);
+    const body = (await res.json()) as ApiResult<Record<string, never>> | ApiError;
+    if (!body.ok) throw new Error(body.error ?? 'Unknown error');
+  },
+
+  async remove(id: string): Promise<void> {
+    const res = await fetch(`/api/admin/seo?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     await ensureOk(res);

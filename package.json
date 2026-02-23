@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node --loader ts-node/esm dev/api-server.mjs",
-    "build": "tsc && vite build",
+  "build": "node scripts/generate-sitemap.mjs && tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
   },

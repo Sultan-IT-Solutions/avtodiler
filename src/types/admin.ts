@@ -133,6 +133,7 @@ export interface AdminData {
   offers: OfferItem[];
   dealers: DealerItem[];
   leads: LeadItem[];
+  seo: SeoItem[];
 }
 
 export type AdminSectionKey = keyof AdminData;
