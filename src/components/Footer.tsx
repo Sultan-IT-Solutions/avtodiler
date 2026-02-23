@@ -56,10 +56,10 @@ export const Footer = () => {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-luxury-burgundy flex items-center justify-center">
-                <span className="text-white font-display text-lg font-bold">L</span>
+                <span className="text-white font-display text-lg font-bold">H</span>
               </div>
               <div>
-                <div className="text-white font-display text-lg tracking-tight leading-none">Luxury Auto</div>
+                <div className="text-white font-display text-lg tracking-tight leading-none">HONGQI AUTO</div>
                 <div className="text-luxury-muted text-micro uppercase tracking-ultra mt-0.5">Kazakhstan</div>
               </div>
             </div>
@@ -105,9 +105,9 @@ export const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@luxuryauto.kz" className="flex items-start gap-3 text-luxury-muted hover:text-white transition-colors">
+                <a href="mailto:hongqiparts@gmail.com" className="flex items-start gap-3 text-luxury-muted hover:text-white transition-colors">
                   <Mail size={16} className="mt-0.5 flex-shrink-0" />
-                  <span>info@luxuryauto.kz</span>
+                  <span>hongqiparts@gmail.com</span>
                 </a>
               </li>
             </ul>
@@ -119,13 +119,18 @@ export const Footer = () => {
               {t('footer.social')}
             </h4>
             <ul className="space-y-4">
-              {['Instagram', 'Facebook', 'YouTube'].map((social) => (
-                <li key={social}>
+              {[
+                { name: 'Instagram', href: 'https://www.instagram.com/hongqi__parts' },
+                { name: 'TikTok', href: 'https://www.tiktok.com/@hongqi_parts' },
+              ].map((social) => (
+                <li key={social.name}>
                   <a
-                    href="#"
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm text-luxury-muted hover:text-white transition-colors duration-300 inline-flex items-center gap-2 group"
                   >
-                    {social}
+                    {social.name}
                     <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                   </a>
                 </li>
@@ -139,7 +144,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-micro tracking-ultra text-luxury-muted">
           <div>
-            &copy; {currentYear} Luxury Auto Kazakhstan. {t('footer.rights')}.
+            &copy; {currentYear} HONGQI AUTO Kazakhstan. {t('footer.rights')}.
           </div>
           <div className="flex gap-8">
             <Link to="/privacy" className="hover:text-white transition-colors">

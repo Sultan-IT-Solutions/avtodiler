@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useLayoutEffect } from 'react';
+﻿import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import i18n from '../i18n/config';
 import { localizedText } from '../utils/localizedText';
@@ -199,7 +199,7 @@ export const Home = () => {
               color: 'transparent',
             }}
           >
-            LUXURY AUTO
+            HONGQI AUTO
           </span>
         </motion.div>
 

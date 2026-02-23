@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -23,8 +23,8 @@ const contactMethods = [
   {
     icon: Mail,
     labelKey: 'contactPage.methods.email.label',
-    value: 'info@luxuryauto.kz',
-    href: 'mailto:info@luxuryauto.kz',
+    value: 'hongqiparts@gmail.com',
+    href: 'mailto:hongqiparts@gmail.com',
     descriptionKey: 'contactPage.methods.email.description',
   },
   {

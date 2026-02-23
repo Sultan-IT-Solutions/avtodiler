@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
@@ -253,7 +253,7 @@
     },
     "banner": {
       "eyebrow": "Official representative",
-      "text": "All Luxury Auto dealer centers are official representatives of the Hongqi brand in Kazakhstan and provide a full range of services."
+      "text": "All HONGQI AUTO dealer centers are official representatives of the Hongqi brand in Kazakhstan and provide a full range of services."
     }
   },
   "brandsPage": {
@@ -308,7 +308,7 @@
       "1981": "Hongqi becomes an official ceremonial vehicle for state events.",
       "2018": "Brand relaunch with a new design strategy and lineup.",
       "2020": "International expansion. Launch of the E-HS9 electric lineup.",
-      "2023": "Hongqi enters Kazakhstan. Luxury Auto becomes an official dealer.",
+      "2023": "Hongqi enters Kazakhstan. HONGQI AUTO becomes an official dealer.",
       "2024": "Lineup expands to 8 models. Record sales."
     },
     "cta": {
@@ -435,11 +435,11 @@
   },
   "cta": {
     "title": "Begin Your Journey",
-    "description": "Schedule a private consultation with our luxury automotive specialists",
+    "description": "Schedule a private consultation with our HONGQI AUTOmotive specialists",
     "button": "Contact Us"
   },
   "footer": {
-    "tagline": "Kazakhstan's Premier Luxury Automotive Destination",
+    "tagline": "Kazakhstan's Premier HONGQI AUTOmotive Destination",
     "quickLinks": "Quick Links",
     "legal": "Legal",
     "privacy": "Privacy Policy",

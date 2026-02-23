@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { LogOut, Plus, Save, Trash2 } from 'lucide-react';
 import type {
@@ -360,7 +360,7 @@ const AdminApp = () => {
         <aside className="border-r border-white/10 bg-luxury-elevated p-6 space-y-6">
           <div>
             <p className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">Админ-панель</p>
-            <h1 className="text-lg font-semibold mt-2">Luxury Auto</h1>
+            <h1 className="text-lg font-semibold mt-2">HONGQI AUTO</h1>
           </div>
           <nav className="space-y-2">
             {sections.map((section) => (

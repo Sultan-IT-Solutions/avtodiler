@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { CarDetail } from './pages/CarDetail';
@@ -124,7 +124,7 @@ const Preloader = ({ onComplete }: { onComplete: () => void }) => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-micro uppercase tracking-ultra text-luxury-muted"
         >
-          Luxury Auto Kazakhstan
+          HONGQI AUTO Kazakhstan
         </motion.div>
 
         {/* Counter */}

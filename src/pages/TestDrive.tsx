@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
 import { cars } from '../data/cars';
@@ -7,9 +7,9 @@ import { ContactFormSection } from '../components/ContactFormSection';
 import { submitLead } from '../utils/leads';
 
 const dealers = [
-  { id: 1, name: 'Luxury Auto — Аль-Фараби', address: 'ул. Аль-Фараби, 77, Алматы' },
-  { id: 2, name: 'Luxury Auto — Назарбаева', address: 'пр. Назарбаева, 120, Алматы' },
-  { id: 3, name: 'Luxury Auto — Астана', address: 'пр. Мангилик Ел, 54, Астана' },
+  { id: 1, name: 'HONGQI AUTO — Аль-Фараби', address: 'ул. Аль-Фараби, 77, Алматы' },
+  { id: 2, name: 'HONGQI AUTO — Назарбаева', address: 'пр. Назарбаева, 120, Алматы' },
+  { id: 3, name: 'HONGQI AUTO — Астана', address: 'пр. Мангилик Ел, 54, Астана' },
 ];
 
 const steps = [

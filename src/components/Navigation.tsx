@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -283,7 +283,7 @@ export const Navigation = () => {
                 transition={{ delay: 1 }}
                 className="absolute bottom-12 left-12 right-12 flex justify-between items-end text-luxury-muted text-micro tracking-ultra"
               >
-                <span>info@luxuryauto.kz</span>
+                <span>hongqiparts@gmail.com</span>
                 <span>+7 (775) 381-38-39</span>
               </motion.div>
             </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useLayoutEffect } from 'react';
+﻿import { useEffect, useRef, useState, useLayoutEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Award, Users, Car, Shield } from 'lucide-react';
@@ -130,7 +130,7 @@ export const About = () => {
             <div className="overflow-hidden">
               <h1 className="hero-reveal text-[clamp(44px,8vw,120px)] font-bold leading-[0.9] tracking-[-0.04em] text-white uppercase"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                LUXURY AUTO
+                HONGQI AUTO
               </h1>
             </div>
             <div className="overflow-hidden">
