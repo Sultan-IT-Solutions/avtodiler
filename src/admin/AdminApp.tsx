@@ -1295,6 +1295,7 @@ const SeoSection = ({
     description: item.description ?? localeField(),
     keywords: item.keywords ?? localeField(),
     image: item.image ?? '',
+    favicon: item.favicon ?? '',
   });
 
   const normalizedItems = useMemo(() => items.map(ensureSeoShape), [items]);
@@ -1306,6 +1307,7 @@ const SeoSection = ({
     description: localeField(),
     keywords: localeField(),
     image: '',
+    favicon: '',
   }));
 
   const isValidUrl = (value: string) => {
@@ -1322,6 +1324,10 @@ const SeoSection = ({
     if (!state.draft) return;
     if (!isValidUrl(state.draft.image ?? '')) {
       notify('Укажите корректный URL изображения (http/https)', 'ОК');
+      return;
+    }
+    if (!isValidUrl(state.draft.favicon ?? '')) {
+      notify('Укажите корректный URL favicon (http/https)', 'ОК');
       return;
     }
     if (!window.confirm('Сохранить изменения?')) return;
@@ -1419,6 +1425,30 @@ const SeoSection = ({
                     alt="SEO preview"
                     className="w-full max-w-[480px] aspect-[1.91/1] object-cover"
                   />
+                </div>
+              ) : null}
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+                Иконка вкладки (favicon URL)
+              </p>
+              <input
+                value={state.draft.favicon ?? ''}
+                onChange={(event) => state.setDraft({ ...state.draft!, favicon: event.target.value })}
+                placeholder="https://example.com/favicon.png"
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+              {!isValidUrl(state.draft.favicon ?? '') && (
+                <p className="mt-2 text-xs text-red-300">Введите корректный URL (http/https).</p>
+              )}
+              {isValidUrl(state.draft.favicon ?? '') && state.draft.favicon?.trim() ? (
+                <div className="mt-4 border border-white/10 bg-luxury-surface p-3 inline-flex items-center gap-3">
+                  <img
+                    src={state.draft.favicon}
+                    alt="Favicon preview"
+                    className="w-10 h-10 object-contain bg-black/40"
+                  />
+                  <span className="text-xs text-white/60">Превью иконки</span>
                 </div>
               ) : null}
             </div>

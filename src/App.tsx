@@ -315,7 +315,8 @@ const useSeoMeta = () => {
     const keywords = selected
       ? localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
       : '';
-    const imageUrl = selected?.image?.trim() ?? '';
+  const imageUrl = selected?.image?.trim() ?? '';
+  const faviconUrl = selected?.favicon?.trim() ?? '';
 
     document.title = title || fallbackTitle;
 
@@ -400,6 +401,19 @@ const useSeoMeta = () => {
     canonical.setAttribute('rel', 'canonical');
     canonical.setAttribute('href', canonicalUrl);
     if (!canonical.parentElement) document.head.appendChild(canonical);
+
+    if (faviconUrl) {
+      const favicon = document.querySelector('link[rel="icon"]') ?? document.createElement('link');
+      favicon.setAttribute('rel', 'icon');
+      favicon.setAttribute('href', faviconUrl);
+      if (!favicon.parentElement) document.head.appendChild(favicon);
+
+      const shortcut =
+        document.querySelector('link[rel="shortcut icon"]') ?? document.createElement('link');
+      shortcut.setAttribute('rel', 'shortcut icon');
+      shortcut.setAttribute('href', faviconUrl);
+      if (!shortcut.parentElement) document.head.appendChild(shortcut);
+    }
 
     document.documentElement.lang = lang;
   }, [items, location.pathname, i18n.language]);
