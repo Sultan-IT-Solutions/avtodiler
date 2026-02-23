@@ -260,6 +260,18 @@ const useSeoMeta = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
   const [items, setItems] = useState<SeoItem[]>([]);
+  const defaultsRef = useRef({
+    title: document.title,
+    description: '',
+  });
+
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="description"]');
+    defaultsRef.current = {
+      title: document.title,
+      description: meta?.getAttribute('content') ?? '',
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -285,30 +297,37 @@ const useSeoMeta = () => {
     const exact = items.find((item) => item.slug === path);
     const wildcard = items.find((item) => item.slug === '/car/*' && path.startsWith('/car/'));
     const fallback = items.find((item) => item.slug === '*') ?? items.find((item) => item.slug === 'global');
-    const selected = exact ?? wildcard ?? fallback;
-    if (!selected) return;
+  const selected = exact ?? wildcard ?? fallback;
 
-    const title = localizedText(selected.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' });
-    const description = localizedText(selected.description, {
-      lng: lang,
-      fallbackLng: 'ru',
-      emptyFallback: '',
-    });
-    const keywords = localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' });
+  const fallbackTitle = defaultsRef.current.title;
+  const fallbackDescription = defaultsRef.current.description;
 
-    if (title) document.title = title;
-    if (description) {
-      const meta = document.querySelector('meta[name="description"]') ?? document.createElement('meta');
-      meta.setAttribute('name', 'description');
-      meta.setAttribute('content', description);
-      if (!meta.parentElement) document.head.appendChild(meta);
-    }
-    if (keywords) {
-      const meta = document.querySelector('meta[name="keywords"]') ?? document.createElement('meta');
-      meta.setAttribute('name', 'keywords');
-      meta.setAttribute('content', keywords);
-      if (!meta.parentElement) document.head.appendChild(meta);
-    }
+    const title = selected
+      ? localizedText(selected.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
+      : '';
+    const description = selected
+      ? localizedText(selected.description, {
+          lng: lang,
+          fallbackLng: 'ru',
+          emptyFallback: '',
+        })
+      : '';
+    const keywords = selected
+      ? localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
+      : '';
+
+    document.title = title || fallbackTitle;
+
+    const descriptionMeta =
+      document.querySelector('meta[name="description"]') ?? document.createElement('meta');
+    descriptionMeta.setAttribute('name', 'description');
+    descriptionMeta.setAttribute('content', description || fallbackDescription);
+    if (!descriptionMeta.parentElement) document.head.appendChild(descriptionMeta);
+
+    const keywordsMeta = document.querySelector('meta[name="keywords"]') ?? document.createElement('meta');
+    keywordsMeta.setAttribute('name', 'keywords');
+    keywordsMeta.setAttribute('content', keywords);
+    if (!keywordsMeta.parentElement) document.head.appendChild(keywordsMeta);
 
     const robots = document.querySelector('meta[name="robots"]') ?? document.createElement('meta');
     robots.setAttribute('name', 'robots');
@@ -321,13 +340,13 @@ const useSeoMeta = () => {
 
     const ogTitle = document.querySelector('meta[property="og:title"]') ?? document.createElement('meta');
     ogTitle.setAttribute('property', 'og:title');
-    ogTitle.setAttribute('content', title || document.title);
+    ogTitle.setAttribute('content', title || fallbackTitle || document.title);
     if (!ogTitle.parentElement) document.head.appendChild(ogTitle);
 
     const ogDescription =
       document.querySelector('meta[property="og:description"]') ?? document.createElement('meta');
     ogDescription.setAttribute('property', 'og:description');
-    ogDescription.setAttribute('content', description || '');
+    ogDescription.setAttribute('content', description || fallbackDescription || '');
     if (!ogDescription.parentElement) document.head.appendChild(ogDescription);
 
     const ogType = document.querySelector('meta[property="og:type"]') ?? document.createElement('meta');
@@ -355,13 +374,13 @@ const useSeoMeta = () => {
     const twitterTitle =
       document.querySelector('meta[name="twitter:title"]') ?? document.createElement('meta');
     twitterTitle.setAttribute('name', 'twitter:title');
-    twitterTitle.setAttribute('content', title || document.title);
+    twitterTitle.setAttribute('content', title || fallbackTitle || document.title);
     if (!twitterTitle.parentElement) document.head.appendChild(twitterTitle);
 
     const twitterDescription =
       document.querySelector('meta[name="twitter:description"]') ?? document.createElement('meta');
     twitterDescription.setAttribute('name', 'twitter:description');
-    twitterDescription.setAttribute('content', description || '');
+    twitterDescription.setAttribute('content', description || fallbackDescription || '');
     if (!twitterDescription.parentElement) document.head.appendChild(twitterDescription);
 
     const canonicalUrl = `${window.location.origin}${path}`;
