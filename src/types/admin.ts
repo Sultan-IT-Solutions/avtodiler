@@ -126,6 +126,7 @@ export interface SeoItem {
   title: LocaleText;
   description: LocaleText;
   keywords: LocaleText;
+  image?: string;
 }
 
 export interface AdminData {

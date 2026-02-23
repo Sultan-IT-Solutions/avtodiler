@@ -1294,6 +1294,7 @@ const SeoSection = ({
     title: item.title ?? localeField(),
     description: item.description ?? localeField(),
     keywords: item.keywords ?? localeField(),
+    image: item.image ?? '',
   });
 
   const normalizedItems = useMemo(() => items.map(ensureSeoShape), [items]);
@@ -1304,10 +1305,25 @@ const SeoSection = ({
     title: localeField(),
     description: localeField(),
     keywords: localeField(),
+    image: '',
   }));
+
+  const isValidUrl = (value: string) => {
+    if (!value.trim()) return true;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
 
   const handleSave = () => {
     if (!state.draft) return;
+    if (!isValidUrl(state.draft.image ?? '')) {
+      notify('Укажите корректный URL изображения (http/https)', 'ОК');
+      return;
+    }
     if (!window.confirm('Сохранить изменения?')) return;
     const draft = ensureSeoShape(state.draft);
     const next = state.isNew
@@ -1383,6 +1399,29 @@ const SeoSection = ({
               onChange={(keywords) => state.setDraft({ ...state.draft!, keywords })}
               rows={2}
             />
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+                Изображение для вкладки (OG/Twitter URL)
+              </p>
+              <input
+                value={state.draft.image ?? ''}
+                onChange={(event) => state.setDraft({ ...state.draft!, image: event.target.value })}
+                placeholder="https://example.com/preview.jpg"
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+              {!isValidUrl(state.draft.image ?? '') && (
+                <p className="mt-2 text-xs text-red-300">Введите корректный URL (http/https).</p>
+              )}
+              {isValidUrl(state.draft.image ?? '') && state.draft.image?.trim() ? (
+                <div className="mt-4 border border-white/10 bg-luxury-surface p-3">
+                  <img
+                    src={state.draft.image}
+                    alt="SEO preview"
+                    className="w-full max-w-[480px] aspect-[1.91/1] object-cover"
+                  />
+                </div>
+              ) : null}
+            </div>
             <div className="flex items-center gap-3">
               <button onClick={handleSave} className="btn-primary flex items-center gap-2">
                 <Save size={16} />

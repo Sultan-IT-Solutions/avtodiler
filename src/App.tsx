@@ -315,6 +315,7 @@ const useSeoMeta = () => {
     const keywords = selected
       ? localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
       : '';
+    const imageUrl = selected?.image?.trim() ?? '';
 
     document.title = title || fallbackTitle;
 
@@ -365,6 +366,11 @@ const useSeoMeta = () => {
     ogLocaleMeta.setAttribute('content', ogLocale);
     if (!ogLocaleMeta.parentElement) document.head.appendChild(ogLocaleMeta);
 
+  const ogImage = document.querySelector('meta[property="og:image"]') ?? document.createElement('meta');
+  ogImage.setAttribute('property', 'og:image');
+  ogImage.setAttribute('content', imageUrl);
+  if (!ogImage.parentElement) document.head.appendChild(ogImage);
+
     const twitterCard =
       document.querySelector('meta[name="twitter:card"]') ?? document.createElement('meta');
     twitterCard.setAttribute('name', 'twitter:card');
@@ -382,6 +388,12 @@ const useSeoMeta = () => {
     twitterDescription.setAttribute('name', 'twitter:description');
     twitterDescription.setAttribute('content', description || fallbackDescription || '');
     if (!twitterDescription.parentElement) document.head.appendChild(twitterDescription);
+
+    const twitterImage =
+      document.querySelector('meta[name="twitter:image"]') ?? document.createElement('meta');
+    twitterImage.setAttribute('name', 'twitter:image');
+    twitterImage.setAttribute('content', imageUrl);
+    if (!twitterImage.parentElement) document.head.appendChild(twitterImage);
 
     const canonicalUrl = `${window.location.origin}${path}`;
     const canonical = document.querySelector('link[rel="canonical"]') ?? document.createElement('link');
