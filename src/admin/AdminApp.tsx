@@ -1407,7 +1407,7 @@ const SeoSection = ({
             />
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
-                Изображение для вкладки (OG/Twitter URL)
+                Изображение для превью в социальных сетях (OG/Twitter URL)
               </p>
               <input
                 value={state.draft.image ?? ''}
