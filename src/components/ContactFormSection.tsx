@@ -9,9 +9,15 @@ export const ContactFormSection = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+
+  const isPhoneValid = phone.replace(/\D/g, '').length >= 10;
+  const phoneError = phoneTouched && !isPhoneValid;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneTouched(true);
+    if (!isPhoneValid) return;
     await submitLead({
       type: 'callback',
       name,
@@ -119,15 +125,29 @@ export const ContactFormSection = () => {
                     type="tel"
                     required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full h-12 px-4 bg-luxury-surface border border-white/10 text-white font-light focus:outline-none focus:border-white/30 transition-colors"
+                    onChange={(e) => {
+                      if (!phoneTouched) setPhoneTouched(true);
+                      setPhone(e.target.value);
+                    }}
+                    onBlur={() => setPhoneTouched(true)}
+                    className={`w-full h-12 px-4 bg-luxury-surface border text-white font-light focus:outline-none transition-colors ${
+                      phoneError ? 'border-luxury-burgundy/70 focus:border-luxury-burgundy/80' : 'border-white/10 focus:border-white/30'
+                    }`}
                     placeholder={t('contactForm.phonePlaceholder')}
                   />
+                  {phoneError && (
+                    <p className="text-[11px] text-luxury-burgundy mt-2">
+                      {t('contactForm.phoneError')}
+                    </p>
+                  )}
                 </div>
                 <div className="sm:col-span-2">
                   <button
                     type="submit"
-                    className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2 !py-3 !px-8 text-xs"
+                    disabled={!isPhoneValid}
+                    className={`btn-primary w-full sm:w-auto flex items-center justify-center gap-2 !py-3 !px-8 text-xs ${
+                      !isPhoneValid ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                   >
                     {t('contactForm.submit')}
                     <Send size={14} />

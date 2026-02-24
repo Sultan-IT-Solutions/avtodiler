@@ -183,6 +183,7 @@
     "services": {
       "maintenance": {
         "title": "Техническое обслуживание",
+        "phoneError": "Введите корректный номер телефона",
         "description": "Регулярное ТО по регламенту производителя. Замена масла, фильтров, проверка всех систем автомобиля.",
         "price": "от 45 000 ₸"
       },
@@ -369,8 +370,10 @@
       "namePlaceholder": "Ваше имя",
       "phoneLabel": "Телефон *",
       "phonePlaceholder": "+7 (___) ___-__-__",
+      "phoneError": "Введите корректный номер телефона",
       "emailLabel": "Email",
       "emailPlaceholder": "your@email.com",
+      "emailError": "Введите корректный email",
       "modelLabel": "Интересующая модель",
       "modelPlaceholder": "Выберите модель",
       "messageLabel": "Сообщение",

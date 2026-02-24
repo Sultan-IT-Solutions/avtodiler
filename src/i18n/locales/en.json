@@ -169,6 +169,7 @@
     "phone": "Phone",
     "namePlaceholder": "Your name",
     "phonePlaceholder": "+7 (___) __-__-__",
+    "phoneError": "Enter a valid phone number",
     "submit": "Send request"
   },
   "servicePage": {
@@ -373,8 +374,10 @@
       "namePlaceholder": "Your name",
       "phoneLabel": "Phone *",
       "phonePlaceholder": "+7 (___) ___-__-__",
+      "phoneError": "Enter a valid phone number",
       "emailLabel": "Email",
       "emailPlaceholder": "your@email.com",
+      "emailError": "Enter a valid email address",
       "modelLabel": "Model of interest",
       "modelPlaceholder": "Select a model",
       "messageLabel": "Message",

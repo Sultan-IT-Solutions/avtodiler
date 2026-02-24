@@ -78,7 +78,7 @@ export const Contact = () => {
 
   const carOptions = useMemo(() => {
     const map = new Map<string, Car>();
-  cars.forEach((car: Car) => {
+    cars.forEach((car: Car) => {
       const label = car.modelDisplay ?? `${car.brand} ${car.model}`.trim();
       if (!map.has(label)) map.set(label, car);
     });
@@ -89,10 +89,29 @@ export const Contact = () => {
     }));
   }, [cars]);
 
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  const isPhoneValid = useMemo(() => {
+    const digits = formData.phone.replace(/\D/g, '');
+    return digits.length >= 10;
+  }, [formData.phone]);
+
+  const isEmailValid = useMemo(() => {
+    if (!formData.email) return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  }, [formData.email]);
+
+  const phoneError = phoneTouched && !isPhoneValid;
+  const emailError = emailTouched && !isEmailValid;
+
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneTouched(true);
+    setEmailTouched(true);
+    if (!isPhoneValid || !isEmailValid) return;
     await submitLead({
       type: 'contact',
       name: formData.name,
@@ -341,10 +360,19 @@ export const Contact = () => {
                         type="tel"
                         required
                         value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="input-luxury"
+                        onChange={(e) => {
+                          if (!phoneTouched) setPhoneTouched(true);
+                          setFormData({ ...formData, phone: e.target.value });
+                        }}
+                        onBlur={() => setPhoneTouched(true)}
+                        className={`input-luxury ${phoneError ? 'border-luxury-burgundy/70' : ''}`}
                         placeholder={t('contactPage.form.phonePlaceholder')}
                       />
+                      {phoneError && (
+                        <p className="text-[11px] text-luxury-burgundy mt-2">
+                          {t('contactPage.form.phoneError')}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -355,10 +383,19 @@ export const Contact = () => {
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="input-luxury"
+                      onChange={(e) => {
+                        if (!emailTouched) setEmailTouched(true);
+                        setFormData({ ...formData, email: e.target.value });
+                      }}
+                      onBlur={() => setEmailTouched(true)}
+                      className={`input-luxury ${emailError ? 'border-luxury-burgundy/70' : ''}`}
                       placeholder={t('contactPage.form.emailPlaceholder')}
                     />
+                    {emailError && (
+                      <p className="text-[11px] text-luxury-burgundy mt-2">
+                        {t('contactPage.form.emailError')}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -393,7 +430,10 @@ export const Contact = () => {
 
                   <button
                     type="submit"
-                    className="btn-primary w-full flex items-center justify-center gap-3"
+                    disabled={!isPhoneValid || !isEmailValid}
+                    className={`btn-primary w-full flex items-center justify-center gap-3 ${
+                      !isPhoneValid || !isEmailValid ? 'opacity-60 cursor-not-allowed' : ''
+                    }`}
                   >
                     {t('contactPage.form.submit')}
                     <Send size={18} />
