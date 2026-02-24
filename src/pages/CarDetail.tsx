@@ -259,7 +259,7 @@ export const CarDetail = () => {
       {/* ===================== IMMERSIVE HERO ===================== */}
       <section
         ref={heroRef}
-        className="relative h-[100vh] min-h-[600px] overflow-hidden"
+        className="relative h-[65vh] min-h-[420px] lg:h-[100vh] lg:min-h-[600px] overflow-hidden"
       >
         <motion.div
           style={{ y: heroImgY, scale: heroImgScale }}
@@ -300,7 +300,7 @@ export const CarDetail = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-28 left-6 lg:left-16 z-20"
+          className="absolute top-20 left-6 lg:top-28 lg:left-16 z-20"
         >
           <Link
             to="/catalog"
@@ -365,7 +365,7 @@ export const CarDetail = () => {
         <motion.div
           ref={titleRef}
           style={{ y: heroTitleY, opacity: heroInfoOpacity }}
-          className="absolute bottom-0 left-0 right-0 z-10 pb-16 lg:pb-24"
+          className="absolute bottom-0 left-0 right-0 z-10 pb-10 lg:pb-24"
         >
           <div className="container mx-auto px-6 lg:px-16">
             <div className="max-w-6xl">
