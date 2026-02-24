@@ -1,23 +1,25 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Footer } from '../components/Footer';
 import { submitLead } from '../utils/leads';
+import { publicApi } from '../utils/publicApi';
+import type { Car } from '../types/car';
 
 const contactMethods = [
   {
     icon: Phone,
     labelKey: 'contactPage.methods.phone.label',
-  value: '+7 (775) 381-38-39',
-  href: 'tel:+77753813839',
+    value: '+7 (775) 381-38-39',
+    href: 'tel:+77753813839',
     descriptionKey: 'contactPage.methods.phone.description',
   },
   {
     icon: MessageCircle,
     labelKey: 'contactPage.methods.whatsapp.label',
-  value: '+7 (775) 381-38-39',
-  href: 'https://wa.me/77753813839',
+    value: '+7 (775) 381-38-39',
+    href: 'https://wa.me/77753813839',
     descriptionKey: 'contactPage.methods.whatsapp.description',
   },
   {
@@ -56,6 +58,36 @@ export const Contact = () => {
     model: '',
     message: '',
   });
+
+  const [cars, setCars] = useState<Car[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .cars()
+      .then((items) => {
+        if (!cancelled) setCars(items);
+      })
+      .catch(() => {
+        if (!cancelled) setCars([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const carOptions = useMemo(() => {
+    const map = new Map<string, Car>();
+  cars.forEach((car: Car) => {
+      const label = car.modelDisplay ?? `${car.brand} ${car.model}`.trim();
+      if (!map.has(label)) map.set(label, car);
+    });
+    return Array.from(map.entries()).map(([label, car]) => ({
+      label,
+      value: car.model,
+      key: car.id ?? label,
+    }));
+  }, [cars]);
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -339,14 +371,11 @@ export const Contact = () => {
                       className="input-luxury"
                     >
                       <option value="">{t('contactPage.form.modelPlaceholder')}</option>
-                      <option value="E-HS9">Hongqi E-HS9</option>
-                      <option value="HQ9">Hongqi HQ9</option>
-                      <option value="H9">Hongqi H9</option>
-                      <option value="HS7">Hongqi HS7</option>
-                      <option value="H6">Hongqi H6</option>
-                      <option value="HS5">Hongqi HS5</option>
-                      <option value="H5">Hongqi H5</option>
-                      <option value="HS3">Hongqi HS3</option>
+                      {carOptions.map((option) => (
+                        <option key={option.key} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

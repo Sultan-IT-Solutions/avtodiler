@@ -15,6 +15,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { publicApi } from '../utils/publicApi';
+import { formatPriceKzt } from '../utils/formatPrice';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -85,6 +86,10 @@ export const Home = () => {
   const { t } = useTranslation();
   const [cars, setCars] = useState<Car[]>([]);
   const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
+  const latestCars = useMemo<Car[]>(
+    () => [...cars].sort((a, b) => (b.year ?? 0) - (a.year ?? 0)).slice(0, 3),
+    [cars],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -529,37 +534,63 @@ export const Home = () => {
               </span>
             </Link>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { title: t('homePage.offers.cards.tradeIn.title'), desc: t('homePage.offers.cards.tradeIn.desc'), badge: t('homePage.offers.cards.tradeIn.badge'), image: cars[0]?.images[0] },
-              { title: t('homePage.offers.cards.credit.title'), desc: t('homePage.offers.cards.credit.desc'), badge: t('homePage.offers.cards.credit.badge'), image: cars[1]?.images[0] },
-              { title: t('homePage.offers.cards.service.title'), desc: t('homePage.offers.cards.service.desc'), badge: t('homePage.offers.cards.service.badge'), image: cars[2]?.images[0] },
-            ].map((offer, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Link to="/offers" className="block group">
-                  <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-500">
-                    <div className="relative aspect-[16/9] overflow-hidden">
-                      <img src={offer.image} alt={offer.title} className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" onError={(e) => { e.currentTarget.src = SITE_IMAGES.hero; e.currentTarget.onerror = () => { e.currentTarget.src = SITE_IMAGES.cta; }; }} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70" />
-                      <div className="absolute top-3 left-3 bg-luxury-burgundy px-2.5 py-1">
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-white">{offer.badge}</span>
+          {latestCars.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {latestCars.map((car, i) => {
+                const title = car.modelDisplay ?? `${car.brand} ${car.model}`.trim();
+                const badge = car.availability ?? `${car.year ?? ''}`.trim();
+                const price = Number.isFinite(car.price) ? formatPriceKzt(car.price) : '';
+                const image = car.images?.[0] ?? SITE_IMAGES.hero;
+
+                return (
+                  <motion.div
+                    key={car.id}
+                    initial={{ opacity: 0, y: 60 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <Link to={`/car/${car.id}`} className="block group">
+                      <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-500">
+                        <div className="relative aspect-[16/9] overflow-hidden">
+                          <img
+                            src={image}
+                            alt={title}
+                            className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                            onError={(e) => {
+                              e.currentTarget.src = SITE_IMAGES.hero;
+                              e.currentTarget.onerror = () => {
+                                e.currentTarget.src = SITE_IMAGES.cta;
+                              };
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70" />
+                          {badge && (
+                            <div className="absolute top-3 left-3 bg-luxury-burgundy px-2.5 py-1">
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-white">{badge}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-6">
+                          <h3
+                            className="text-base font-bold text-white mb-2 group-hover:text-luxury-burgundy transition-colors"
+                            style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
+                          >
+                            {title}
+                          </h3>
+                          <p className="text-sm text-white/30 font-light">
+                            {price ? `${t('homePage.common.from')} ${price}` : t('homePage.common.allModels')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-base font-bold text-white mb-2 group-hover:text-luxury-burgundy transition-colors"
-                        style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>{offer.title}</h3>
-                      <p className="text-sm text-white/30 font-light">{offer.desc}</p>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
