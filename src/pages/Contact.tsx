@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,7 @@ const contactMethods = [
   {
     icon: MapPin,
     labelKey: 'contactPage.methods.address.label',
-    value: 'ул. Аль-Фараби, 77',
+    value: 'Алатау просп., 1а/5, Шугыла',
     href: 'https://maps.google.com',
     descriptionKey: 'contactPage.methods.address.description',
   },
@@ -251,16 +251,8 @@ export const Contact = () => {
                 </div>
                 <div className="space-y-3 text-white/40 font-light text-[15px]">
                   <div className="flex justify-between gap-8">
-                    <span>{t('contactPage.hours.weekdays')}</span>
-                    <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>09:00 — 20:00</span>
-                  </div>
-                  <div className="flex justify-between gap-8">
-                    <span>{t('contactPage.hours.sat')}</span>
+                    <span>Ежедневно</span>
                     <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>10:00 — 18:00</span>
-                  </div>
-                  <div className="flex justify-between gap-8">
-                    <span>{t('contactPage.hours.sun')}</span>
-                    <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>11:00 — 17:00</span>
                   </div>
                 </div>
               </div>

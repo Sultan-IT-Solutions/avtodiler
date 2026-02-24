@@ -322,16 +322,8 @@ export const Service = () => {
                 </div>
                 <div className="space-y-3 text-white/40 font-light text-[15px]">
                   <div className="flex justify-between gap-8">
-                    <span>{t('servicePage.booking.hoursWeekdays')}</span>
-                    <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>08:00 — 20:00</span>
-                  </div>
-                  <div className="flex justify-between gap-8">
-                    <span>{t('servicePage.booking.hoursSaturday')}</span>
-                    <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>09:00 — 18:00</span>
-                  </div>
-                  <div className="flex justify-between gap-8">
-                    <span>{t('servicePage.booking.hoursSunday')}</span>
-                    <span className="text-white/40" style={{ fontFamily: "'Space Grotesk', monospace" }}>выходной</span>
+                    <span>Ежедневно</span>
+                    <span className="text-white" style={{ fontFamily: "'Space Grotesk', monospace" }}>10:00 — 18:00</span>
                   </div>
                 </div>
               </div>

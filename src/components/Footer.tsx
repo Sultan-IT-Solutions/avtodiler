@@ -55,11 +55,15 @@ export const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-luxury-burgundy flex items-center justify-center">
-                <span className="text-white font-display text-lg font-bold">H</span>
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img
+                  src="https://cdn.hongqi.ru/storage/mediadocument/document/0/19/325/19325/01jb1w2g0p3rcwrq2gdxkdy6g5.webp"
+                  alt="Hongqi"
+                  className="h-10 w-auto object-contain"
+                />
               </div>
               <div>
-                <div className="text-white font-display text-lg tracking-tight leading-none">HONGQI AUTO</div>
+                <div className="text-white font-display text-lg tracking-tight leading-none">Hongqi Auto</div>
                 <div className="text-luxury-muted text-micro uppercase tracking-ultra mt-0.5">Kazakhstan</div>
               </div>
             </div>

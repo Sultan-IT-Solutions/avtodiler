@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
@@ -352,7 +352,7 @@
       "phone": { "label": "Phone", "description": "Call us during business hours" },
       "whatsapp": { "label": "WhatsApp", "description": "Message us on WhatsApp 24/7" },
       "email": { "label": "Email", "description": "We'll reply within 24 hours" },
-      "address": { "label": "Address", "description": "Almaty, Kazakhstan" }
+      "address": { "label": "Address", "description": "Alatau Ave., 1a/5, Shugyla, Almaty" }
     },
     "consultation": {
       "eyebrow": "Book",
@@ -384,7 +384,7 @@
     },
     "map": {
       "title": "Our showroom",
-      "address": "77 Al-Farabi Ave, Almaty, Kazakhstan",
+      "address": "Alatau Ave., 1a/5, Shugyla, Nauryzbay district, Almaty",
       "open": "Open on map"
     }
   },
@@ -445,7 +445,7 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact Information",
-    "address": "Almaty, Kazakhstan",
+    "address": "Alatau Ave., 1a/5, Shugyla, Almaty",
     "rights": "All rights reserved"
   }
 }
