@@ -9,10 +9,11 @@ import type {
   LeadItem,
   LocaleText,
   OfferItem,
+  ServiceItem,
   SeoItem,
 } from '../types/admin';
 import { createId } from '../utils/adminStorage';
-import { carsApi, dealersApi, leadsApi, offersApi, seoApi } from '../utils/adminApi';
+import { carsApi, dealersApi, leadsApi, offersApi, seoApi, servicesApi } from '../utils/adminApi';
 
 const readAuthOk = () => false;
 
@@ -246,6 +247,7 @@ type SectionInfo = { key: AdminSectionKey; label: string };
 const AdminApp = () => {
   const [data, setData] = useState<AdminData>(() => ({
     cars: [],
+    services: [],
     offers: [],
     dealers: [],
     leads: [],
@@ -286,8 +288,9 @@ const AdminApp = () => {
     const load = async () => {
       setIsSyncing(true);
       try {
-        const [cars, offers, dealers, leads, seo] = await Promise.all([
+        const [cars, services, offers, dealers, leads, seo] = await Promise.all([
           carsApi.list(),
+          servicesApi.list(),
           offersApi.list(),
           dealersApi.list(),
           leadsApi.list(),
@@ -298,6 +301,7 @@ const AdminApp = () => {
         setData((current) => ({
           ...current,
           cars,
+          services,
           offers,
           dealers,
           leads,
@@ -333,6 +337,7 @@ const AdminApp = () => {
   const sections = useMemo<SectionInfo[]>(
     () => [
       { key: 'cars', label: 'Автомобили' },
+      { key: 'services', label: 'Сервис' },
       { key: 'offers', label: 'Предложения / акции' },
       { key: 'dealers', label: 'Дилерские центры' },
       { key: 'leads', label: 'Заявки' },
@@ -412,6 +417,23 @@ const AdminApp = () => {
                 try {
                   if (mode === 'delete') await offersApi.remove(item.id);
                   else await offersApi.upsert(item);
+                } catch (error) {
+                  notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
+                }
+              }}
+              notify={notify}
+              syncing={isSyncing}
+            />
+          )}
+          {activeSection === 'services' && (
+            <ServicesSection
+              title={activeLabel}
+              items={data.services}
+              onChange={(items) => updateData((current) => ({ ...current, services: items }))}
+              onPersist={async (item, mode) => {
+                try {
+                  if (mode === 'delete') await servicesApi.remove(item.id);
+                  else await servicesApi.upsert(item);
                 } catch (error) {
                   notify(`Neon sync failed: ${(error as Error).message}`, 'ОК');
                 }
@@ -1093,6 +1115,119 @@ const OffersSection = ({
           </div>
         ) : (
           <EmptyState text="Добавьте предложение." />
+        )}
+      </div>
+    </SectionLayout>
+  );
+};
+
+const ServicesSection = ({
+  title,
+  items,
+  onChange,
+  onPersist,
+  notify,
+  syncing,
+}: {
+  title: string;
+  items: ServiceItem[];
+  onChange: (items: ServiceItem[]) => void;
+  onPersist: (item: ServiceItem, mode: 'upsert' | 'delete') => Promise<void>;
+  notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  syncing: boolean;
+}) => {
+  const state = useEntityState(items, () => ({
+    id: createId(),
+    title: localeField(),
+    description: localeField(),
+    price: '',
+  }));
+
+  const handleSave = () => {
+    if (!state.draft) return;
+    if (!window.confirm('Сохранить изменения?')) return;
+    const next = state.isNew
+      ? [...items, state.draft]
+      : items.map((item) => (item.id === state.draft?.id ? state.draft : item));
+    onChange(next);
+    void onPersist(state.draft, 'upsert');
+    notify(state.isNew ? 'Услуга добавлена' : 'Изменения сохранены', 'ОК');
+    state.setIsNew(false);
+    state.setSelectedId(state.draft.id);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm('Удалить запись?')) return;
+    const next = items.filter((item) => item.id !== id);
+    onChange(next);
+    const deleted = items.find((item) => item.id === id);
+    if (deleted) void onPersist(deleted, 'delete');
+    notify('Услуга удалена', 'ОК');
+    state.setSelectedId(next[0]?.id ?? null);
+    state.setDraft(next[0] ?? null);
+    state.setIsNew(false);
+  };
+
+  return (
+    <SectionLayout title={title} description="Услуги сервиса для страницы /service.">
+      {syncing ? (
+        <div className="border border-white/10 bg-luxury-elevated px-4 py-3 text-sm text-white/70">
+          Синхронизация с Neon…
+        </div>
+      ) : null}
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+        <div className="space-y-4">
+          <button onClick={state.createNew} className="btn-primary w-full justify-center">
+            <Plus size={16} />
+            Добавить услугу
+          </button>
+          <EntityList
+            items={items}
+            selectedId={state.selectedId}
+            onSelect={state.selectItem}
+            getLabel={(item) => item.title.ru || 'Без названия'}
+          />
+        </div>
+        {state.draft ? (
+          <div className="bg-luxury-elevated border border-white/10 p-6 space-y-5">
+            <LocaleFields
+              label="Название"
+              value={state.draft.title}
+              onChange={(titleValue) => state.setDraft({ ...state.draft!, title: titleValue })}
+            />
+            <LocaleTextAreas
+              label="Описание"
+              value={state.draft.description}
+              onChange={(description) => state.setDraft({ ...state.draft!, description })}
+              rows={4}
+            />
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">Цена (опционально)</p>
+              <input
+                value={state.draft.price ?? ''}
+                onChange={(event) => state.setDraft({ ...state.draft!, price: event.target.value })}
+                placeholder="от 45 000 ₸"
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={handleSave} className="btn-primary flex items-center gap-2">
+                <Save size={16} />
+                Сохранить
+              </button>
+              {!state.isNew && (
+                <button
+                  onClick={() => handleDelete(state.draft!.id)}
+                  className="btn-outline text-white/70 border-white/20"
+                >
+                  <Trash2 size={16} />
+                  Удалить
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <EmptyState text="Добавьте услугу." />
         )}
       </div>
     </SectionLayout>

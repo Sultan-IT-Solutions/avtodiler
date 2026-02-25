@@ -38,6 +38,21 @@ before update on offers
 for each row
 execute function set_updated_at();
 
+create table if not exists services (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists services_updated_at_idx on services (updated_at desc);
+
+drop trigger if exists services_set_updated_at on services;
+create trigger services_set_updated_at
+before update on services
+for each row
+execute function set_updated_at();
+
 create table if not exists dealers (
   id text primary key,
   data jsonb not null,

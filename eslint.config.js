@@ -25,5 +25,17 @@ export default tseslint.config(
       'react-hooks/exhaustive-deps': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
+  },
+  {
+    files: ['dev/**/*.mjs', 'scripts/**/*.mjs', 'api/**/*.ts', 'server/**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        process: 'readonly',
+        Buffer: 'readonly',
+        console: 'readonly',
+      },
+    },
   }
 );

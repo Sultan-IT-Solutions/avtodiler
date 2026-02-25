@@ -15,7 +15,6 @@ import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { publicApi } from '../utils/publicApi';
-import { formatPriceKzt } from '../utils/formatPrice';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -86,10 +85,6 @@ export const Home = () => {
   const { t } = useTranslation();
   const [cars, setCars] = useState<Car[]>([]);
   const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
-  const latestCars = useMemo<Car[]>(
-    () => [...cars].sort((a, b) => (b.year ?? 0) - (a.year ?? 0)).slice(0, 3),
-    [cars],
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -508,89 +503,6 @@ export const Home = () => {
               {t('homePage.common.allModels')} <ArrowRight size={16} />
             </MagneticButton>
           </div>
-        </div>
-      </section>
-
-      {/* ============================================================
-          SECTION: OFFERS
-          ============================================================ */}
-      <section className="py-24 lg:py-40">
-        <div className="container mx-auto px-6 lg:px-16">
-          <div className="flex items-end justify-between mb-16 gsap-reveal">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="w-10 h-px bg-luxury-burgundy" />
-                <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('homePage.offers.eyebrow')}</span>
-              </div>
-              <h2 className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
-                style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}>
-                {t('homePage.offers.titleLine1')}<br /><span className="text-white/90">{t('homePage.offers.titleLine2')}</span>
-              </h2>
-            </div>
-            <Link to="/offers" className="hidden md:flex items-center gap-3 text-white/20 hover:text-white/60 transition-colors group">
-              <span className="text-[11px] uppercase tracking-[0.2em]">{t('homePage.offers.allOffers')}</span>
-              <span className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-white/30 transition-all">
-                <ArrowRight size={14} />
-              </span>
-            </Link>
-          </div>
-          {latestCars.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {latestCars.map((car, i) => {
-                const title = car.modelDisplay ?? `${car.brand} ${car.model}`.trim();
-                const badge = car.availability ?? `${car.year ?? ''}`.trim();
-                const price = Number.isFinite(car.price) ? formatPriceKzt(car.price) : '';
-                const image = car.images?.[0] ?? SITE_IMAGES.hero;
-
-                return (
-                  <motion.div
-                    key={car.id}
-                    initial={{ opacity: 0, y: 60 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <Link to={`/car/${car.id}`} className="block group">
-                      <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-white/10 transition-all duration-500">
-                        <div className="relative aspect-[16/9] overflow-hidden">
-                          <img
-                            src={image}
-                            alt={title}
-                            className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-                            onError={(e) => {
-                              e.currentTarget.src = SITE_IMAGES.hero;
-                              e.currentTarget.onerror = () => {
-                                e.currentTarget.src = SITE_IMAGES.cta;
-                              };
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent to-transparent opacity-70" />
-                          {badge && (
-                            <div className="absolute top-3 left-3 bg-luxury-burgundy px-2.5 py-1">
-                              <span className="text-[10px] uppercase tracking-[0.2em] text-white">{badge}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-6">
-                          <h3
-                            className="text-base font-bold text-white mb-2 group-hover:text-luxury-burgundy transition-colors"
-                            style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
-                          >
-                            {title}
-                          </h3>
-                          <p className="text-sm text-white/30 font-light">
-                            {price ? `${t('homePage.common.from')} ${price}` : t('homePage.common.allModels')}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
         </div>
       </section>
 

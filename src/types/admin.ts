@@ -74,7 +74,7 @@ export interface ServiceItem {
   id: string;
   title: LocaleText;
   description: LocaleText;
-  price: string;
+  price?: string;
 }
 
 export interface OfferItem {
@@ -132,6 +132,7 @@ export interface SeoItem {
 
 export interface AdminData {
   cars: AdminCar[];
+  services: ServiceItem[];
   offers: OfferItem[];
   dealers: DealerItem[];
   leads: LeadItem[];

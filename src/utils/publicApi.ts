@@ -1,5 +1,5 @@
 import type { Car } from '../types/car';
-import type { DealerItem, OfferItem, SeoItem } from '../types/admin';
+import type { DealerItem, OfferItem, SeoItem, ServiceItem } from '../types/admin';
 
 type ApiResult<T> = { ok: true } & T;
 
@@ -42,6 +42,13 @@ export const publicApi = {
     const res = await fetch('/api/public/offers');
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{ items: { data: OfferItem }[] }>;
+    return (body.items ?? []).map((x) => x.data);
+  },
+
+  async services(): Promise<ServiceItem[]> {
+    const res = await fetch('/api/public/services');
+    await ensureOk(res);
+    const body = (await res.json()) as ApiResult<{ items: { data: ServiceItem }[] }>;
     return (body.items ?? []).map((x) => x.data);
   },
 

@@ -1,60 +1,21 @@
-import { useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { submitLead } from '../utils/leads';
 import { useTranslation } from 'react-i18next';
+import { publicApi } from '../utils/publicApi';
+import { localizedText } from '../utils/localizedText';
+import type { ServiceItem } from '../types/admin';
+import { EmptyState } from '../components/EmptyState';
 
-const services = [
-  {
-    id: 1,
-    icon: Wrench,
-    titleKey: 'servicePage.services.maintenance.title',
-    descriptionKey: 'servicePage.services.maintenance.description',
-    priceKey: 'servicePage.services.maintenance.price',
-  },
-  {
-    id: 2,
-    icon: ShieldCheck,
-    titleKey: 'servicePage.services.diagnostics.title',
-    descriptionKey: 'servicePage.services.diagnostics.description',
-    priceKey: 'servicePage.services.diagnostics.price',
-  },
-  {
-    id: 3,
-    icon: Cog,
-    titleKey: 'servicePage.services.engineRepair.title',
-    descriptionKey: 'servicePage.services.engineRepair.description',
-    priceKey: 'servicePage.services.engineRepair.price',
-  },
-  {
-    id: 4,
-    icon: Paintbrush,
-    titleKey: 'servicePage.services.bodyRepair.title',
-    descriptionKey: 'servicePage.services.bodyRepair.description',
-    priceKey: 'servicePage.services.bodyRepair.price',
-  },
-  {
-    id: 5,
-    icon: Zap,
-    titleKey: 'servicePage.services.electrics.title',
-    descriptionKey: 'servicePage.services.electrics.description',
-    priceKey: 'servicePage.services.electrics.price',
-  },
-  {
-    id: 6,
-    icon: CarFront,
-    titleKey: 'servicePage.services.tires.title',
-    descriptionKey: 'servicePage.services.tires.description',
-    priceKey: 'servicePage.services.tires.price',
-  },
-];
+const serviceIcons = [Wrench, ShieldCheck, Cog, Paintbrush, Zap, CarFront];
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Service = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -64,6 +25,7 @@ export const Service = () => {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
+  const [services, setServices] = useState<ServiceItem[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -72,14 +34,42 @@ export const Service = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    void publicApi
+      .services()
+      .then((items) => {
+        if (!cancelled) setServices(items);
+      })
+      .catch(() => {
+        if (!cancelled) setServices([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const localizedServices = useMemo(
+    () =>
+      services.map((service, index) => ({
+        ...service,
+        icon: serviceIcons[index % serviceIcons.length],
+        title: localizedText(service.title, { lng: i18n.language, fallbackLng: 'ru' }),
+        description: localizedText(service.description, { lng: i18n.language, fallbackLng: 'ru' }),
+      })),
+    [services, i18n.language],
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedService = services.find((s) => s.id.toString() === formData.service);
+    const selectedService = services.find((service) => service.id === formData.service);
     await submitLead({
       type: 'service',
       name: formData.name,
       phone: formData.phone,
-      service: selectedService ? t(selectedService.titleKey) : formData.service,
+      service: selectedService
+        ? localizedText(selectedService.title, { lng: i18n.language, fallbackLng: 'ru' })
+        : formData.service,
       comment: formData.comment,
     });
     setIsSubmitted(true);
@@ -238,46 +228,52 @@ export const Service = () => {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((s, i) => (
-              <motion.div
-                key={s.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.8, delay: i * 0.08, ease }}
-                className="bg-luxury-elevated border border-white/5 p-8 lg:p-10 group hover:border-white/10 hover:bg-luxury-hover transition-all duration-600 relative overflow-hidden"
-              >
-                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/40 to-luxury-burgundy/0 opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-luxury-burgundy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
+          {localizedServices.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {localizedServices.map((service, i) => (
+                <motion.div
+                  key={service.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.8, delay: i * 0.08, ease }}
+                  className="bg-luxury-elevated border border-white/5 p-8 lg:p-10 group hover:border-white/10 hover:bg-luxury-hover transition-all duration-600 relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/40 to-luxury-burgundy/0 opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-luxury-burgundy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
 
-                <div className="relative z-10">
-                  <div className="w-14 h-14 border border-white/10 flex items-center justify-center mb-8 group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy/10 transition-all duration-400">
-                    <s.icon size={24} className="text-white/40 group-hover:text-luxury-burgundy transition-colors duration-400" />
-                  </div>
+                  <div className="relative z-10">
+                    <div className="w-14 h-14 border border-white/10 flex items-center justify-center mb-8 group-hover:border-luxury-burgundy group-hover:bg-luxury-burgundy/10 transition-all duration-400">
+                      <service.icon size={24} className="text-white/40 group-hover:text-luxury-burgundy transition-colors duration-400" />
+                    </div>
 
-                  <h3
-                    className="text-[15px] font-bold text-white uppercase tracking-[0.05em] mb-4"
-                    style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
-                  >
-                    {t(s.titleKey)}
-                  </h3>
-                  <p className="text-white/40 font-light text-[15px] leading-relaxed mb-6">
-                    {t(s.descriptionKey)}
-                  </p>
-
-                  <div className="pt-6 border-t border-white/5">
-                    <span
-                      className="text-luxury-burgundy text-lg font-medium"
-                      style={{ fontFamily: "'Space Grotesk', monospace" }}
+                    <h3
+                      className="text-[15px] font-bold text-white uppercase tracking-[0.05em] mb-4"
+                      style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                     >
-                      {t(s.priceKey)}
-                    </span>
+                      {service.title}
+                    </h3>
+                    <p className="text-white/40 font-light text-[15px] leading-relaxed mb-6">
+                      {service.description}
+                    </p>
+
+                    {service.price ? (
+                      <div className="pt-6 border-t border-white/5">
+                        <span
+                          className="text-luxury-burgundy text-lg font-medium"
+                          style={{ fontFamily: "'Space Grotesk', monospace" }}
+                        >
+                          {service.price}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -396,9 +392,9 @@ export const Service = () => {
                       className="input-luxury"
                     >
                       <option value="">{t('servicePage.booking.servicePlaceholder')}</option>
-                      {services.map((s) => (
-                        <option key={s.id} value={s.id.toString()}>
-                          {t(s.titleKey)}
+                      {localizedServices.map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.title}
                         </option>
                       ))}
                     </select>
