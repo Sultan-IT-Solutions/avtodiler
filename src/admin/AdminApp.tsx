@@ -337,7 +337,7 @@ const AdminApp = () => {
   const sections = useMemo<SectionInfo[]>(
     () => [
       { key: 'cars', label: 'Автомобили' },
-      { key: 'services', label: 'Сервис' },
+      { key: 'services', label: 'Сервисы' },
       { key: 'offers', label: 'Предложения / акции' },
       { key: 'dealers', label: 'Дилерские центры' },
       { key: 'leads', label: 'Заявки' },
@@ -656,6 +656,85 @@ const CarsSection = ({
     state.setIsNew(false);
   };
 
+  const [imagesInput, setImagesInput] = useState('');
+  const [image360Input, setImage360Input] = useState('');
+  const [imageChecks, setImageChecks] = useState<
+    Record<string, 'idle' | 'checking' | 'ok' | 'error'>
+  >({});
+
+  const isValidUrl = (value: string) => {
+    if (!value.trim()) return false;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const splitUrls = (value: string) =>
+    value
+      .split(',')
+      .map((url) => url.trim())
+      .filter(Boolean);
+
+  const dedupeUrls = (urls: string[]) => Array.from(new Set(urls));
+
+  const parseUrls = (value: string) => dedupeUrls(splitUrls(value));
+
+  const validUrls = (value: string) => parseUrls(value).filter(isValidUrl);
+
+  const invalidImages = useMemo(
+    () => parseUrls(imagesInput).filter((url) => !isValidUrl(url)),
+    [imagesInput]
+  );
+
+  const invalidImage360 = useMemo(
+    () => parseUrls(image360Input).filter((url) => !isValidUrl(url)),
+    [image360Input]
+  );
+
+  useEffect(() => {
+    if (!state.draft) return;
+    setImagesInput(state.draft.images.join(', '));
+    setImage360Input((state.draft.image360 ?? []).join(', '));
+    setImageChecks({});
+  }, [state.draft?.id]);
+
+  const checkAvailability = async (urls: string[]) => {
+    if (!urls.length) return;
+    setImageChecks((current) => {
+      const next = { ...current };
+      urls.forEach((url) => {
+        next[url] = 'checking';
+      });
+      return next;
+    });
+
+    await Promise.all(
+      urls.map(async (url) => {
+        try {
+          const res = await fetch(url, { method: 'HEAD' });
+          setImageChecks((current) => ({
+            ...current,
+            [url]: res.ok ? 'ok' : 'error',
+          }));
+        } catch {
+          setImageChecks((current) => ({
+            ...current,
+            [url]: 'error',
+          }));
+        }
+      })
+    );
+  };
+
+  const imageFallback =
+    'data:image/svg+xml;utf8,' +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="300" height="200" fill="#101010"/><text x="150" y="105" font-size="14" fill="#777" text-anchor="middle" font-family="Arial">no image</text></svg>'
+    );
+
   return (
     <SectionLayout title={title} description="Полный список автомобилей с ценами и доступностью.">
       {syncing ? (
@@ -800,34 +879,138 @@ const CarsSection = ({
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">Изображения (URL через запятую)</p>
               <textarea
-                value={state.draft.images.join(', ')}
-                onChange={(event) =>
+                value={imagesInput}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextValid = validUrls(nextValue);
+                  setImagesInput(nextValue);
+                  setImageChecks((current) => {
+                    const next: Record<string, 'idle' | 'checking' | 'ok' | 'error'> = {};
+                    nextValid.forEach((url) => {
+                      if (current[url]) next[url] = current[url];
+                    });
+                    return next;
+                  });
                   state.setDraft({
                     ...state.draft!,
-                    images: event.target.value
-                      .split(',')
-                      .map((url) => url.trim())
-                      .filter(Boolean),
-                  })
-                }
-                className="w-full min-h-[90px] bg-luxury-surface border border-white/10 px-3 py-2 text-sm text-white"
+                    images: nextValid,
+                  });
+                }}
+                className={`w-full min-h-[90px] bg-luxury-surface border px-3 py-2 text-sm text-white ${
+                  invalidImages.length ? 'border-luxury-burgundy/70' : 'border-white/10'
+                }`}
               />
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <p className="text-[11px] text-white/40">Только http/https ссылки. Превью появится ниже.</p>
+                <button
+                  type="button"
+                  onClick={() => checkAvailability(state.draft!.images)}
+                  className="text-[11px] uppercase tracking-[0.2em] text-white/70 border border-white/20 px-3 py-1 hover:border-white/40"
+                >
+                  Проверить доступность
+                </button>
+              </div>
+              {invalidImages.length ? (
+                <p className="text-[11px] text-luxury-burgundy mt-2">
+                  Невалидные ссылки: {invalidImages.join(', ')}
+                </p>
+              ) : null}
+              {state.draft.images.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
+                  {state.draft.images.map((url) => (
+                    <div key={url} className="border border-white/10 bg-luxury-surface overflow-hidden">
+                      <div className="aspect-[4/3] bg-black/50">
+                        <img
+                          src={url}
+                          alt="preview"
+                          className="w-full h-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.src = imageFallback;
+                          }}
+                        />
+                      </div>
+                      <div className="px-2 py-2 text-[10px] text-white/50 break-all">{url}</div>
+                      {imageChecks[url] ? (
+                        <div className="px-2 pb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
+                          {imageChecks[url] === 'checking'
+                            ? 'Проверка…'
+                            : imageChecks[url] === 'ok'
+                              ? 'OK'
+                              : 'Ошибка'}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">Фото 360 (URL через запятую)</p>
               <textarea
-                value={(state.draft.image360 ?? []).join(', ')}
-                onChange={(event) =>
+                value={image360Input}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  const nextValid = validUrls(nextValue);
+                  setImage360Input(nextValue);
+                  setImageChecks((current) => {
+                    const next: Record<string, 'idle' | 'checking' | 'ok' | 'error'> = {};
+                    nextValid.forEach((url) => {
+                      if (current[url]) next[url] = current[url];
+                    });
+                    return next;
+                  });
                   state.setDraft({
                     ...state.draft!,
-                    image360: event.target.value
-                      .split(',')
-                      .map((url) => url.trim())
-                      .filter(Boolean),
-                  })
-                }
-                className="w-full min-h-[70px] bg-luxury-surface border border-white/10 px-3 py-2 text-sm text-white"
+                    image360: nextValid,
+                  });
+                }}
+                className={`w-full min-h-[70px] bg-luxury-surface border px-3 py-2 text-sm text-white ${
+                  invalidImage360.length ? 'border-luxury-burgundy/70' : 'border-white/10'
+                }`}
               />
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <p className="text-[11px] text-white/40">Только http/https ссылки. Превью появится ниже.</p>
+                <button
+                  type="button"
+                  onClick={() => checkAvailability(state.draft!.image360 ?? [])}
+                  className="text-[11px] uppercase tracking-[0.2em] text-white/70 border border-white/20 px-3 py-1 hover:border-white/40"
+                >
+                  Проверить доступность
+                </button>
+              </div>
+              {invalidImage360.length ? (
+                <p className="text-[11px] text-luxury-burgundy mt-2">
+                  Невалидные ссылки: {invalidImage360.join(', ')}
+                </p>
+              ) : null}
+              {(state.draft.image360 ?? []).length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-4">
+                  {(state.draft.image360 ?? []).map((url) => (
+                    <div key={url} className="border border-white/10 bg-luxury-surface overflow-hidden">
+                      <div className="aspect-[4/3] bg-black/50">
+                        <img
+                          src={url}
+                          alt="360 preview"
+                          className="w-full h-full object-cover"
+                          onError={(event) => {
+                            event.currentTarget.src = imageFallback;
+                          }}
+                        />
+                      </div>
+                      <div className="px-2 py-2 text-[10px] text-white/50 break-all">{url}</div>
+                      {imageChecks[url] ? (
+                        <div className="px-2 pb-2 text-[10px] uppercase tracking-[0.2em] text-white/40">
+                          {imageChecks[url] === 'checking'
+                            ? 'Проверка…'
+                            : imageChecks[url] === 'ok'
+                              ? 'OK'
+                              : 'Ошибка'}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div className="space-y-3">
               <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">Характеристики</p>
