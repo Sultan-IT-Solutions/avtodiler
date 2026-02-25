@@ -712,20 +712,41 @@ const CarsSection = ({
     });
 
     await Promise.all(
-      urls.map(async (url) => {
-        try {
-          const res = await fetch(url, { method: 'HEAD' });
-          setImageChecks((current) => ({
-            ...current,
-            [url]: res.ok ? 'ok' : 'error',
-          }));
-        } catch {
-          setImageChecks((current) => ({
-            ...current,
-            [url]: 'error',
-          }));
-        }
-      })
+      urls.map(
+        (url) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            const timer = window.setTimeout(() => {
+              img.src = '';
+              setImageChecks((current) => ({
+                ...current,
+                [url]: 'error',
+              }));
+              resolve();
+            }, 8000);
+
+            img.onload = () => {
+              window.clearTimeout(timer);
+              setImageChecks((current) => ({
+                ...current,
+                [url]: 'ok',
+              }));
+              resolve();
+            };
+
+            img.onerror = () => {
+              window.clearTimeout(timer);
+              setImageChecks((current) => ({
+                ...current,
+                [url]: 'error',
+              }));
+              resolve();
+            };
+
+            img.referrerPolicy = 'no-referrer';
+            img.src = url;
+          })
+      )
     );
   };
 
