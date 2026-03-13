@@ -527,7 +527,7 @@ const ShopReviewsSection = () => {
       setDraft({
         id: createId(),
         name: '',
-        rating: 5,
+        rating: null,
         text: localeField(),
       });
       return;
@@ -540,7 +540,7 @@ const ShopReviewsSection = () => {
       current ?? {
         id: createId(),
         name: '',
-        rating: 5,
+        rating: null,
         text: localeField(),
       }
     );
@@ -561,7 +561,7 @@ const ShopReviewsSection = () => {
               setDraft({
                 id: createId(),
                 name: '',
-                rating: 5,
+                rating: null,
                 text: localeField(),
               });
             }}
@@ -591,11 +591,20 @@ const ShopReviewsSection = () => {
               <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/60">Рейтинг</p>
               <input
                 type="number"
-                min={1}
+                min={0}
                 max={5}
-                value={draft.rating}
-                onChange={(event) => setDraft({ ...draft, rating: Number(event.target.value) })}
+                value={draft.rating ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value.trim();
+                  if (!value) {
+                    setDraft({ ...draft, rating: null });
+                    return;
+                  }
+                  const parsed = Math.min(5, Math.max(0, Number(value)));
+                  setDraft({ ...draft, rating: Number.isNaN(parsed) ? null : parsed });
+                }}
                 className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+                placeholder="0-5"
               />
             </div>
           </div>

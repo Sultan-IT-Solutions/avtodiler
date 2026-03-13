@@ -72,7 +72,7 @@ export interface StoreItem {
 export interface ReviewItem {
   id: string;
   name: string;
-  rating: number;
+  rating: number | null;
   text: LocaleText;
 }
 

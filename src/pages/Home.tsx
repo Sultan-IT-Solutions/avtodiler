@@ -567,7 +567,11 @@ export const Home = () => {
                 transition={{ duration: 0.7, delay: index * 0.08 }}
                 className="border border-white/10 bg-luxury-black p-8"
               >
-                <p className="text-luxury-burgundy tracking-[0.2em]">{'★'.repeat(review.rating)}</p>
+                {typeof review.rating === 'number' ? (
+                  <p className="text-luxury-burgundy tracking-[0.2em]">
+                    {'★'.repeat(Math.max(0, Math.min(5, review.rating)))}
+                  </p>
+                ) : null}
                 <p className="mt-5 text-base leading-8 text-white/75">
                   {localizedText(review.text, { lng: i18n.language })}
                 </p>
