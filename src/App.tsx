@@ -9,6 +9,7 @@ import { Service } from './pages/Service';
 import { TestDrive } from './pages/TestDrive';
 import { Offers } from './pages/Offers';
 import { Dealers } from './pages/Dealers';
+import { Policy } from './pages/Policy';
 import AdminApp from './admin/AdminApp';
 import { ShopProvider } from './context/ShopContext';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -473,6 +474,8 @@ function AnimatedRoutes() {
           <Route path="/offers" element={<Offers />} />
           <Route path="/dealers" element={<Dealers />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/policy" element={<Policy />} />
+          <Route path="/privacy" element={<Policy />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin/*" element={<AdminApp />} />
         </Routes>

@@ -43,9 +43,9 @@ const Select = (props: SelectHTMLAttributes<HTMLSelectElement>) => (
 const useShopSeo = (path: string) => {
   const { state } = useShop();
   const { i18n } = useTranslation();
+  const page = state.seoPages.find((item) => item.slug === path);
 
   useEffect(() => {
-    const page = state.seoPages.find((item) => item.slug === path);
     if (!page) return;
 
     document.title = localizedText(page.title, { lng: i18n.language, fallbackLng: 'en' });
@@ -59,7 +59,9 @@ const useShopSeo = (path: string) => {
     if (!meta.parentElement) {
       document.head.appendChild(meta);
     }
-  }, [i18n.language, path, state.seoPages]);
+  }, [i18n.language, page]);
+
+  return page;
 };
 
 const stockLabel = (stock: number, t: (key: string) => string) =>
@@ -308,7 +310,7 @@ const Breadcrumbs = ({
 export const ShopHomePage = () => {
   const { t, i18n } = useTranslation();
   const { state } = useShop();
-  useShopSeo('/hongqi-parts');
+  const seoPage = useShopSeo('/hongqi-parts');
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -327,7 +329,7 @@ export const ShopHomePage = () => {
               {t('shop.home.hero.eyebrow')}
             </p>
             <h1 className="text-[clamp(42px,7vw,88px)] font-display font-light leading-[0.98] text-white">
-              {t('shop.home.hero.title')}
+              {localizedText(seoPage?.h1 ?? { ru: t('shop.home.hero.title'), en: t('shop.home.hero.title'), kz: t('shop.home.hero.title') }, { lng: i18n.language })}
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-7 text-white/60">
               {t('shop.home.hero.subtitle')}
@@ -520,7 +522,7 @@ export const ShopCatalogPage = () => {
   const { state } = useShop();
   const location = useLocation();
   const { categorySlug, subcategorySlug } = useParams();
-  useShopSeo('/hongqi-parts/catalog');
+  const seoPage = useShopSeo('/hongqi-parts/catalog');
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
@@ -621,7 +623,14 @@ export const ShopCatalogPage = () => {
                 ? localizedText(subcategory.name, { lng: i18n.language })
                 : category
                   ? localizedText(category.name, { lng: i18n.language })
-                  : t('shop.catalog.title')
+                  : localizedText(
+                      seoPage?.h1 ?? {
+                        ru: t('shop.catalog.title'),
+                        en: t('shop.catalog.title'),
+                        kz: t('shop.catalog.title'),
+                      },
+                      { lng: i18n.language }
+                    )
             }
             subtitle={t('shop.catalog.subtitle')}
           />
@@ -1043,48 +1052,118 @@ export const ShopProductPage = () => {
 
 export const ShopCartPage = () => {
   const { t, i18n } = useTranslation();
-  const { cart, getProduct, removeFromCart, updateCartQuantity, cartTotal } = useShop();
+  const { cart, getProduct, removeFromCart, updateCartQuantity, cartTotal, cartCount } = useShop();
+  const subtotal = cartTotal;
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
-        <ShopSectionIntro title={t('shop.cart.title')} />
+        <ShopSectionIntro
+          eyebrow={t('shop.cart.eyebrow', 'Shop cart')}
+          title={t('shop.cart.title')}
+          subtitle={t('shop.cart.subtitle', 'Проверьте состав заказа перед оформлением.')}
+        />
         {cart.length === 0 ? (
-          <div className="card-luxury mt-8 p-8 text-white/65">{t('shop.cart.empty')}</div>
+          <div className="card-luxury mt-8 p-10 text-center">
+            <p className="text-sm uppercase tracking-[0.24em] text-luxury-burgundy">
+              {t('shop.cart.emptyEyebrow', 'Cart')}
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold text-white">{t('shop.cart.empty')}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-white/60">
+              {t('shop.cart.emptySubtitle', 'Добавьте нужные позиции из каталога, чтобы оформить заказ онлайн.')}
+            </p>
+            <Link to="/hongqi-parts/catalog" className="btn-primary mt-8 inline-flex">
+              {t('shop.actions.goCatalog')}
+            </Link>
+          </div>
         ) : (
           <div className="mt-8 grid gap-8 xl:grid-cols-[1fr_360px]">
             <div className="grid gap-4">
+              <div className="card-luxury flex flex-wrap items-center justify-between gap-4 p-5">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
+                    {t('shop.cart.title')}
+                  </p>
+                  <p className="mt-2 text-sm text-white/60">
+                    {t('shop.cart.headerCount', { count: cartCount })}
+                  </p>
+                </div>
+                <Link to="/hongqi-parts/catalog" className="btn-outline px-5 py-3 text-[11px]">
+                  {t('shop.cart.continueShopping', 'Продолжить покупки')}
+                </Link>
+              </div>
               {cart.map((item) => {
                 const product = getProduct(item.productId);
                 if (!product) return null;
+                const productName = localizedText(product.name, { lng: i18n.language });
+                const lineTotal = product.price * item.quantity;
 
                 return (
                   <div
                     key={item.productId}
-                    className="card-luxury grid gap-5 p-5 sm:grid-cols-[180px_1fr_auto] sm:items-center"
+                    className="card-luxury grid gap-5 p-5 lg:grid-cols-[170px_minmax(0,1fr)_220px] lg:items-center"
                   >
-                    <SmartImage
-                      src={product.images[0]}
-                      alt={localizedText(product.name, { lng: i18n.language })}
-                      className="h-36 w-full object-cover"
-                    />
-                    <div>
-                      <p className="text-xl font-semibold text-white">
-                        {localizedText(product.name, { lng: i18n.language })}
-                      </p>
-                      <p className="mt-2 text-sm text-white/45">{product.article}</p>
-                      <p className="mt-3 text-white">{formatPrice(product.price)}</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <input
-                        type="number"
-                        min={1}
-                        value={item.quantity}
-                        onChange={(event) =>
-                          updateCartQuantity(item.productId, Number(event.target.value))
-                        }
-                        className="h-11 w-24 border border-white/15 bg-transparent px-3 text-white"
+                    <Link to={`/hongqi-parts/${product.slug}`} className="block overflow-hidden">
+                      <SmartImage
+                        src={product.images[0]}
+                        alt={productName}
+                        className="h-36 w-full object-cover"
+                        fallbackLabel={product.article}
                       />
+                    </Link>
+                    <div>
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <Link to={`/hongqi-parts/${product.slug}`} className="text-xl font-semibold text-white">
+                          {productName}
+                        </Link>
+                        <span className={product.stock > 0 ? 'text-sm text-white/60' : 'text-sm text-luxury-burgundy'}>
+                          {stockLabel(product.stock, t)}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid gap-2 text-sm text-white/45">
+                        <p>{t('shop.product.article')}: {product.article}</p>
+                        <p>{t('shop.product.oem')}: {product.oem}</p>
+                        <p>{t('shop.product.manufacturer')}: {product.manufacturer}</p>
+                      </div>
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <span className="text-sm text-white/45">{t('shop.cart.unitPrice', 'Цена за единицу')}</span>
+                        <span className="text-base text-white">{formatPrice(product.price)}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start gap-4 lg:items-end">
+                      <div className="flex items-center overflow-hidden border border-white/15">
+                        <button
+                          type="button"
+                          className="h-11 w-11 border-r border-white/15 text-white/70 transition hover:text-white"
+                          onClick={() => updateCartQuantity(item.productId, item.quantity - 1)}
+                          aria-label={t('shop.cart.decrease', 'Уменьшить')}
+                        >
+                          -
+                        </button>
+                        <input
+                          type="number"
+                          min={1}
+                          value={item.quantity}
+                          onChange={(event) =>
+                            updateCartQuantity(item.productId, Number(event.target.value))
+                          }
+                          className="h-11 w-20 border-0 bg-transparent px-3 text-center text-white"
+                        />
+                        <button
+                          type="button"
+                          className="h-11 w-11 border-l border-white/15 text-white/70 transition hover:text-white"
+                          onClick={() => updateCartQuantity(item.productId, item.quantity + 1)}
+                          aria-label={t('shop.cart.increase', 'Увеличить')}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div className="text-left lg:text-right">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                          {t('shop.cart.lineTotal', 'Сумма')}
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-white">{formatPrice(lineTotal)}</p>
+                      </div>
                       <button
                         onClick={() => removeFromCart(item.productId)}
                         className="text-sm text-luxury-burgundy"
@@ -1097,15 +1176,37 @@ export const ShopCartPage = () => {
               })}
             </div>
             <div className="card-luxury h-fit p-6 xl:sticky xl:top-28">
-              <p className="text-sm uppercase tracking-[0.2em] text-white/45">
-                {t('shop.cart.summary')}
+              <p className="text-sm uppercase tracking-[0.2em] text-white/45">{t('shop.cart.summary')}</p>
+              <div className="mt-6 space-y-4 border-b border-white/10 pb-6">
+                <div className="flex items-center justify-between gap-4 text-sm text-white/60">
+                  <span>{t('shop.cart.headerCount', { count: cartCount })}</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4 text-sm text-white/60">
+                  <span>{t('shop.cart.delivery', 'Доставка')}</span>
+                  <span>{t('shop.cart.deliveryHint', 'Уточняется менеджером')}</span>
+                </div>
+              </div>
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <span className="text-sm uppercase tracking-[0.2em] text-white/45">
+                  {t('shop.cart.total', 'Итого')}
+                </span>
+                <p className="text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
+              </div>
+              <p className="mt-4 text-sm leading-6 text-white/55">
+                {t('shop.cart.secureHint', 'После оформления менеджер подтвердит наличие, доставку и детали оплаты.')}
               </p>
-              <p className="mt-6 text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
               <Link
                 to="/hongqi-parts/checkout"
                 className="btn-primary mt-8 inline-flex w-full justify-center"
               >
                 {t('shop.actions.checkout')}
+              </Link>
+              <Link
+                to="/hongqi-parts/catalog"
+                className="btn-outline mt-3 inline-flex w-full justify-center"
+              >
+                {t('shop.cart.continueShopping', 'Продолжить покупки')}
               </Link>
             </div>
           </div>
@@ -1233,12 +1334,22 @@ export const ShopCheckoutPage = () => {
 export const ShopStoresPage = () => {
   const { t, i18n } = useTranslation();
   const { state } = useShop();
-  useShopSeo('/hongqi-parts/stores');
+  const seoPage = useShopSeo('/hongqi-parts/stores');
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
-        <ShopSectionIntro title={t('shop.stores.title')} subtitle={t('shop.stores.subtitle')} />
+        <ShopSectionIntro
+          title={localizedText(
+            seoPage?.h1 ?? {
+              ru: t('shop.stores.title'),
+              en: t('shop.stores.title'),
+              kz: t('shop.stores.title'),
+            },
+            { lng: i18n.language }
+          )}
+          subtitle={t('shop.stores.subtitle')}
+        />
         <ShopAsyncState />
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {state.stores.map((store) => (
@@ -1261,14 +1372,24 @@ export const ShopStoresPage = () => {
 };
 
 export const ShopRequestPage = () => {
-  const { t } = useTranslation();
-  useShopSeo('/hongqi-parts/request');
+  const { t, i18n } = useTranslation();
+  const seoPage = useShopSeo('/hongqi-parts/request');
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <div className="card-luxury max-w-4xl p-8 lg:p-10">
-          <ShopSectionIntro title={t('shop.request.title')} subtitle={t('shop.request.subtitle')} />
+          <ShopSectionIntro
+            title={localizedText(
+              seoPage?.h1 ?? {
+                ru: t('shop.request.title'),
+                en: t('shop.request.title'),
+                kz: t('shop.request.title'),
+              },
+              { lng: i18n.language }
+            )}
+            subtitle={t('shop.request.subtitle')}
+          />
           <QuickRequestForm />
         </div>
       </div>
@@ -1855,111 +1976,13 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
             ) : null}
 
             {tab === 'warehouse' ? (
-              <div className="grid gap-4">
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  {[
-                    { label: t('shop.admin.summarySku'), value: inventorySummary.totalProducts },
-                    { label: t('shop.admin.summaryTotalStock'), value: inventorySummary.totalStock },
-                    { label: t('shop.admin.summaryLowStock'), value: inventorySummary.lowStockCount },
-                    { label: t('shop.admin.summaryMovements'), value: inventorySummary.totalMovements },
-                  ].map((item) => (
-                    <div key={item.label} className="card-luxury p-5">
-                      <p className="text-[11px] uppercase tracking-[0.24em] text-white/40">{item.label}</p>
-                      <p className="mt-4 text-3xl font-semibold text-white">{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="card-luxury p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h2 className="text-xl font-semibold text-white">{t('shop.admin.lowStock')}</h2>
-                    <p className="text-sm text-white/50">{t('shop.admin.lowStockHint')}</p>
-                  </div>
-                  <div className="mt-4 grid gap-3">
-                    {lowStock.length === 0 ? (
-                      <div className="border border-white/10 bg-white/[0.02] p-4 text-white/55">
-                        {t('shop.admin.allStockOk')}
-                      </div>
-                    ) : null}
-                    {lowStock.map((product) => (
-                      <div
-                        key={product.id}
-                        className="grid gap-4 border border-white/10 bg-white/[0.02] p-4 lg:grid-cols-[minmax(0,1fr)_auto]"
-                      >
-                        <div>
-                          <p className="text-lg font-semibold text-white">
-                            {localizedText(product.name, { lng: i18n.language })}
-                          </p>
-                          <p className="mt-2 text-sm uppercase tracking-[0.2em] text-white/35">
-                            {product.article}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="min-w-14 text-center text-white/55">{product.stock}</span>
-                          <button
-                            className="btn-outline px-4 py-2"
-                            onClick={() =>
-                              addInventoryMovement({
-                                productId: product.id,
-                                operation: 'income',
-                                quantity: 1,
-                                comment: 'Manual restock',
-                              })
-                            }
-                          >
-                            +1
-                          </button>
-                          <button
-                            className="btn-outline px-4 py-2"
-                            onClick={() =>
-                              addInventoryMovement({
-                                productId: product.id,
-                                operation: 'expense',
-                                quantity: 1,
-                                comment: 'Manual write-off',
-                              })
-                            }
-                          >
-                            -1
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="card-luxury overflow-x-auto p-6">
-                  <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead className="text-white/45">
-                      <tr>
-                        <th className="pb-3">{t('shop.admin.date')}</th>
-                        <th className="pb-3">{t('shop.admin.productColumn')}</th>
-                        <th className="pb-3">{t('shop.admin.operation')}</th>
-                        <th className="pb-3">{t('shop.admin.quantity')}</th>
-                        <th className="pb-3">{t('shop.forms.comment')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {state.inventoryMovements.map((movement) => (
-                        <tr key={movement.id} className="border-t border-white/10 text-white/70">
-                          <td className="py-3">{new Date(movement.date).toLocaleString()}</td>
-                          <td className="py-3">
-                            {localizedText(
-                              state.products.find((product) => product.id === movement.productId)?.name ?? {
-                                ru: movement.productId,
-                                en: movement.productId,
-                                kz: movement.productId,
-                              },
-                              { lng: i18n.language }
-                            )}
-                          </td>
-                          <td className="py-3">{movement.operation}</td>
-                          <td className="py-3">{movement.quantity}</td>
-                          <td className="py-3">{movement.comment}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <WarehouseSection
+                products={state.products}
+                inventoryMovements={state.inventoryMovements}
+                lowStock={lowStock}
+                inventorySummary={inventorySummary}
+                onAddInventoryMovement={addInventoryMovement}
+              />
             ) : null}
 
             {tab === 'stores' ? (
@@ -2038,6 +2061,321 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   }
 
   return <div className="min-h-screen bg-luxury-black pt-24">{content}</div>;
+};
+
+const WarehouseSection = ({
+  products,
+  inventoryMovements,
+  lowStock,
+  inventorySummary,
+  onAddInventoryMovement,
+}: {
+  products: ProductItem[];
+  inventoryMovements: { id: string; productId: string; date: string; operation: 'income' | 'expense'; reason?: string; quantity: number; comment: string }[];
+  lowStock: ProductItem[];
+  inventorySummary: {
+    totalProducts: number;
+    totalStock: number;
+    lowStockCount: number;
+    totalMovements: number;
+  };
+  onAddInventoryMovement: (payload: Omit<{ id: string; productId: string; date: string; operation: 'income' | 'expense'; reason?: string; quantity: number; comment: string }, 'id' | 'date'>) => void;
+}) => {
+  const { t, i18n } = useTranslation();
+  const [selectedProductId, setSelectedProductId] = useState(products[0]?.id ?? '');
+  const [movementOperation, setMovementOperation] = useState<'income' | 'expense'>('income');
+  const [movementReason, setMovementReason] = useState('restock');
+  const [movementQuantity, setMovementQuantity] = useState(1);
+  const [movementComment, setMovementComment] = useState('');
+  const [movementFilter, setMovementFilter] = useState<'all' | 'income' | 'expense'>('all');
+  const [movementQuery, setMovementQuery] = useState('');
+
+  useEffect(() => {
+    if (!selectedProductId && products[0]?.id) {
+      setSelectedProductId(products[0].id);
+    }
+  }, [products, selectedProductId]);
+
+  const movementReasonOptions =
+    movementOperation === 'income'
+      ? [
+          { value: 'restock', label: t('shop.admin.reasonRestock') },
+          { value: 'return', label: t('shop.admin.reasonReturn') },
+          { value: 'adjustment', label: t('shop.admin.reasonAdjustment') },
+        ]
+      : [
+          { value: 'writeoff', label: t('shop.admin.reasonWriteoff') },
+          { value: 'order', label: t('shop.admin.reasonOrder') },
+          { value: 'reservation', label: t('shop.admin.reasonReservation') },
+        ];
+
+  useEffect(() => {
+    setMovementReason(movementReasonOptions[0]?.value ?? '');
+  }, [movementOperation]);
+
+  const filteredMovements = useMemo(() => {
+    const query = movementQuery.trim().toLowerCase();
+    return inventoryMovements.filter((movement) => {
+      const product = products.find((item) => item.id === movement.productId);
+      const productName = localizedText(
+        product?.name ?? { ru: movement.productId, en: movement.productId, kz: movement.productId },
+        { lng: i18n.language }
+      ).toLowerCase();
+      const sku = product?.article.toLowerCase() ?? '';
+      const operationMatch = movementFilter === 'all' || movement.operation === movementFilter;
+      const queryMatch =
+        !query ||
+        productName.includes(query) ||
+        sku.includes(query) ||
+        movement.comment.toLowerCase().includes(query) ||
+        (movement.reason ?? '').toLowerCase().includes(query);
+      return operationMatch && queryMatch;
+    });
+  }, [i18n.language, inventoryMovements, movementFilter, movementQuery, products]);
+
+  const exportMovements = () => {
+    const csvEscape = (value: string) => value.split('"').join('""');
+    const rows = filteredMovements.map((movement) => {
+      const product = products.find((item) => item.id === movement.productId);
+      const productName = localizedText(
+        product?.name ?? { ru: movement.productId, en: movement.productId, kz: movement.productId },
+        { lng: i18n.language }
+      );
+      return [
+        new Date(movement.date).toLocaleString(),
+        `"${csvEscape(String(productName))}"`,
+        `"${csvEscape(product?.article ?? '')}"`,
+        movement.operation,
+        movement.reason ?? '',
+        String(movement.quantity),
+        `"${csvEscape(movement.comment)}"`,
+      ].join(',');
+    });
+    const csv = [
+      ['date', 'product', 'article', 'operation', 'reason', 'quantity', 'comment'].join(','),
+      ...rows,
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'warehouse-movements.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: t('shop.admin.summarySku'), value: inventorySummary.totalProducts },
+          { label: t('shop.admin.summaryTotalStock'), value: inventorySummary.totalStock },
+          { label: t('shop.admin.summaryLowStock'), value: inventorySummary.lowStockCount },
+          { label: t('shop.admin.summaryMovements'), value: inventorySummary.totalMovements },
+        ].map((item) => (
+          <div key={item.label} className="card-luxury p-5">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-white/40">{item.label}</p>
+            <p className="mt-4 text-3xl font-semibold text-white">{item.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <div className="card-luxury p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-white">{t('shop.admin.manualMovement')}</h2>
+            <p className="text-sm text-white/50">{t('shop.admin.manualMovementHint')}</p>
+          </div>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <Select value={selectedProductId} onChange={(event) => setSelectedProductId(event.target.value)}>
+              {products.map((product) => (
+                <option key={product.id} value={product.id}>
+                  {localizedText(product.name, { lng: i18n.language })} ({product.article})
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={movementOperation}
+              onChange={(event) => setMovementOperation(event.target.value as 'income' | 'expense')}
+            >
+              <option value="income">{t('shop.admin.operationIncome')}</option>
+              <option value="expense">{t('shop.admin.operationExpense')}</option>
+            </Select>
+            <Select value={movementReason} onChange={(event) => setMovementReason(event.target.value)}>
+              {movementReasonOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+            <Input
+              type="number"
+              min={1}
+              value={movementQuantity}
+              onChange={(event) => setMovementQuantity(Math.max(1, Number(event.target.value) || 1))}
+              placeholder={t('shop.admin.quantity')}
+            />
+            <div className="md:col-span-2">
+              <Textarea
+                value={movementComment}
+                onChange={(event) => setMovementComment(event.target.value)}
+                placeholder={t('shop.admin.manualCommentPlaceholder')}
+                className="min-h-[110px]"
+              />
+            </div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              className="btn-primary"
+              onClick={() =>
+                onAddInventoryMovement({
+                  productId: selectedProductId,
+                  operation: movementOperation,
+                  reason: movementReason,
+                  quantity: movementQuantity,
+                  comment: movementComment || movementReason,
+                })
+              }
+            >
+              {t('shop.admin.applyMovement')}
+            </button>
+          </div>
+        </div>
+
+        <div className="card-luxury p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-white">{t('shop.admin.lowStock')}</h2>
+            <p className="text-sm text-white/50">{t('shop.admin.lowStockHint')}</p>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {lowStock.length === 0 ? (
+              <div className="border border-white/10 bg-white/[0.02] p-4 text-white/55">
+                {t('shop.admin.allStockOk')}
+              </div>
+            ) : null}
+            {lowStock.map((product) => (
+              <div
+                key={product.id}
+                className="grid gap-4 border border-white/10 bg-white/[0.02] p-4 lg:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <div>
+                  <p className="text-lg font-semibold text-white">
+                    {localizedText(product.name, { lng: i18n.language })}
+                  </p>
+                  <p className="mt-2 text-sm uppercase tracking-[0.2em] text-white/35">
+                    {product.article}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-14 text-center text-white/55">{product.stock}</span>
+                  <button
+                    className="btn-outline px-4 py-2"
+                    onClick={() =>
+                      onAddInventoryMovement({
+                        productId: product.id,
+                        operation: 'income',
+                        reason: 'restock',
+                        quantity: 1,
+                        comment: 'Manual restock',
+                      })
+                    }
+                  >
+                    +1
+                  </button>
+                  <button
+                    className="btn-outline px-4 py-2"
+                    onClick={() =>
+                      onAddInventoryMovement({
+                        productId: product.id,
+                        operation: 'expense',
+                        reason: 'writeoff',
+                        quantity: 1,
+                        comment: 'Manual write-off',
+                      })
+                    }
+                  >
+                    -1
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="card-luxury p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-white">{t('shop.admin.movementsHistory')}</h2>
+            <p className="mt-2 text-sm text-white/50">{t('shop.admin.movementsHistoryHint')}</p>
+          </div>
+          <button className="btn-outline px-5 py-3 text-[11px]" onClick={exportMovements}>
+            {t('shop.admin.exportCsv')}
+          </button>
+        </div>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+          <Input
+            value={movementQuery}
+            onChange={(event) => setMovementQuery(event.target.value)}
+            placeholder={t('shop.admin.movementSearch')}
+          />
+          <Select
+            value={movementFilter}
+            onChange={(event) => setMovementFilter(event.target.value as 'all' | 'income' | 'expense')}
+          >
+            <option value="all">{t('shop.admin.allOperations')}</option>
+            <option value="income">{t('shop.admin.operationIncome')}</option>
+            <option value="expense">{t('shop.admin.operationExpense')}</option>
+          </Select>
+        </div>
+        <div className="mt-6 overflow-x-auto">
+          <table className="w-full min-w-[880px] text-left text-sm">
+            <thead className="text-white/45">
+              <tr>
+                <th className="pb-3">{t('shop.admin.date')}</th>
+                <th className="pb-3">{t('shop.admin.productColumn')}</th>
+                <th className="pb-3">{t('shop.product.article')}</th>
+                <th className="pb-3">{t('shop.admin.operation')}</th>
+                <th className="pb-3">{t('shop.admin.reason')}</th>
+                <th className="pb-3">{t('shop.admin.quantity')}</th>
+                <th className="pb-3">{t('shop.forms.comment')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredMovements.map((movement) => {
+                const product = products.find((item) => item.id === movement.productId);
+                return (
+                  <tr key={movement.id} className="border-t border-white/10 text-white/70">
+                    <td className="py-3">{new Date(movement.date).toLocaleString()}</td>
+                    <td className="py-3">
+                      {localizedText(
+                        product?.name ?? { ru: movement.productId, en: movement.productId, kz: movement.productId },
+                        { lng: i18n.language }
+                      )}
+                    </td>
+                    <td className="py-3">{product?.article ?? '—'}</td>
+                    <td className="py-3">
+                      {movement.operation === 'income'
+                        ? t('shop.admin.operationIncome')
+                        : t('shop.admin.operationExpense')}
+                    </td>
+                    <td className="py-3">{t(`shop.admin.reasonMap.${movement.reason ?? 'adjustment'}`)}</td>
+                    <td className="py-3">{movement.quantity}</td>
+                    <td className="py-3">{movement.comment}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {filteredMovements.length === 0 ? (
+            <div className="mt-4 border border-white/10 bg-white/[0.02] p-4 text-white/55">
+              {t('shop.admin.noMovements')}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export const ShopCatalogResolverPage = () => {

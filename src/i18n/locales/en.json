@@ -464,6 +464,117 @@
     "address": "Alatau Ave., 1a/5, Shugyla, Almaty",
     "rights": "All rights reserved"
   },
+  "policy": {
+    "eyebrow": "Legal information",
+    "title": "Personal Data Processing and Protection Policy",
+    "intro": "This Policy explains what information Hongqi Auto Almaty may collect through the website, why it is processed, and what measures are used to protect it.",
+    "updated": "The current version remains effective until a new revision is published.",
+    "general": {
+      "title": "General provisions",
+      "p1": "This Policy is prepared with due regard to the legislation of the Republic of Kazakhstan, including the Law dated May 21, 2013 No. 94-V “On Personal Data and Their Protection”.",
+      "p2": "For the purposes of this Policy, the Operator is Hongqi Auto Almaty. When processing personal data, the Operator follows the principles of lawfulness, fairness, and respect for the rights of data subjects.",
+      "p3": "This Policy applies to information the Operator receives through the website https://www.hongqi-auto-almaty.kz, including forms, requests, orders, and other user interactions."
+    },
+    "definitions": {
+      "title": "Key terms",
+      "items": [
+        {
+          "term": "Automated processing",
+          "text": "Processing of personal data by means of computer systems and software tools."
+        },
+        {
+          "term": "Blocking",
+          "text": "Temporary suspension of data processing except when processing is required to verify or update the data."
+        },
+        {
+          "term": "Website",
+          "text": "Information materials, software, and databases available at https://www.hongqi-auto-almaty.kz."
+        },
+        {
+          "term": "Depersonalization",
+          "text": "Actions making it impossible to determine, without additional information, that personal data belongs to a particular individual."
+        },
+        {
+          "term": "Processing of personal data",
+          "text": "Any operation involving personal data, including collection, recording, storage, updating, use, transfer, depersonalization, blocking, and destruction."
+        },
+        {
+          "term": "Operator",
+          "text": "A legal entity or individual determining the purposes and methods of personal data processing."
+        },
+        {
+          "term": "Personal data",
+          "text": "Any information relating directly or indirectly to an identified or identifiable website user."
+        },
+        {
+          "term": "User",
+          "text": "Any person visiting the website or interacting with its functionality."
+        },
+        {
+          "term": "Provision and dissemination",
+          "text": "Transfer of personal data to a defined group of persons or disclosure to a broader audience in cases provided by law."
+        },
+        {
+          "term": "Cross-border transfer",
+          "text": "Transfer of personal data to the territory of a foreign state, foreign authority, individual, or legal entity."
+        },
+        {
+          "term": "Destruction",
+          "text": "Actions that make restoration of personal data impossible."
+        }
+      ]
+    },
+    "userData": {
+      "title": "What data may be processed",
+      "items": [
+        "name, surname, and other details provided by the User in contact forms;",
+        "email address;",
+        "phone number;",
+        "data from requests, orders, comments, and messages;",
+        "depersonalized technical data, including cookies, browser information, and analytics service data."
+      ],
+      "note": "For the purposes of this Policy, all such information may be referred to as personal data if it allows direct or indirect identification of the User."
+    },
+    "purposes": {
+      "title": "Purposes of processing",
+      "items": [
+        "processing inquiries, requests, orders, and parts selection submissions;",
+        "contacting the User regarding services, orders, and consultations;",
+        "sending service and informational communications where allowed by law and user settings;",
+        "improving the website, its content, performance, and usability;",
+        "maintaining internal records, analytics, and protection against abuse."
+      ],
+      "optOut": "The User may opt out of informational mailings by sending a request to hongqiparts@gmail.com."
+    },
+    "legal": {
+      "title": "Legal grounds for processing",
+      "p1": "The Operator processes personal data when the User independently fills in website forms, submits requests, places an order, contacts the Operator, or otherwise expresses consent to the processing of personal data.",
+      "p2": "Depersonalized data may be processed where permitted by the User’s browser settings, including the use of cookies and JavaScript."
+    },
+    "collection": {
+      "title": "Collection, storage, and protection procedure",
+      "items": [
+        "The Operator applies organizational and technical measures to protect personal data against unauthorized access, alteration, disclosure, or destruction.",
+        "Access to personal data is granted only to authorized persons and only to the extent necessary for their duties.",
+        "Transfer of personal data to third parties is allowed only where required by law or necessary to fulfil obligations to the User.",
+        "The User may request clarification, updating, or withdrawal of consent by contacting hongqiparts@gmail.com."
+      ],
+      "p1": "The retention period depends on the purposes of processing, applicable legal requirements, and the nature of the relationship with the User.",
+      "p2": "If the User identifies inaccurate information, they may contact the Operator to update it.",
+      "p3": "When processing purposes are achieved or lawful grounds for deletion arise, the data is destroyed or depersonalized."
+    },
+    "transfer": {
+      "title": "Cross-border data transfer",
+      "p1": "Before any cross-border transfer of personal data, the Operator takes reasonable steps to verify that the receiving party ensures an adequate level of protection for the rights of data subjects.",
+      "p2": "If the foreign state does not ensure sufficient protection, transfer is permitted only on lawful grounds, including the data subject’s consent or the need to perform a contract."
+    },
+    "final": {
+      "title": "Final provisions",
+      "p1": "For any questions related to personal data processing, the User may contact the Operator at hongqiparts@gmail.com.",
+      "p2": "The Operator may update this Policy. A new version takes effect from the moment it is published on /policy unless otherwise stated.",
+      "p3": "Continued use of the website after publication of an updated version means the User accepts the current version of the Policy to the extent permitted by law."
+    }
+  },
   "shop": {
     "routes": {
       "shop": "Parts store"
@@ -583,9 +694,24 @@
       }
     },
     "cart": {
+      "eyebrow": "Cart",
       "title": "Cart",
+      "added": "Added to cart",
       "empty": "Your cart is empty.",
-      "summary": "Order total"
+      "emptyEyebrow": "Shopping",
+      "emptySubtitle": "Add the required items from the catalog to place an order online.",
+      "subtitle": "Review your order composition before checkout.",
+      "summary": "Order total",
+      "headerCount": "Items in cart: {{count}}",
+      "continueShopping": "Continue shopping",
+      "unitPrice": "Unit price",
+      "lineTotal": "Line total",
+      "delivery": "Delivery",
+      "deliveryHint": "Confirmed by manager",
+      "total": "Total",
+      "secureHint": "After checkout, the manager will confirm availability, delivery, and payment details.",
+      "increase": "Increase",
+      "decrease": "Decrease"
     },
     "checkout": {
       "title": "Checkout",
@@ -593,7 +719,7 @@
       "card": "Bank card",
       "kaspi": "Kaspi",
       "manager": "Through manager",
-      "statusHint": "When paid by card, the order is immediately marked as paid. Admin statuses: new, paid, shipped, completed.",
+      "statusHint": "After checkout, the manager will contact you to confirm the order and delivery details.",
       "successTitle": "Order created",
       "successSubtitle": "Order number: {{orderId}}. The manager will receive a notification and contact you.",
       "openAdmin": "Open admin"
@@ -644,6 +770,33 @@
       "lowStock": "Low stock items",
       "lowStockHint": "Products that need warehouse replenishment",
       "allStockOk": "All products have a sufficient stock level.",
+      "manualMovement": "Manual warehouse operation",
+      "manualMovementHint": "Create manual restock, write-off, return, or adjustment operations.",
+      "manualCommentPlaceholder": "Warehouse operation comment",
+      "applyMovement": "Apply operation",
+      "movementsHistory": "Movement history",
+      "movementsHistoryHint": "Log of all warehouse operations with filtering and export.",
+      "movementSearch": "Search by product, SKU, reason, or comment",
+      "allOperations": "All operations",
+      "operationIncome": "Income",
+      "operationExpense": "Expense",
+      "reason": "Reason",
+      "reasonRestock": "Restock",
+      "reasonReturn": "Return",
+      "reasonAdjustment": "Adjustment",
+      "reasonWriteoff": "Write-off",
+      "reasonOrder": "Order",
+      "reasonReservation": "Reservation",
+      "exportCsv": "Export CSV",
+      "noMovements": "No movements found for the current filter.",
+      "reasonMap": {
+        "restock": "Restock",
+        "return": "Return",
+        "adjustment": "Adjustment",
+        "writeoff": "Write-off",
+        "order": "Order",
+        "reservation": "Reservation"
+      },
       "productColumn": "Product",
       "date": "Date",
       "operation": "Operation",

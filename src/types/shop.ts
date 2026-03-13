@@ -95,6 +95,7 @@ export interface InventoryMovement {
   productId: string;
   date: string;
   operation: 'income' | 'expense';
+  reason?: string;
   quantity: number;
   comment: string;
 }

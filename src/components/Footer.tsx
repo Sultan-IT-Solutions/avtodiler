@@ -151,7 +151,7 @@ export const Footer = () => {
             &copy; {currentYear} HONGQI AUTO Kazakhstan. {t('footer.rights')}.
           </div>
           <div className="flex gap-8">
-            <Link to="/privacy" className="hover:text-white transition-colors">
+            <Link to="/policy" className="hover:text-white transition-colors">
               {t('footer.privacy')}
             </Link>
             <Link to="/terms" className="hover:text-white transition-colors">

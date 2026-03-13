@@ -5,6 +5,8 @@ import type { CartItem, CategoryItem, HongqiModel, InventoryMovement, OrderItem,
 import { shopAdminApi, shopPublicApi } from '../utils/shopApi';
 
 const createId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+const CART_STORAGE_KEY = 'hongqi-parts-cart';
+const CART_TTL_MS = 48 * 60 * 60 * 1000;
 
 type CheckoutPayload = {
   name: string;
@@ -27,6 +29,7 @@ type ShopContextValue = {
   cart: CartItem[];
   cartCount: number;
   cartTotal: number;
+  cartNotice: string;
   isLoading: boolean;
   loadError: string;
   addToCart: (productId: string, quantity?: number) => void;
@@ -59,6 +62,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
   const location = useLocation();
   const [state, setState] = useState<ShopState>(seedShopState);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartNotice, setCartNotice] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
@@ -114,8 +118,59 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as
+        | CartItem[]
+        | {
+            items?: CartItem[];
+            savedAt?: number;
+          };
+      const items = Array.isArray(parsed) ? parsed : parsed.items ?? [];
+      const savedAt = Array.isArray(parsed) ? Date.now() : Number(parsed.savedAt ?? 0);
+      if (!savedAt || Date.now() - savedAt > CART_TTL_MS) {
+        window.localStorage.removeItem(CART_STORAGE_KEY);
+        return;
+      }
+      if (Array.isArray(items)) {
+        setCart(
+          items.filter(
+            (item): item is CartItem =>
+              Boolean(item) &&
+              typeof item.productId === 'string' &&
+              Number.isFinite(item.quantity) &&
+              item.quantity > 0
+          )
+        );
+      }
+    } catch {
+      window.localStorage.removeItem(CART_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(
+      CART_STORAGE_KEY,
+      JSON.stringify({
+        items: cart,
+        savedAt: Date.now(),
+      })
+    );
+  }, [cart]);
+
+  useEffect(() => {
+    if (!cartNotice) return;
+    const timer = window.setTimeout(() => setCartNotice(''), 2200);
+    return () => window.clearTimeout(timer);
+  }, [cartNotice]);
+
+  useEffect(() => {
     let cancelled = false;
-    const isShopRoute = location.pathname.startsWith('/hongqi-parts');
+    const isShopRoute =
+      location.pathname.startsWith('/hongqi-parts') || location.pathname === '/cart';
 
     const load = async () => {
       if (!isShopRoute) {
@@ -147,6 +202,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
       if (!existing) return [...current, { productId, quantity }];
       return current.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + quantity } : item);
     });
+    setCartNotice('added');
   };
 
   const updateCartQuantity = (productId: string, quantity: number) => {
@@ -193,6 +249,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
           productId: item.productId,
           date: new Date().toISOString(),
           operation: 'expense' as const,
+          reason: 'order',
           quantity: item.quantity,
           comment: `Order ${orderId}`
         })),
@@ -351,6 +408,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     cart,
     cartCount,
     cartTotal,
+    cartNotice,
     isLoading,
     loadError,
     addToCart,
@@ -375,7 +433,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     saveSeoPage,
     deleteSeoPage,
     loadAdminData
-  }), [cart, cartCount, cartTotal, isLoading, loadError, productsMap, state]);
+  }), [cart, cartCount, cartNotice, cartTotal, isLoading, loadError, productsMap, state]);
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 };

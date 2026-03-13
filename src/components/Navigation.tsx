@@ -2,10 +2,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag } from 'lucide-react';
+import { useShop } from '../context/ShopContext';
 
 export const Navigation = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const { cartCount, cartNotice } = useShop();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -55,6 +58,25 @@ export const Navigation = () => {
   const changeLanguage = (lng: string) => {
     i18n.changeLanguage(lng);
   };
+
+  const renderCartLink = () => (
+    <Link
+      to="/hongqi-parts/cart"
+      className={`relative inline-flex h-11 w-11 items-center justify-center border transition-all duration-300 ${
+        location.pathname === '/hongqi-parts/cart'
+          ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
+          : 'border-white/10 text-white/80 hover:border-white/25 hover:text-white'
+      }`}
+      aria-label={t('shop.cart.title')}
+    >
+      <ShoppingBag size={18} strokeWidth={1.8} />
+      {cartCount > 0 ? (
+        <span className="absolute -right-2 -top-2 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-luxury-burgundy px-1 text-[10px] font-semibold text-white">
+          {cartCount}
+        </span>
+      ) : null}
+    </Link>
+  );
 
   return (
     <>
@@ -163,13 +185,7 @@ export const Navigation = () => {
                 ))}
               </div>
 
-              {/* CTA Button */}
-              <Link
-                to="/contact"
-                className="btn-primary text-micro px-5 py-2.5"
-              >
-                {t('hero.ctaSecondary')}
-              </Link>
+              {renderCartLink()}
             </div>
 
             {/* Mobile: Logo or Menu button */}
@@ -208,6 +224,20 @@ export const Navigation = () => {
           </div>
         </nav>
       </motion.header>
+
+      <AnimatePresence>
+        {cartNotice ? (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.22 }}
+            className="fixed right-4 top-24 z-[60] border border-luxury-burgundy/40 bg-luxury-elevated px-4 py-3 text-sm text-white shadow-[0_18px_40px_rgba(0,0,0,0.28)] lg:right-6"
+          >
+            {t('shop.cart.added')}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {/* Full-screen Mobile Menu */}
       <AnimatePresence>
@@ -254,6 +284,24 @@ export const Navigation = () => {
                   </motion.div>
                 ))}
               </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5, delay: 0.45 }}
+                className="mb-10 flex items-center justify-between border border-white/10 bg-white/[0.03] px-5 py-4"
+              >
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-subtle">
+                    {t('shop.cart.title')}
+                  </p>
+                  <p className="mt-2 text-sm text-white/65">
+                    {t('shop.cart.headerCount', { count: cartCount })}
+                  </p>
+                </div>
+                {renderCartLink()}
+              </motion.div>
 
               {/* Language Switcher */}
               <motion.div
