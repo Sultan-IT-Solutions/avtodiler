@@ -548,12 +548,15 @@
       "title": "Hongqi бөлшектер каталогы",
       "subtitle": "Модель, санат, ішкі санат, қойма және іздеу сұранысы бойынша қайта жүктеусіз сүзгілеу.",
       "searchPlaceholder": "Атауы, артикул немесе OEM",
+      "priceFrom": "Баға бастап",
+      "priceTo": "Баға дейін",
       "allModels": "Барлық модельдер",
       "allAvailability": "Кез келгені",
       "sortPopular": "Алдымен танымалдары",
       "sortPriceAsc": "Баға өсу ретімен",
       "sortPriceDesc": "Баға кему ретімен",
       "found": "Табылды: {{count}}",
+      "categoryFallback": "Бұл санатта әзірге байланыстырылған тауарлар жоқ.",
       "empty": "Таңдалған сүзгілер бойынша тауар табылмады."
     },
     "product": {
@@ -569,6 +572,8 @@
       "descriptionTitle": "Тауар сипаттамасы",
       "seoEyebrow": "SEO мәтін",
       "related": "Осы санаттағы тауарлар",
+      "similar": "Сәйкестігі бойынша ұқсас тауарлар",
+      "zoomHint": "Үлкейту үшін суретті басыңыз.",
       "notFound": "Тауар табылмады",
       "table": {
         "model": "Модель",
@@ -602,6 +607,7 @@
       "subtitle": "Қажетті тауар каталогта жоқ болса, VIN мен пікіріңізді жіберіңіз."
     },
     "admin": {
+      "description": "Бөлшектер каталогын, тапсырыстарды, қойманы және shop SEO-ны басқару.",
       "tabs": {
         "products": "Тауарлар",
         "categories": "Санаттар",
@@ -611,8 +617,17 @@
         "stores": "Дүкендер",
         "reviews": "Пікірлер",
         "requests": "Сұраныстар",
-        "seo": "SEO"
+        "seo": "SEO",
+        "import": "Excel импорт"
       },
+      "importEyebrow": "Деректер импорты",
+      "importTitle": "Excel-ді Neon-ға жүктеу",
+      "importDescription": "Shop анықтамалықтарының парақтары бар Excel файлын жүктеңіз. Модельдер, санаттар, тауарлар, дүкендер және SEO беттері үшін бөлек парақтар қолдау табады.",
+      "importSheetsTitle": "Қолдау көрсетілетін парақтар",
+      "importSheetsHint": "Әр парақта толық объектінің JSON-ы бар data бағанын немесе name_ru / name_en / name_kz секілді жазық бағандарды қолдануға болады.",
+      "importCta": ".xlsx файлын импорттау үшін таңдаңыз",
+      "importing": "Импорт орындалып жатыр...",
+      "importResult": "Импорт нәтижесі",
       "newProduct": "Жаңа тауар",
       "productSlug": "Тауар slug-ы",
       "productName": "Тауар атауы",
@@ -620,7 +635,16 @@
       "price": "Бағасы",
       "stock": "Қалдық",
       "modelsComma": "Модельдер үтір арқылы",
+      "addSubcategory": "Ішкі санат қосу",
+      "addModel": "Модель қосу",
+      "summarySku": "SKU",
+      "summaryTotalStock": "Жалпы қалдық",
+      "summaryLowStock": "Аз қалдық",
+      "summaryMovements": "Қозғалыстар",
       "lowStock": "Қалдығы аз тауарлар",
+      "lowStockHint": "Қойманы толықтыруды қажет ететін тауарлар",
+      "allStockOk": "Барлық тауарлардың қоры жеткілікті.",
+      "productColumn": "Тауар",
       "date": "Күні",
       "operation": "Операция",
       "quantity": "Саны",

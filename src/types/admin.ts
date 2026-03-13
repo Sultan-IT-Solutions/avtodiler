@@ -136,6 +136,7 @@ export interface AdminData {
   offers: OfferItem[];
   dealers: DealerItem[];
   leads: LeadItem[];
+  reviews: null;
   seo: SeoItem[];
   shop: null;
 }

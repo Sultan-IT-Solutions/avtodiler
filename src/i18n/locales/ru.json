@@ -550,12 +550,15 @@
       "title": "Каталог запчастей Hongqi",
       "subtitle": "Фильтрация без перезагрузки по модели, категории, подкатегории, наличию и поисковому запросу.",
       "searchPlaceholder": "Название, артикул или OEM",
+      "priceFrom": "Цена от",
+      "priceTo": "Цена до",
       "allModels": "Все модели",
       "allAvailability": "Любое наличие",
       "sortPopular": "Сначала популярные",
       "sortPriceAsc": "Цена по возрастанию",
       "sortPriceDesc": "Цена по убыванию",
       "found": "Найдено: {{count}}",
+      "categoryFallback": "В этой категории пока нет привязанных товаров.",
       "empty": "По вашему фильтру товары не найдены."
     },
     "product": {
@@ -571,6 +574,8 @@
       "descriptionTitle": "Описание товара",
       "seoEyebrow": "SEO текст",
       "related": "Товары из той же категории",
+      "similar": "Похожие товары по совместимости",
+      "zoomHint": "Нажмите на изображение, чтобы увеличить.",
       "notFound": "Товар не найден",
       "table": {
         "model": "Модель",
@@ -604,6 +609,7 @@
       "subtitle": "Отправьте VIN и комментарий, если нужной позиции нет в каталоге."
     },
     "admin": {
+      "description": "Управление каталогом, заказами, складом и SEO магазина запчастей.",
       "tabs": {
         "products": "Товары",
         "categories": "Категории",
@@ -613,8 +619,17 @@
         "stores": "Магазины",
         "reviews": "Отзывы",
         "requests": "Заявки",
-        "seo": "SEO"
+        "seo": "SEO",
+        "import": "Импорт Excel"
       },
+      "importEyebrow": "Импорт данных",
+      "importTitle": "Загрузка Excel в Neon",
+      "importDescription": "Загрузите Excel-файл с листами shop-справочников. Поддерживаются отдельные листы для моделей, категорий, товаров, магазинов и SEO-страниц.",
+      "importSheetsTitle": "Поддерживаемые листы",
+      "importSheetsHint": "Для каждого листа можно передавать либо колонку data с полным JSON объекта, либо плоские колонки по шаблону name_ru / name_en / name_kz и т.д.",
+      "importCta": "Выберите .xlsx файл для импорта",
+      "importing": "Импорт выполняется...",
+      "importResult": "Результат импорта",
       "newProduct": "Новый товар",
       "productSlug": "Slug товара",
       "productName": "Название товара",
@@ -622,7 +637,16 @@
       "price": "Цена",
       "stock": "Остаток",
       "modelsComma": "Модели через запятую",
+      "addSubcategory": "Добавить подкатегорию",
+      "addModel": "Добавить модель",
+      "summarySku": "SKU",
+      "summaryTotalStock": "Общий остаток",
+      "summaryLowStock": "Low stock",
+      "summaryMovements": "Движения",
       "lowStock": "Товары с низким остатком",
+      "lowStockHint": "Товары, которым требуется пополнение склада",
+      "allStockOk": "Все товары имеют достаточный остаток.",
+      "productColumn": "Товар",
       "date": "Дата",
       "operation": "Операция",
       "quantity": "Количество",

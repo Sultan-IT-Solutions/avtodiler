@@ -24,5 +24,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const sql = getSql();
   await sql`insert into shop_requests (id, data) values (${id}, ${body.data}::jsonb)`;
+  const request = body.data as {
+    name?: string;
+    phone?: string;
+    vin?: string;
+    comment?: string;
+    createdAt?: string;
+  };
+  const managerLead = {
+    id: `lead-request-${id}`,
+    type: 'callback',
+    name: typeof request.name === 'string' ? request.name : `Shop request ${id}`,
+    phone: typeof request.phone === 'string' ? request.phone : 'not-provided',
+    car: typeof request.vin === 'string' ? request.vin : undefined,
+    comment: [
+      `Parts request ${id}`,
+      typeof request.vin === 'string' && request.vin ? `VIN: ${request.vin}` : null,
+      typeof request.comment === 'string' && request.comment ? `Comment: ${request.comment}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    createdAt:
+      typeof request.createdAt === 'string' && request.createdAt
+        ? request.createdAt
+        : new Date().toISOString(),
+  };
+  await sql`insert into leads (id, data, created_at) values (${managerLead.id}, ${managerLead}::jsonb, ${managerLead.createdAt}::timestamptz)`;
   json(res, 200, { ok: true });
 }

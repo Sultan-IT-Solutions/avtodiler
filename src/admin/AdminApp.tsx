@@ -13,6 +13,8 @@ import type {
   SeoItem,
 } from '../types/admin';
 import { ShopAdminPage } from '../pages/ShopPages';
+import { useShop } from '../context/ShopContext';
+import type { ReviewItem } from '../types/shop';
 import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi, seoApi, servicesApi } from '../utils/adminApi';
 
@@ -252,6 +254,7 @@ const AdminApp = () => {
     offers: [],
     dealers: [],
     leads: [],
+    reviews: null,
     seo: [],
     shop: null,
   }));
@@ -343,6 +346,7 @@ const AdminApp = () => {
       { key: 'offers', label: 'Предложения / акции' },
       { key: 'dealers', label: 'Дилерские центры' },
       { key: 'leads', label: 'Заявки' },
+      { key: 'reviews', label: 'Отзывы' },
       { key: 'shop', label: 'Shop / запчасти' },
       { key: 'seo', label: 'SEO' },
     ],
@@ -483,6 +487,7 @@ const AdminApp = () => {
               syncing={isSyncing}
             />
           )}
+          {activeSection === 'reviews' && <ShopReviewsSection />}
           {activeSection === 'seo' && (
             <SeoSection
               title={activeLabel}
@@ -504,6 +509,127 @@ const AdminApp = () => {
         </main>
       </div>
     </div>
+  );
+};
+
+const ShopReviewsSection = () => {
+  const { state, saveReview, deleteReview, loadAdminData } = useShop();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<ReviewItem | null>(null);
+
+  useEffect(() => {
+    void loadAdminData().catch(() => undefined);
+  }, [loadAdminData]);
+
+  useEffect(() => {
+    if (!state.reviews.length) {
+      setSelectedId(null);
+      setDraft({
+        id: createId(),
+        name: '',
+        rating: 5,
+        text: localeField(),
+      });
+      return;
+    }
+
+    const currentId = selectedId ?? state.reviews[0]?.id ?? null;
+    const current = state.reviews.find((item) => item.id === currentId) ?? state.reviews[0];
+    setSelectedId(current?.id ?? null);
+    setDraft(
+      current ?? {
+        id: createId(),
+        name: '',
+        rating: 5,
+        text: localeField(),
+      }
+    );
+  }, [selectedId, state.reviews]);
+
+  if (!draft) return null;
+
+  return (
+    <SectionLayout
+      title="Отзывы"
+      description="Отзывы клиентов для главной страницы магазина запчастей."
+    >
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              setSelectedId(null);
+              setDraft({
+                id: createId(),
+                name: '',
+                rating: 5,
+                text: localeField(),
+              });
+            }}
+            className="btn-primary w-full justify-center"
+          >
+            <Plus size={16} />
+            Добавить отзыв
+          </button>
+          <EntityList
+            items={state.reviews}
+            selectedId={selectedId}
+            onSelect={(id) => setSelectedId(id)}
+            getLabel={(item) => item.name || 'Без имени'}
+          />
+        </div>
+        <div className="bg-luxury-elevated border border-white/10 p-6 space-y-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/60">Имя</p>
+              <input
+                value={draft.name}
+                onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+            </div>
+            <div>
+              <p className="mb-2 text-[11px] uppercase tracking-[0.2em] text-white/60">Рейтинг</p>
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={draft.rating}
+                onChange={(event) => setDraft({ ...draft, rating: Number(event.target.value) })}
+                className="w-full h-11 bg-luxury-surface border border-white/10 px-3 text-sm text-white"
+              />
+            </div>
+          </div>
+          <LocaleTextAreas
+            label="Текст отзыва"
+            value={draft.text}
+            onChange={(text) => setDraft({ ...draft, text })}
+            rows={5}
+          />
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => saveReview(draft)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Save size={16} />
+              Сохранить
+            </button>
+            {selectedId ? (
+              <button
+                onClick={() => {
+                  if (!window.confirm('Удалить отзыв?')) return;
+                  deleteReview(selectedId);
+                  setSelectedId(null);
+                }}
+                className="btn-outline text-white/70 border-white/20 flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Удалить
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </SectionLayout>
   );
 };
 

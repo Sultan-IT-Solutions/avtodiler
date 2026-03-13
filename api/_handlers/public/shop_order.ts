@@ -5,6 +5,11 @@ import { readRawBody, safeJsonParse, type VercelRequest, type VercelResponse } f
 type OrderPayload = {
   id: string;
   data: {
+    name?: string;
+    phone?: string;
+    city?: string;
+    comment?: string;
+    paymentMethod?: string;
     items: Array<{ productId: string; quantity: number; price: number }>;
   } & Record<string, unknown>;
 };
@@ -32,6 +37,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const sql = getSql();
   await sql`insert into shop_orders (id, data) values (${id}, ${data}::jsonb)`;
+  const managerLead = {
+    id: `lead-order-${id}`,
+    type: 'callback',
+    name: typeof data.name === 'string' ? data.name : `Shop order ${id}`,
+    phone: typeof data.phone === 'string' ? data.phone : 'not-provided',
+    comment: [
+      `Shop order ${id}`,
+      typeof data.city === 'string' && data.city ? `City: ${data.city}` : null,
+      typeof data.paymentMethod === 'string' && data.paymentMethod
+        ? `Payment: ${data.paymentMethod}`
+        : null,
+      typeof data.comment === 'string' && data.comment ? `Comment: ${data.comment}` : null,
+      `Items: ${data.items.map((item) => `${item.productId} x${item.quantity}`).join(', ')}`,
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    createdAt: new Date().toISOString(),
+  };
+  await sql`insert into leads (id, data, created_at) values (${managerLead.id}, ${managerLead}::jsonb, ${managerLead.createdAt}::timestamptz)`;
 
   for (const item of data.items) {
     const rows = await sql`select data from shop_products where id = ${item.productId} limit 1`;

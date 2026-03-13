@@ -548,12 +548,15 @@
       "title": "Hongqi parts catalog",
       "subtitle": "Client-side filtering by model, category, subcategory, stock, and search query without page reload.",
       "searchPlaceholder": "Name, article, or OEM",
+      "priceFrom": "Price from",
+      "priceTo": "Price to",
       "allModels": "All models",
       "allAvailability": "Any availability",
       "sortPopular": "Popular first",
       "sortPriceAsc": "Price ascending",
       "sortPriceDesc": "Price descending",
       "found": "Found: {{count}}",
+      "categoryFallback": "There are no linked products in this category yet.",
       "empty": "No products found for the selected filters."
     },
     "product": {
@@ -569,6 +572,8 @@
       "descriptionTitle": "Product description",
       "seoEyebrow": "SEO text",
       "related": "Products from the same category",
+      "similar": "Similar compatible products",
+      "zoomHint": "Click the image to enlarge it.",
       "notFound": "Product not found",
       "table": {
         "model": "Model",
@@ -602,6 +607,7 @@
       "subtitle": "Send your VIN and comment if the required item is missing from the catalog."
     },
     "admin": {
+      "description": "Manage the parts catalog, orders, warehouse, and shop SEO.",
       "tabs": {
         "products": "Products",
         "categories": "Categories",
@@ -611,8 +617,17 @@
         "stores": "Stores",
         "reviews": "Reviews",
         "requests": "Requests",
-        "seo": "SEO"
+        "seo": "SEO",
+        "import": "Excel import"
       },
+      "importEyebrow": "Data import",
+      "importTitle": "Upload Excel to Neon",
+      "importDescription": "Upload an Excel workbook with shop reference sheets. Separate sheets are supported for models, categories, products, stores, and SEO pages.",
+      "importSheetsTitle": "Supported sheets",
+      "importSheetsHint": "Each sheet may contain either a data column with full object JSON or flat columns such as name_ru / name_en / name_kz and similar fields.",
+      "importCta": "Select an .xlsx file to import",
+      "importing": "Import in progress...",
+      "importResult": "Import result",
       "newProduct": "New product",
       "productSlug": "Product slug",
       "productName": "Product name",
@@ -620,7 +635,16 @@
       "price": "Price",
       "stock": "Stock",
       "modelsComma": "Models separated by comma",
+      "addSubcategory": "Add subcategory",
+      "addModel": "Add model",
+      "summarySku": "SKU",
+      "summaryTotalStock": "Total stock",
+      "summaryLowStock": "Low stock",
+      "summaryMovements": "Movements",
       "lowStock": "Low stock items",
+      "lowStockHint": "Products that need warehouse replenishment",
+      "allStockOk": "All products have a sufficient stock level.",
+      "productColumn": "Product",
       "date": "Date",
       "operation": "Operation",
       "quantity": "Quantity",

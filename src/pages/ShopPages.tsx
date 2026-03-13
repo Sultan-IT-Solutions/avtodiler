@@ -11,8 +11,10 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SITE_IMAGES } from '../data/siteImages';
 import { useShop } from '../context/ShopContext';
-import type { CategoryItem, HongqiModel, OrderItem, ProductItem, ReviewItem, SeoPage } from '../types/shop';
+import type { CategoryItem, HongqiModel, OrderItem, ProductItem, SeoPage } from '../types/shop';
 import { localizedText } from '../utils/localizedText';
+import { shopAdminApi } from '../utils/shopApi';
+import { parseShopWorkbook, summarizeImportPayload } from '../utils/shopImport';
 
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('ru-RU', {
@@ -477,6 +479,28 @@ export const ShopHomePage = () => {
         </div>
       </section>
 
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="mb-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            {t('shop.home.reviews.eyebrow')}
+          </p>
+          <h2 className="mt-4 text-h2 text-white">{t('shop.home.reviews.title')}</h2>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {state.reviews.map((review) => (
+            <article key={review.id} className="card-luxury p-6">
+              <p className="text-luxury-burgundy">{'★'.repeat(review.rating)}</p>
+              <p className="mt-4 text-white/75">
+                {localizedText(review.text, { lng: i18n.language })}
+              </p>
+              <p className="mt-6 text-sm uppercase tracking-[0.2em] text-white/45">
+                {review.name}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="container mx-auto px-6 pb-20 lg:px-16 lg:pb-24">
         <div className="card-luxury overflow-hidden p-8 lg:p-10">
           <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
@@ -501,6 +525,8 @@ export const ShopCatalogPage = () => {
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [model, setModel] = useState(params.get('model') ?? '');
+  const [minPrice, setMinPrice] = useState(params.get('minPrice') ?? '');
+  const [maxPrice, setMaxPrice] = useState(params.get('maxPrice') ?? '');
   const [availability, setAvailability] = useState<'all' | 'inStock' | 'outOfStock'>('all');
   const [sort, setSort] = useState<'popular' | 'priceAsc' | 'priceDesc'>('popular');
   const [page, setPage] = useState(1);
@@ -509,6 +535,8 @@ export const ShopCatalogPage = () => {
   useEffect(() => {
     setQuery(params.get('q') ?? '');
     setModel(params.get('model') ?? '');
+    setMinPrice(params.get('minPrice') ?? '');
+    setMaxPrice(params.get('maxPrice') ?? '');
   }, [params]);
 
   const category = state.categories.find((item) => item.slug === categorySlug);
@@ -528,8 +556,18 @@ export const ShopCatalogPage = () => {
       const availabilityMatch =
         availability === 'all' ||
         (availability === 'inStock' ? product.stock > 0 : product.stock === 0);
+      const minPriceMatch = !minPrice || product.price >= Number(minPrice);
+      const maxPriceMatch = !maxPrice || product.price <= Number(maxPrice);
 
-      return queryMatch && modelMatch && categoryMatch && subcategoryMatch && availabilityMatch;
+      return (
+        queryMatch &&
+        modelMatch &&
+        categoryMatch &&
+        subcategoryMatch &&
+        availabilityMatch &&
+        minPriceMatch &&
+        maxPriceMatch
+      );
     });
 
     switch (sort) {
@@ -550,7 +588,9 @@ export const ShopCatalogPage = () => {
     categorySlug,
     deferredQuery,
     i18n.language,
+    maxPrice,
     model,
+    minPrice,
     sort,
     state.products,
     subcategorySlug,
@@ -558,12 +598,17 @@ export const ShopCatalogPage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [availability, categorySlug, deferredQuery, model, sort, subcategorySlug]);
+  }, [availability, categorySlug, deferredQuery, maxPrice, minPrice, model, sort, subcategorySlug]);
 
   const pageSize = 6;
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(page, pageCount);
   const items = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const showSubcategoryFallback =
+    !subcategory &&
+    Boolean(category) &&
+    filtered.length === 0 &&
+    (category?.subcategories.length ?? 0) > 0;
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -613,6 +658,22 @@ export const ShopCatalogPage = () => {
                   <option value="inStock">{t('shop.stock.inStock')}</option>
                   <option value="outOfStock">{t('shop.stock.outOfStock')}</option>
                 </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={minPrice}
+                    onChange={(event) => setMinPrice(event.target.value)}
+                    placeholder={t('shop.catalog.priceFrom')}
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={maxPrice}
+                    onChange={(event) => setMaxPrice(event.target.value)}
+                    placeholder={t('shop.catalog.priceTo')}
+                  />
+                </div>
                 <Select
                   value={sort}
                   onChange={(event) =>
@@ -630,12 +691,14 @@ export const ShopCatalogPage = () => {
           <div className="min-w-0">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <p className="text-sm text-white/55">{t('shop.catalog.found', { count: filtered.length })}</p>
-              {(query || model || availability !== 'all' || sort !== 'popular') ? (
+              {(query || model || minPrice || maxPrice || availability !== 'all' || sort !== 'popular') ? (
                 <button
                   className="btn-outline px-4 py-2 text-[11px]"
                   onClick={() => {
                     setQuery('');
                     setModel('');
+                    setMinPrice('');
+                    setMaxPrice('');
                     setAvailability('all');
                     setSort('popular');
                   }}
@@ -649,7 +712,28 @@ export const ShopCatalogPage = () => {
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-            {items.length === 0 ? (
+            {showSubcategoryFallback ? (
+              <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {category?.subcategories.map((item) => (
+                  <Link
+                    key={item.id}
+                    to={`/hongqi-parts/catalog/${category.slug}/${item.slug}`}
+                    className="card-luxury group p-6"
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
+                      {localizedText(category.name, { lng: i18n.language })}
+                    </p>
+                    <h3 className="mt-4 text-2xl font-semibold text-white">
+                      {localizedText(item.name, { lng: i18n.language })}
+                    </h3>
+                    <p className="mt-4 text-sm leading-7 text-white/55">
+                      {t('shop.catalog.categoryFallback')}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+            {items.length === 0 && !showSubcategoryFallback ? (
               <div className="card-luxury mt-6 p-8 text-white/55">{t('shop.catalog.empty')}</div>
             ) : null}
             {pageCount > 1 ? (
@@ -681,15 +765,59 @@ export const ShopProductPage = () => {
   const { state, addToCart } = useShop();
   const { slug } = useParams();
   const [activeImage, setActiveImage] = useState(0);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
   const product = state.products.find((item) => item.slug === slug);
   const category = state.categories.find((item) => item.slug === product?.categorySlug);
-  const related = state.products
+  const sameCategoryProducts = state.products
     .filter((item) => item.id !== product?.id && item.categorySlug === product?.categorySlug)
+    .slice(0, 4);
+  const similarProducts = state.products
+    .filter((item) => {
+      if (!product || item.id === product.id) return false;
+      if (item.categorySlug === product.categorySlug) return false;
+      return item.models.some((model) => product.models.includes(model));
+    })
     .slice(0, 4);
 
   useEffect(() => {
     setActiveImage(0);
+    setIsZoomOpen(false);
   }, [product?.id]);
+
+  useEffect(() => {
+    if (!product) return;
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.shopSchema = product.id;
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: localizedText(product.name, { lng: i18n.language, fallbackLng: 'en' }),
+      sku: product.article,
+      mpn: product.oem,
+      image: product.images,
+      description: localizedText(product.description, { lng: i18n.language, fallbackLng: 'en' }),
+      brand: {
+        '@type': 'Brand',
+        name: product.manufacturer,
+      },
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: 'KZT',
+        price: product.price,
+        availability:
+          product.stock > 0
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+      },
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      script.remove();
+    };
+  }, [i18n.language, product]);
 
   if (!product) {
     return (
@@ -710,13 +838,18 @@ export const ShopProductPage = () => {
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <div className="overflow-hidden border border-white/10 bg-luxury-elevated">
+            <button
+              type="button"
+              className="block w-full overflow-hidden border border-white/10 bg-luxury-elevated text-left"
+              onClick={() => setIsZoomOpen(true)}
+            >
               <SmartImage
                 src={product.images[activeImage]}
                 alt={productName}
                 className="h-[320px] w-full object-cover sm:h-[420px] xl:h-[560px]"
+                fallbackLabel={productName}
               />
-            </div>
+            </button>
             <div className="mt-4 grid grid-cols-3 gap-3">
               {product.images.map((image, index) => (
                 <button
@@ -783,6 +916,7 @@ export const ShopProductPage = () => {
                 {t('shop.actions.quickOrder')}
               </Link>
             </div>
+            <p className="mt-5 text-sm text-white/45">{t('shop.product.zoomHint')}</p>
           </div>
         </div>
 
@@ -853,17 +987,56 @@ export const ShopProductPage = () => {
           </div>
         </section>
 
-        {related.length ? (
+        {sameCategoryProducts.length ? (
           <section className="mt-16">
             <h2 className="text-h3 text-white">{t('shop.product.related')}</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {related.map((item) => (
+              {sameCategoryProducts.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {similarProducts.length ? (
+          <section className="mt-16">
+            <h2 className="text-h3 text-white">
+              {t('shop.product.similar')}
+            </h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {similarProducts.map((item) => (
                 <ProductCard key={item.id} product={item} />
               ))}
             </div>
           </section>
         ) : null}
       </div>
+
+      {isZoomOpen ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/85 px-4 py-8"
+          onClick={() => setIsZoomOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-6xl">
+            <button
+              type="button"
+              className="absolute right-4 top-4 z-10 h-11 w-11 border border-white/15 bg-black/40 text-xl text-white"
+              onClick={() => setIsZoomOpen(false)}
+              aria-label={t('common.close', 'Закрыть')}
+            >
+              ×
+            </button>
+            <SmartImage
+              src={product.images[activeImage]}
+              alt={productName}
+              className="max-h-[82vh] w-full object-contain"
+              fallbackLabel={productName}
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -1321,78 +1494,6 @@ const SeoEditor = ({
   );
 };
 
-const ReviewEditor = ({
-  item,
-  onSave,
-  onDelete,
-}: {
-  item?: ReviewItem;
-  onSave: (item: ReviewItem) => void;
-  onDelete: (id: string) => void;
-}) => {
-  const [draft, setDraft] = useState<ReviewItem>(
-    item ?? {
-      id: `review-${Date.now()}`,
-      name: '',
-      rating: 5,
-      text: emptyLocale(),
-    }
-  );
-
-  useEffect(() => {
-    setDraft(
-      item ?? {
-        id: `review-${Date.now()}`,
-        name: '',
-        rating: 5,
-        text: emptyLocale(),
-      }
-    );
-  }, [item]);
-
-  return (
-    <div className="card-luxury p-6">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Input
-          value={draft.name}
-          onChange={(event) => setDraft({ ...draft, name: event.target.value })}
-          placeholder="Имя клиента"
-        />
-        <Input
-          type="number"
-          min={1}
-          max={5}
-          value={draft.rating}
-          onChange={(event) => setDraft({ ...draft, rating: Number(event.target.value) })}
-          placeholder="Рейтинг"
-        />
-      </div>
-      <div className="mt-4 grid gap-4">
-        {(['ru', 'en', 'kz'] as const).map((locale) => (
-          <Textarea
-            key={`review-${locale}`}
-            value={draft.text[locale]}
-            onChange={(event) =>
-              setDraft({ ...draft, text: { ...draft.text, [locale]: event.target.value } })
-            }
-            placeholder={`Отзыв ${locale.toUpperCase()}`}
-          />
-        ))}
-      </div>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <button className="btn-primary" onClick={() => onSave(draft)}>
-          Сохранить
-        </button>
-        {item ? (
-          <button className="btn-outline" onClick={() => onDelete(item.id)}>
-            Удалить
-          </button>
-        ) : null}
-      </div>
-    </div>
-  );
-};
-
 export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   const { t, i18n } = useTranslation();
   const {
@@ -1405,8 +1506,6 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
     deleteModel,
     saveStore,
     deleteStore,
-    saveReview,
-    deleteReview,
     updateOrderStatus,
     addInventoryMovement,
     saveSeoPage,
@@ -1416,10 +1515,9 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
     loadError,
   } = useShop();
   const [tab, setTab] = useState<
-    'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'reviews' | 'requests' | 'seo'
+    'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import'
   >('products');
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
-  const [selectedReviewId, setSelectedReviewId] = useState<string | undefined>(undefined);
   const confirmDelete = (message: string, onConfirm: () => void) => {
     if (!window.confirm(message)) return;
     onConfirm();
@@ -1436,8 +1534,16 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   }, [selectedProductId, state.products]);
 
   const selectedProduct = state.products.find((item) => item.id === selectedProductId);
-  const selectedReview = state.reviews.find((item) => item.id === selectedReviewId);
   const lowStock = state.products.filter((product) => product.stock <= 2);
+  const inventorySummary = useMemo(
+    () => ({
+      totalProducts: state.products.length,
+      totalStock: state.products.reduce((sum, product) => sum + product.stock, 0),
+      lowStockCount: lowStock.length,
+      totalMovements: state.inventoryMovements.length,
+    }),
+    [lowStock.length, state.inventoryMovements.length, state.products]
+  );
 
   const content = (
     <div className="grid gap-6">
@@ -1447,9 +1553,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
             Shop Admin
           </p>
           <h2 className="mt-3 text-3xl font-semibold text-white">{t('shop.routes.shop')}</h2>
-          <p className="mt-3 max-w-3xl text-white/55">
-            Управление каталогом, заказами, складом и SEO магазина запчастей.
-          </p>
+          <p className="mt-3 max-w-3xl text-white/55">{t('shop.admin.description')}</p>
         </div>
 
         {(isLoading || loadError) && <ShopAsyncState embedded />}
@@ -1457,7 +1561,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
         <div className="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
           <aside className="card-luxury h-fit p-4 xl:sticky xl:top-10">
             {(
-              ['products', 'categories', 'models', 'orders', 'warehouse', 'stores', 'reviews', 'requests', 'seo'] as const
+              ['products', 'categories', 'models', 'orders', 'warehouse', 'stores', 'requests', 'seo', 'import'] as const
             ).map((item) => (
               <button
                 key={item}
@@ -1599,7 +1703,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                                 )
                               }
                             >
-                              Удалить
+                              {t('shop.actions.delete')}
                             </button>
                           </div>
                           <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -1645,7 +1749,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                           })
                         }
                       >
-                        Добавить подкатегорию
+                        {t('shop.admin.addSubcategory')}
                       </button>
                     </div>
                     <div className="mt-6 flex flex-wrap gap-3">
@@ -1714,7 +1818,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     })
                   }
                 >
-                  Добавить модель
+                  {t('shop.admin.addModel')}
                 </button>
               </div>
             ) : null}
@@ -1752,19 +1856,45 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
 
             {tab === 'warehouse' ? (
               <div className="grid gap-4">
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    { label: t('shop.admin.summarySku'), value: inventorySummary.totalProducts },
+                    { label: t('shop.admin.summaryTotalStock'), value: inventorySummary.totalStock },
+                    { label: t('shop.admin.summaryLowStock'), value: inventorySummary.lowStockCount },
+                    { label: t('shop.admin.summaryMovements'), value: inventorySummary.totalMovements },
+                  ].map((item) => (
+                    <div key={item.label} className="card-luxury p-5">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-white/40">{item.label}</p>
+                      <p className="mt-4 text-3xl font-semibold text-white">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
                 <div className="card-luxury p-6">
-                  <h2 className="text-xl font-semibold text-white">{t('shop.admin.lowStock')}</h2>
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <h2 className="text-xl font-semibold text-white">{t('shop.admin.lowStock')}</h2>
+                    <p className="text-sm text-white/50">{t('shop.admin.lowStockHint')}</p>
+                  </div>
                   <div className="mt-4 grid gap-3">
+                    {lowStock.length === 0 ? (
+                      <div className="border border-white/10 bg-white/[0.02] p-4 text-white/55">
+                        {t('shop.admin.allStockOk')}
+                      </div>
+                    ) : null}
                     {lowStock.map((product) => (
                       <div
                         key={product.id}
-                        className="flex flex-wrap items-center justify-between gap-3 border border-white/10 p-4"
+                        className="grid gap-4 border border-white/10 bg-white/[0.02] p-4 lg:grid-cols-[minmax(0,1fr)_auto]"
                       >
-                        <span className="text-white">
-                          {localizedText(product.name, { lng: i18n.language })}
-                        </span>
-                        <div className="flex gap-2">
-                          <span className="text-white/55">{product.stock}</span>
+                        <div>
+                          <p className="text-lg font-semibold text-white">
+                            {localizedText(product.name, { lng: i18n.language })}
+                          </p>
+                          <p className="mt-2 text-sm uppercase tracking-[0.2em] text-white/35">
+                            {product.article}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="min-w-14 text-center text-white/55">{product.stock}</span>
                           <button
                             className="btn-outline px-4 py-2"
                             onClick={() =>
@@ -1801,6 +1931,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     <thead className="text-white/45">
                       <tr>
                         <th className="pb-3">{t('shop.admin.date')}</th>
+                        <th className="pb-3">{t('shop.admin.productColumn')}</th>
                         <th className="pb-3">{t('shop.admin.operation')}</th>
                         <th className="pb-3">{t('shop.admin.quantity')}</th>
                         <th className="pb-3">{t('shop.forms.comment')}</th>
@@ -1810,6 +1941,16 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       {state.inventoryMovements.map((movement) => (
                         <tr key={movement.id} className="border-t border-white/10 text-white/70">
                           <td className="py-3">{new Date(movement.date).toLocaleString()}</td>
+                          <td className="py-3">
+                            {localizedText(
+                              state.products.find((product) => product.id === movement.productId)?.name ?? {
+                                ru: movement.productId,
+                                en: movement.productId,
+                                kz: movement.productId,
+                              },
+                              { lng: i18n.language }
+                            )}
+                          </td>
                           <td className="py-3">{movement.operation}</td>
                           <td className="py-3">{movement.quantity}</td>
                           <td className="py-3">{movement.comment}</td>
@@ -1853,44 +1994,6 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
               </div>
             ) : null}
 
-            {tab === 'reviews' ? (
-              <div className="grid gap-6 2xl:grid-cols-[300px_minmax(0,1fr)]">
-                <div className="card-luxury p-4">
-                  <div className="max-h-[640px] overflow-auto pr-1">
-                    {state.reviews.map((review) => (
-                      <button
-                        key={review.id}
-                        onClick={() => setSelectedReviewId(review.id)}
-                        className={`mb-2 block w-full border px-3 py-3 text-left ${
-                          selectedReviewId === review.id
-                            ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
-                            : 'border-white/10 text-white/65'
-                        }`}
-                      >
-                        {review.name || review.id}
-                      </button>
-                    ))}
-                  </div>
-                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedReviewId(undefined)}>
-                    Новый отзыв
-                  </button>
-                </div>
-                <ReviewEditor
-                  item={selectedReview}
-                  onSave={(item) => {
-                    saveReview(item);
-                    setSelectedReviewId(item.id);
-                  }}
-                  onDelete={(id) => {
-                    confirmDelete('Удалить отзыв?', () => {
-                      deleteReview(id);
-                      setSelectedReviewId(state.reviews.find((review) => review.id !== id)?.id);
-                    });
-                  }}
-                />
-              </div>
-            ) : null}
-
             {tab === 'requests' ? (
               <div className="grid gap-4">
                 {state.requests.length === 0 ? (
@@ -1922,6 +2025,8 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                 ))}
               </div>
             ) : null}
+
+            {tab === 'import' ? <ShopImportSection /> : null}
           </main>
         </div>
       </div>
@@ -1941,4 +2046,101 @@ export const ShopCatalogResolverPage = () => {
   const isCategory = state.categories.some((item) => item.slug === slug);
 
   return isCategory ? <ShopCatalogPage /> : <ShopProductPage />;
+};
+
+const ShopImportSection = () => {
+  const { t } = useTranslation();
+  const { loadAdminData } = useShop();
+  const [report, setReport] = useState<Array<{ key: string; count: number }>>([]);
+  const [error, setError] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+
+  const handleImport = async (file: File) => {
+    setIsImporting(true);
+    setError('');
+    try {
+      const payload = await parseShopWorkbook(file);
+      const summary = summarizeImportPayload(payload);
+
+      for (const model of payload.models) {
+        await shopAdminApi.upsert('models', model.id, model);
+      }
+      for (const category of payload.categories) {
+        await shopAdminApi.upsert('categories', category.id, category);
+      }
+      for (const product of payload.products) {
+        await shopAdminApi.upsert('products', product.id, product);
+      }
+      for (const store of payload.stores) {
+        await shopAdminApi.upsert('stores', store.id, store);
+      }
+      for (const page of payload.seoPages) {
+        await shopAdminApi.upsert('seoPages', page.id, page);
+      }
+
+      await loadAdminData();
+      setReport(summary);
+    } catch (nextError) {
+      setError((nextError as Error).message || 'Import failed');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  return (
+    <div className="grid gap-6">
+      <div className="card-luxury p-6">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
+          {t('shop.admin.importEyebrow')}
+        </p>
+        <h3 className="mt-4 text-2xl font-semibold text-white">{t('shop.admin.importTitle')}</h3>
+        <p className="mt-4 max-w-3xl text-white/60">{t('shop.admin.importDescription')}</p>
+        <div className="mt-6 rounded-sm border border-white/10 bg-white/[0.02] p-5">
+          <p className="text-sm font-medium text-white">{t('shop.admin.importSheetsTitle')}</p>
+          <p className="mt-3 text-sm leading-7 text-white/55">{t('shop.admin.importSheetsHint')}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {['models', 'categories', 'products', 'stores', 'seoPages'].map((item) => (
+              <span
+                key={item}
+                className="border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/65"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+        <label className="mt-6 flex cursor-pointer items-center justify-center border border-dashed border-white/20 bg-white/[0.02] px-6 py-10 text-center transition hover:border-luxury-burgundy/60 hover:bg-luxury-burgundy/5">
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              void handleImport(file);
+              event.currentTarget.value = '';
+            }}
+          />
+          <span className="text-sm leading-7 text-white/75">
+            {isImporting ? t('shop.admin.importing') : t('shop.admin.importCta')}
+          </span>
+        </label>
+        {error ? <div className="mt-4 border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">{error}</div> : null}
+      </div>
+
+      {report.length ? (
+        <div className="card-luxury p-6">
+          <h4 className="text-lg font-semibold text-white">{t('shop.admin.importResult')}</h4>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {report.map((item) => (
+              <div key={item.key} className="border border-white/10 bg-white/[0.02] p-4">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">{item.key}</p>
+                <p className="mt-3 text-2xl font-semibold text-white">{item.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
 };
