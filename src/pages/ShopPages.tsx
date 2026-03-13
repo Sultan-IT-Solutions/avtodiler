@@ -105,12 +105,15 @@ const SmartImage = ({
   src,
   alt,
   className,
+  fallbackLabel,
 }: {
   src?: string;
   alt: string;
   className?: string;
+  fallbackLabel?: string;
 }) => {
   const [index, setIndex] = useState(0);
+  const [showFallbackCard, setShowFallbackCard] = useState(false);
   const sources = useMemo(
     () => [src, ...shopFallbackImages].filter((item): item is string => Boolean(item)),
     [src]
@@ -118,16 +121,48 @@ const SmartImage = ({
 
   useEffect(() => {
     setIndex(0);
+    setShowFallbackCard(false);
   }, [src]);
+
+  if (!sources.length || showFallbackCard) {
+    return (
+      <div
+        className={`relative overflow-hidden bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] ${className ?? ''}`.trim()}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.16),transparent_30%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="relative flex h-full w-full flex-col justify-between p-6">
+          <span className="text-[10px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            Hongqi Parts
+          </span>
+          <div>
+            <div className="h-px w-20 bg-luxury-burgundy/60" />
+            <p className="mt-4 text-lg font-semibold text-white">
+              {fallbackLabel || alt}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <img
       src={sources[Math.min(index, sources.length - 1)]}
       alt={alt}
       loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
       className={className}
       onError={() => {
-        setIndex((current) => (current < sources.length - 1 ? current + 1 : current));
+        setIndex((current) => {
+          const nextIndex = current + 1;
+          if (nextIndex >= sources.length) {
+            setShowFallbackCard(true);
+            return current;
+          }
+          return nextIndex;
+        });
       }}
     />
   );
@@ -144,6 +179,7 @@ const ProductCard = ({ product }: { product: ProductItem }) => {
         <SmartImage
           src={product.images[0]}
           alt={name}
+          fallbackLabel={product.article}
           className="h-64 w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
         />
       </Link>
@@ -396,7 +432,7 @@ export const ShopHomePage = () => {
           </p>
           <h2 className="mt-4 text-h2 text-white">{t('shop.home.popular.title')}</h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {state.products.filter((product) => product.popular).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

@@ -19,6 +19,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navigation } from './components/Navigation';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { Footer } from './components/Footer';
 import {
   ShopCartPage,
   ShopCatalogPage,
@@ -483,6 +484,7 @@ function AnimatedRoutes() {
 const AppShell = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
+  const isShopRoute = location.pathname.startsWith('/hongqi-parts');
 
   useSeoMeta();
 
@@ -495,6 +497,7 @@ const AppShell = () => {
         <main>
           <AnimatedRoutes />
         </main>
+        {!isAdmin && isShopRoute && <Footer />}
       </div>
     </RouteErrorBoundary>
   );
