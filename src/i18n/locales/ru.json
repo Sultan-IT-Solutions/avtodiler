@@ -586,7 +586,6 @@
       "pickByModel": "Подобрать по модели",
       "addToCart": "В корзину",
       "buyKaspi": "Купить в Kaspi",
-      "quickOrder": "Быстрый заказ",
       "sendRequest": "Отправить запрос",
       "remove": "Удалить",
       "checkout": "Оформить заказ",
@@ -601,6 +600,7 @@
     "forms": {
       "name": "Имя",
       "phone": "Телефон",
+      "phoneError": "Введите корректный номер телефона",
       "vin": "VIN номер",
       "comment": "Комментарий",
       "city": "Город",
@@ -738,6 +738,8 @@
       "subtitle": "Отправьте VIN и комментарий, если нужной позиции нет в каталоге."
     },
     "admin": {
+      "eyebrow": "Управление магазином",
+      "savedSuccess": "Успешно сохранено",
       "description": "Управление каталогом, заказами, складом и SEO магазина запчастей.",
       "tabs": {
         "products": "Товары",
@@ -770,7 +772,7 @@
       "addModel": "Добавить модель",
       "summarySku": "SKU",
       "summaryTotalStock": "Общий остаток",
-      "summaryLowStock": "Low stock",
+      "summaryLowStock": "Низкий остаток",
       "summaryMovements": "Движения",
       "lowStock": "Товары с низким остатком",
       "lowStockHint": "Товары, которым требуется пополнение склада",

@@ -584,7 +584,6 @@
       "pickByModel": "Pick by model",
       "addToCart": "Add to cart",
       "buyKaspi": "Buy in Kaspi",
-      "quickOrder": "Quick order",
       "sendRequest": "Send request",
       "remove": "Remove",
       "checkout": "Checkout",
@@ -599,6 +598,7 @@
     "forms": {
       "name": "Name",
       "phone": "Phone",
+      "phoneError": "Enter a valid phone number",
       "vin": "VIN number",
       "comment": "Comment",
       "city": "City",
@@ -736,6 +736,8 @@
       "subtitle": "Send your VIN and comment if the required item is missing from the catalog."
     },
     "admin": {
+      "eyebrow": "Store management",
+      "savedSuccess": "Saved successfully",
       "description": "Manage the parts catalog, orders, warehouse, and shop SEO.",
       "tabs": {
         "products": "Products",

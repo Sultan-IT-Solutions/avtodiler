@@ -7,6 +7,7 @@ import { submitLead } from '../utils/leads';
 import { useTranslation } from 'react-i18next';
 import { publicApi } from '../utils/publicApi';
 import { localizedText } from '../utils/localizedText';
+import { isValidPhone } from '../utils/phone';
 import type { ServiceItem } from '../types/admin';
 import { EmptyState } from '../components/EmptyState';
 
@@ -33,6 +34,8 @@ export const Service = () => {
     comment: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneError = phoneTouched && !isValidPhone(formData.phone);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,6 +65,8 @@ export const Service = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneTouched(true);
+    if (!isValidPhone(formData.phone)) return;
     const selectedService = services.find((service) => service.id === formData.service);
     await submitLead({
       type: 'service',
@@ -79,6 +84,7 @@ export const Service = () => {
       service: '',
       comment: '',
     });
+    setPhoneTouched(false);
     setTimeout(() => setIsSubmitted(false), 4000);
   };
 
@@ -376,10 +382,19 @@ export const Service = () => {
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="input-luxury"
+                      onChange={(e) => {
+                        if (!phoneTouched) setPhoneTouched(true);
+                        setFormData({ ...formData, phone: e.target.value });
+                      }}
+                      onBlur={() => setPhoneTouched(true)}
+                      className={`input-luxury ${phoneError ? 'border-luxury-burgundy/70' : ''}`}
                       placeholder="+7 (___) ___-__-__"
                     />
+                    {phoneError ? (
+                      <p className="mt-2 text-[11px] text-luxury-burgundy">
+                        {t('contactForm.phoneError')}
+                      </p>
+                    ) : null}
                   </div>
 
                   <div>

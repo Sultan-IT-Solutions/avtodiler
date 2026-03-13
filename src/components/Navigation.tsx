@@ -188,39 +188,41 @@ export const Navigation = () => {
               {renderCartLink()}
             </div>
 
-            {/* Mobile: Logo or Menu button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden relative w-10 h-10 flex items-center justify-center"
-              aria-label="Toggle menu"
-            >
-              <div className="relative w-6 h-4 flex flex-col justify-between">
-                <motion.span
-                  animate={{
-                    rotate: isMobileMenuOpen ? 45 : 0,
-                    y: isMobileMenuOpen ? 7 : 0,
-                  }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="block w-full h-px bg-white origin-center"
-                />
-                <motion.span
-                  animate={{
-                    opacity: isMobileMenuOpen ? 0 : 1,
-                    x: isMobileMenuOpen ? 20 : 0,
-                  }}
-                  transition={{ duration: 0.2 }}
-                  className="block w-full h-px bg-white"
-                />
-                <motion.span
-                  animate={{
-                    rotate: isMobileMenuOpen ? -45 : 0,
-                    y: isMobileMenuOpen ? -7 : 0,
-                  }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  className="block w-full h-px bg-white origin-center"
-                />
-              </div>
-            </button>
+            <div className="flex items-center gap-3 lg:hidden">
+              {renderCartLink()}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="relative flex h-10 w-10 items-center justify-center"
+                aria-label="Toggle menu"
+              >
+                <div className="relative flex h-4 w-6 flex-col justify-between">
+                  <motion.span
+                    animate={{
+                      rotate: isMobileMenuOpen ? 45 : 0,
+                      y: isMobileMenuOpen ? 7 : 0,
+                    }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="block h-px w-full origin-center bg-white"
+                  />
+                  <motion.span
+                    animate={{
+                      opacity: isMobileMenuOpen ? 0 : 1,
+                      x: isMobileMenuOpen ? 20 : 0,
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="block h-px w-full bg-white"
+                  />
+                  <motion.span
+                    animate={{
+                      rotate: isMobileMenuOpen ? -45 : 0,
+                      y: isMobileMenuOpen ? -7 : 0,
+                    }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="block h-px w-full origin-center bg-white"
+                  />
+                </div>
+              </button>
+            </div>
           </div>
         </nav>
       </motion.header>

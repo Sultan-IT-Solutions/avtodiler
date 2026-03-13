@@ -15,6 +15,7 @@ import { SITE_IMAGES } from '../data/siteImages';
 import { useShop } from '../context/ShopContext';
 import type { CategoryItem, HongqiModel, OrderItem, ProductItem, SeoPage } from '../types/shop';
 import { localizedText } from '../utils/localizedText';
+import { isValidPhone } from '../utils/phone';
 import { shopAdminApi } from '../utils/shopApi';
 import { parseShopWorkbook, summarizeImportPayload } from '../utils/shopImport';
 
@@ -479,18 +480,23 @@ const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
   const [vin, setVin] = useState('');
   const [comment, setComment] = useState('');
   const [sent, setSent] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneError = phoneTouched && !isValidPhone(phone);
 
   return (
     <form
       className={`mt-8 grid gap-5 ${compact ? '' : 'lg:grid-cols-2'}`}
       onSubmit={(event) => {
         event.preventDefault();
+        setPhoneTouched(true);
+        if (!isValidPhone(phone)) return;
         submitPartRequest({ name, phone, vin, comment });
         setSent(true);
         setName('');
         setPhone('');
         setVin('');
         setComment('');
+        setPhoneTouched(false);
       }}
     >
       <Input
@@ -501,10 +507,20 @@ const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
       />
       <Input
         value={phone}
-        onChange={(event) => setPhone(event.target.value)}
+        onChange={(event) => {
+          if (!phoneTouched) setPhoneTouched(true);
+          setPhone(event.target.value);
+        }}
+        onBlur={() => setPhoneTouched(true)}
         placeholder={t('shop.forms.phone')}
+        className={phoneError ? 'border-luxury-burgundy/70 focus:border-luxury-burgundy/80' : ''}
         required
       />
+      {phoneError ? (
+        <p className={`${compact ? '' : 'lg:col-start-2'} -mt-2 text-[11px] text-luxury-burgundy`}>
+          {t('shop.forms.phoneError')}
+        </p>
+      ) : null}
       <Input
         value={vin}
         onChange={(event) => setVin(event.target.value)}
@@ -1152,9 +1168,6 @@ export const ShopProductPage = () => {
                   {t('shop.actions.buyKaspi')}
                 </a>
               ) : null}
-              <Link to="/checkout" className="btn-outline">
-                {t('shop.actions.quickOrder')}
-              </Link>
             </div>
             <p className="mt-5 text-sm text-white/45">{t('shop.product.zoomHint')}</p>
           </div>
@@ -1457,6 +1470,8 @@ export const ShopCheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<OrderItem['paymentMethod']>('card');
   const [bank, setBank] = useState('Kaspi Bank');
   const [orderId, setOrderId] = useState('');
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneError = phoneTouched && !isValidPhone(phone);
 
   if (cart.length === 0 && !orderId) {
     return (
@@ -1494,6 +1509,8 @@ export const ShopCheckoutPage = () => {
             className="card-luxury p-8"
             onSubmit={(event) => {
               event.preventDefault();
+              setPhoneTouched(true);
+              if (!isValidPhone(phone)) return;
               const created = createOrder({ name, phone, city, comment, paymentMethod, bank });
               setOrderId(created);
             }}
@@ -1508,10 +1525,20 @@ export const ShopCheckoutPage = () => {
               />
               <Input
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
+                onChange={(event) => {
+                  if (!phoneTouched) setPhoneTouched(true);
+                  setPhone(event.target.value);
+                }}
+                onBlur={() => setPhoneTouched(true)}
                 placeholder={t('shop.forms.phone')}
+                className={phoneError ? 'border-luxury-burgundy/70 focus:border-luxury-burgundy/80' : ''}
                 required
               />
+              {phoneError ? (
+                <p className="-mt-2 text-[11px] text-luxury-burgundy lg:col-start-2">
+                  {t('shop.forms.phoneError')}
+                </p>
+              ) : null}
               <Input
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
@@ -1715,7 +1742,7 @@ const ProductEditor = ({
         >
           {categories.map((category) => (
             <option key={category.id} value={category.slug}>
-              {category.slug}
+              {localizedText(category.name, { lng: 'ru', fallbackLng: 'ru' })}
             </option>
           ))}
         </Select>
@@ -1725,7 +1752,7 @@ const ProductEditor = ({
         >
           {(currentCategory?.subcategories ?? []).map((subcategory) => (
             <option key={subcategory.id} value={subcategory.slug}>
-              {subcategory.slug}
+              {localizedText(subcategory.name, { lng: 'ru', fallbackLng: 'ru' })}
             </option>
           ))}
         </Select>
@@ -1866,10 +1893,20 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
     'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import'
   >('products');
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  const [saveNotice, setSaveNotice] = useState('');
   const confirmDelete = (message: string, onConfirm: () => void) => {
     if (!window.confirm(message)) return;
     onConfirm();
   };
+  const notifySaved = () => {
+    setSaveNotice(t('shop.admin.savedSuccess'));
+  };
+
+  useEffect(() => {
+    if (!saveNotice) return;
+    const timer = window.setTimeout(() => setSaveNotice(''), 2400);
+    return () => window.clearTimeout(timer);
+  }, [saveNotice]);
 
   useEffect(() => {
     void loadAdminData().catch(() => undefined);
@@ -1898,11 +1935,25 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
       <div className={embedded ? '' : 'container mx-auto px-6 py-12 lg:px-16'}>
         <div className={embedded ? 'mb-6' : 'mb-8'}>
           <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            Shop Admin
+            {t('shop.admin.eyebrow')}
           </p>
           <h2 className="mt-3 text-3xl font-semibold text-white">{t('shop.routes.shop')}</h2>
           <p className="mt-3 max-w-3xl text-white/55">{t('shop.admin.description')}</p>
         </div>
+
+        <AnimatePresence>
+          {saveNotice ? (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22 }}
+              className="mb-5 inline-flex border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-4 py-3 text-sm text-white"
+            >
+              {saveNotice}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
         {(isLoading || loadError) && <ShopAsyncState embedded />}
 
@@ -1954,6 +2005,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                   product={selectedProduct}
                   onSave={(item) => {
                     saveProduct(item);
+                    notifySaved();
                     setSelectedProductId(item.id);
                   }}
                   onDelete={(id) => {
@@ -2101,7 +2153,13 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       </button>
                     </div>
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <button className="btn-primary" onClick={() => saveCategory(category)}>
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          saveCategory(category);
+                          notifySaved();
+                        }}
+                      >
                         {t('shop.actions.save')}
                       </button>
                       <button
@@ -2141,7 +2199,13 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       ))}
                     </div>
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <button className="btn-primary" onClick={() => saveModel(model)}>
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          saveModel(model);
+                          notifySaved();
+                        }}
+                      >
                         {t('shop.actions.save')}
                       </button>
                       <button
@@ -2187,14 +2251,15 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       </div>
                       <Select
                         value={order.status}
-                        onChange={(event) =>
-                          updateOrderStatus(order.id, event.target.value as OrderItem['status'])
-                        }
+                        onChange={(event) => {
+                          updateOrderStatus(order.id, event.target.value as OrderItem['status']);
+                          notifySaved();
+                        }}
                       >
-                        <option value="new">new</option>
-                        <option value="paid">paid</option>
-                        <option value="shipped">shipped</option>
-                        <option value="completed">completed</option>
+                        <option value="new">Новый</option>
+                        <option value="paid">Оплачен</option>
+                        <option value="shipped">Отправлен</option>
+                        <option value="completed">Завершен</option>
                       </Select>
                     </div>
                   </div>
@@ -2227,7 +2292,13 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       />
                     </div>
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <button className="btn-primary" onClick={() => saveStore(store)}>
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          saveStore(store);
+                          notifySaved();
+                        }}
+                      >
                         {t('shop.actions.save')}
                       </button>
                       <button
@@ -2267,7 +2338,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                   <SeoEditor
                     key={page.id}
                     page={page}
-                    onSave={saveSeoPage}
+                    onSave={(item) => {
+                      saveSeoPage(item);
+                      notifySaved();
+                    }}
                     onDelete={(id) =>
                       confirmDelete('Удалить SEO-страницу?', () => deleteSeoPage(id))
                     }

@@ -1,10 +1,11 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { submitLead } from '../utils/leads';
+import { isValidPhone } from '../utils/phone';
 
 const dealers = [
   { id: 1, name: 'Hongqi Auto — Алматы', address: 'Алатау просп., 1а/5, Шугыла м-н, Наурызбайский район, Алматы' },
@@ -51,9 +52,13 @@ export const TestDrive = () => {
     comment: '',
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneError = phoneTouched && !isValidPhone(formData.phone);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setPhoneTouched(true);
+    if (!isValidPhone(formData.phone)) return;
     await submitLead({
       type: 'test-drive',
       name: formData.name,
@@ -70,6 +75,7 @@ export const TestDrive = () => {
       dealer: '',
       comment: '',
     });
+    setPhoneTouched(false);
     setTimeout(() => setIsSubmitted(false), 5000);
   };
 
@@ -280,10 +286,19 @@ export const TestDrive = () => {
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="input-luxury"
+                      onChange={(e) => {
+                        if (!phoneTouched) setPhoneTouched(true);
+                        setFormData({ ...formData, phone: e.target.value });
+                      }}
+                      onBlur={() => setPhoneTouched(true)}
+                      className={`input-luxury ${phoneError ? 'border-luxury-burgundy/70' : ''}`}
                       placeholder="+7 (___) ___-__-__"
                     />
+                    {phoneError ? (
+                      <p className="mt-2 text-[11px] text-luxury-burgundy">
+                        Введите корректный номер телефона
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
