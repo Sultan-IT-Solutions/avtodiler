@@ -1,13 +1,16 @@
 ﻿import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 
+const CART_RETURN_PATH_KEY = 'hongqi-cart-return-path';
+
 export const Navigation = () => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { cartCount, cartNotice } = useShop();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,6 +41,15 @@ export const Navigation = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (location.pathname === '/cart') return;
+
+    window.sessionStorage.setItem(
+      CART_RETURN_PATH_KEY,
+      `${location.pathname}${location.search}${location.hash}`
+    );
+  }, [location.hash, location.pathname, location.search]);
+
   const navLinks = [
     { path: '/', label: t('nav.home') },
     { path: '/catalog', label: t('nav.catalog') },
@@ -59,9 +71,24 @@ export const Navigation = () => {
     i18n.changeLanguage(lng);
   };
 
+  const handleCartClick = () => {
+    if (location.pathname === '/cart') {
+      const returnPath = window.sessionStorage.getItem(CART_RETURN_PATH_KEY);
+      navigate(returnPath && returnPath !== '/cart' ? returnPath : '/hongqi-parts');
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      CART_RETURN_PATH_KEY,
+      `${location.pathname}${location.search}${location.hash}`
+    );
+    navigate('/cart');
+  };
+
   const renderCartLink = () => (
-    <Link
-      to="/cart"
+    <button
+      type="button"
+      onClick={handleCartClick}
       className={`relative inline-flex h-11 w-11 items-center justify-center border transition-all duration-300 ${
         location.pathname === '/cart'
           ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
@@ -75,7 +102,7 @@ export const Navigation = () => {
           {cartCount}
         </span>
       ) : null}
-    </Link>
+    </button>
   );
 
   return (

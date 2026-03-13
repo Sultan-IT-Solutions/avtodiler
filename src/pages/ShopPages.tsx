@@ -608,6 +608,9 @@ export const ShopHomePage = () => {
               <Link to="/hongqi-parts/request" className="btn-outline">
                 {t('shop.actions.pickByModel')}
               </Link>
+              <Link to="/hongqi-parts/stores" className="btn-outline">
+                {t('shop.stores.title')}
+              </Link>
             </div>
           </div>
           <ShopAsyncState />
@@ -1892,10 +1895,14 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   const [tab, setTab] = useState<
     'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import'
   >('products');
-  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  const [selectedProductId, setSelectedProductId] = useState<string | null | undefined>(undefined);
   const [saveNotice, setSaveNotice] = useState('');
   const confirmDelete = (message: string, onConfirm: () => void) => {
     if (!window.confirm(message)) return;
+    onConfirm();
+  };
+  const confirmSave = (onConfirm: () => void) => {
+    if (!window.confirm('Сохранить изменения?')) return;
     onConfirm();
   };
   const notifySaved = () => {
@@ -1913,7 +1920,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   }, [loadAdminData]);
 
   useEffect(() => {
-    if (!selectedProductId && state.products[0]?.id) {
+    if (selectedProductId === undefined && state.products[0]?.id) {
       setSelectedProductId(state.products[0].id);
     }
   }, [selectedProductId, state.products]);
@@ -1995,7 +2002,7 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       </button>
                     ))}
                   </div>
-                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedProductId(undefined)}>
+                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedProductId(null)}>
                     {t('shop.admin.newProduct')}
                   </button>
                 </div>
@@ -2004,9 +2011,11 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                   models={state.models}
                   product={selectedProduct}
                   onSave={(item) => {
-                    saveProduct(item);
-                    notifySaved();
-                    setSelectedProductId(item.id);
+                    confirmSave(() => {
+                      saveProduct(item);
+                      notifySaved();
+                      setSelectedProductId(item.id);
+                    });
                   }}
                   onDelete={(id) => {
                     confirmDelete('Удалить товар?', () => {
@@ -2156,8 +2165,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       <button
                         className="btn-primary"
                         onClick={() => {
-                          saveCategory(category);
-                          notifySaved();
+                          confirmSave(() => {
+                            saveCategory(category);
+                            notifySaved();
+                          });
                         }}
                       >
                         {t('shop.actions.save')}
@@ -2202,8 +2213,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       <button
                         className="btn-primary"
                         onClick={() => {
-                          saveModel(model);
-                          notifySaved();
+                          confirmSave(() => {
+                            saveModel(model);
+                            notifySaved();
+                          });
                         }}
                       >
                         {t('shop.actions.save')}
@@ -2248,6 +2261,9 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                         <p className="mt-1 text-sm text-white/55">
                           {order.name} • {order.phone} • {order.city}
                         </p>
+                        <p className="mt-1 text-xs text-white/35">
+                          {new Date(order.createdAt).toLocaleString('ru-RU')}
+                        </p>
                       </div>
                       <Select
                         value={order.status}
@@ -2261,6 +2277,86 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                         <option value="shipped">Отправлен</option>
                         <option value="completed">Завершен</option>
                       </Select>
+                    </div>
+
+                    <div className="mt-6 overflow-hidden border border-white/10 bg-white/[0.02]">
+                      <div className="hidden grid-cols-[minmax(0,1.6fr)_100px_140px_140px] gap-4 border-b border-white/10 px-4 py-3 text-[11px] uppercase tracking-[0.2em] text-white/40 md:grid">
+                        <span>{t('shop.admin.orderProduct')}</span>
+                        <span>{t('shop.admin.orderQuantity')}</span>
+                        <span>{t('shop.admin.orderUnitPrice')}</span>
+                        <span>{t('shop.admin.orderLineTotal')}</span>
+                      </div>
+
+                      <div className="divide-y divide-white/10">
+                        {order.items.map((item) => {
+                          const product = state.products.find((entry) => entry.id === item.productId);
+                          const lineTotal = item.quantity * item.price;
+                          return (
+                            <div
+                              key={`${order.id}-${item.productId}`}
+                              className="grid gap-2 px-4 py-4 md:grid-cols-[minmax(0,1.6fr)_100px_140px_140px] md:items-start md:gap-4"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-white">
+                                  {product
+                                    ? localizedText(product.name, { lng: i18n.language })
+                                    : item.productId}
+                                </p>
+                                {product ? (
+                                  <p className="mt-1 text-xs text-white/40">
+                                    {product.article} · {product.oem}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <div className="text-sm text-white/65">
+                                <span className="mr-2 inline-block md:hidden text-white/35">
+                                  {t('shop.admin.orderQuantity')}:
+                                </span>
+                                {item.quantity}
+                              </div>
+                              <div className="text-sm text-white/65">
+                                <span className="mr-2 inline-block md:hidden text-white/35">
+                                  {t('shop.admin.orderUnitPrice')}:
+                                </span>
+                                {formatPrice(item.price)}
+                              </div>
+                              <div className="text-sm font-medium text-white">
+                                <span className="mr-2 inline-block md:hidden text-white/35">
+                                  {t('shop.admin.orderLineTotal')}:
+                                </span>
+                                {formatPrice(lineTotal)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3 border-t border-white/10 pt-5 sm:grid-cols-[1fr_auto] sm:items-start">
+                      <div className="text-sm text-white/55">
+                        <p>
+                          {t('shop.admin.orderItemsCount')}: <span className="text-white">{order.items.length}</span>
+                        </p>
+                        <p className="mt-1">
+                          {t('shop.admin.orderUnitsCount')}:{' '}
+                          <span className="text-white">
+                            {order.items.reduce((sum, item) => sum + item.quantity, 0)}
+                          </span>
+                        </p>
+                        {order.comment ? (
+                          <p className="mt-3 text-white/65">
+                            {t('shop.admin.orderComment')}: {order.comment}
+                          </p>
+                        ) : null}
+                      </div>
+                      <div className="border border-luxury-burgundy/25 bg-luxury-burgundy/10 px-4 py-3 text-right">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-white/45">
+                          {t('shop.admin.orderGrandTotal')}
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-white">
+                          {formatPrice(order.total)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -2295,8 +2391,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                       <button
                         className="btn-primary"
                         onClick={() => {
-                          saveStore(store);
-                          notifySaved();
+                          confirmSave(() => {
+                            saveStore(store);
+                            notifySaved();
+                          });
                         }}
                       >
                         {t('shop.actions.save')}
@@ -2312,6 +2410,21 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     </div>
                   </div>
                 ))}
+                <button
+                  className="btn-outline"
+                  onClick={() =>
+                    saveStore({
+                      id: `store-${Date.now()}`,
+                      city: '',
+                      name: emptyLocale(),
+                      address: emptyLocale(),
+                      phone: '',
+                      hours: emptyLocale(),
+                    })
+                  }
+                >
+                  {t('shop.admin.addNew', 'Добавить новый')}
+                </button>
               </div>
             ) : null}
 
@@ -2339,8 +2452,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     key={page.id}
                     page={page}
                     onSave={(item) => {
-                      saveSeoPage(item);
-                      notifySaved();
+                      confirmSave(() => {
+                        saveSeoPage(item);
+                        notifySaved();
+                      });
                     }}
                     onDelete={(id) =>
                       confirmDelete('Удалить SEO-страницу?', () => deleteSeoPage(id))

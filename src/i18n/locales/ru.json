@@ -739,7 +739,7 @@
     },
     "admin": {
       "eyebrow": "Управление магазином",
-      "savedSuccess": "Успешно сохранено",
+      "savedSuccess": "Изменения сохранены",
       "description": "Управление каталогом, заказами, складом и SEO магазина запчастей.",
       "tabs": {
         "products": "Товары",
@@ -808,6 +808,14 @@
       "date": "Дата",
       "operation": "Операция",
       "quantity": "Количество",
+      "orderProduct": "Товар",
+      "orderQuantity": "Кол-во",
+      "orderUnitPrice": "Цена",
+      "orderLineTotal": "Сумма",
+      "orderGrandTotal": "Итого",
+      "orderItemsCount": "Позиций",
+      "orderUnitsCount": "Единиц",
+      "orderComment": "Комментарий",
       "noOrders": "Заказов пока нет",
       "noRequests": "Заявок пока нет",
       "seoTitle": "SEO Title",
