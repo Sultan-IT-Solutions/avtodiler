@@ -39,13 +39,17 @@ type ShopContextValue = {
   saveProduct: (item: ProductItem) => void;
   deleteProduct: (id: string) => void;
   saveCategory: (item: CategoryItem) => void;
+  deleteCategory: (id: string) => void;
   saveModel: (item: HongqiModel) => void;
+  deleteModel: (id: string) => void;
   saveStore: (item: StoreItem) => void;
+  deleteStore: (id: string) => void;
   saveReview: (item: ReviewItem) => void;
   deleteReview: (id: string) => void;
   updateOrderStatus: (orderId: string, status: OrderItem['status']) => void;
   addInventoryMovement: (payload: Omit<InventoryMovement, 'id' | 'date'>) => void;
   saveSeoPage: (item: SeoPage) => void;
+  deleteSeoPage: (id: string) => void;
   loadAdminData: () => Promise<void>;
 };
 
@@ -234,6 +238,14 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     }));
   };
 
+  const deleteCategory = (id: string) => {
+    void shopAdminApi.remove('categories', id);
+    setState((current) => ({
+      ...current,
+      categories: current.categories.filter((category) => category.id !== id)
+    }));
+  };
+
   const saveModel = (item: HongqiModel) => {
     void shopAdminApi.upsert('models', item.id, item);
     setState((current) => ({
@@ -244,6 +256,14 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     }));
   };
 
+  const deleteModel = (id: string) => {
+    void shopAdminApi.remove('models', id);
+    setState((current) => ({
+      ...current,
+      models: current.models.filter((model) => model.id !== id)
+    }));
+  };
+
   const saveStore = (item: StoreItem) => {
     void shopAdminApi.upsert('stores', item.id, item);
     setState((current) => ({
@@ -251,6 +271,14 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
       stores: current.stores.some((store) => store.id === item.id)
         ? current.stores.map((store) => store.id === item.id ? item : store)
         : [...current.stores, item]
+    }));
+  };
+
+  const deleteStore = (id: string) => {
+    void shopAdminApi.remove('stores', id);
+    setState((current) => ({
+      ...current,
+      stores: current.stores.filter((store) => store.id !== id)
     }));
   };
 
@@ -310,6 +338,14 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     }));
   };
 
+  const deleteSeoPage = (id: string) => {
+    void shopAdminApi.remove('seoPages', id);
+    setState((current) => ({
+      ...current,
+      seoPages: current.seoPages.filter((page) => page.id !== id)
+    }));
+  };
+
   const value = useMemo<ShopContextValue>(() => ({
     state,
     cart,
@@ -327,13 +363,17 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     saveProduct,
     deleteProduct,
     saveCategory,
+    deleteCategory,
     saveModel,
+    deleteModel,
     saveStore,
+    deleteStore,
     saveReview,
     deleteReview,
     updateOrderStatus,
     addInventoryMovement,
     saveSeoPage,
+    deleteSeoPage,
     loadAdminData
   }), [cart, cartCount, cartTotal, isLoading, loadError, productsMap, state]);
 

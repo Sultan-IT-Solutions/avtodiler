@@ -21,7 +21,7 @@ export const shopPublicApi = {
     const res = await fetch('/api/public/shop/bootstrap', { cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{
-      models: HongqiModel[];
+      models: Array<{ data: HongqiModel }>;
       categories: Array<{ data: CategoryItem }>;
       products: Array<{ data: ProductItem }>;
       stores: Array<{ data: StoreItem }>;
@@ -29,7 +29,7 @@ export const shopPublicApi = {
       seoPages: Array<{ data: SeoPage }>;
     }>;
     return {
-      models: body.models ?? [],
+      models: unwrap(body.models),
       categories: unwrap(body.categories),
       products: unwrap(body.products),
       stores: unwrap(body.stores),
@@ -62,7 +62,7 @@ export const shopAdminApi = {
     const res = await fetch('/api/admin/shop/bootstrap', { method: 'GET', cache: 'no-store' });
     await ensureOk(res);
     const body = (await res.json()) as ApiResult<{
-      models: HongqiModel[];
+      models: Array<{ data: HongqiModel }>;
       categories: Array<{ data: CategoryItem }>;
       products: Array<{ data: ProductItem }>;
       stores: Array<{ data: StoreItem }>;
@@ -73,7 +73,7 @@ export const shopAdminApi = {
       seoPages: Array<{ data: SeoPage }>;
     }>;
     return {
-      models: body.models ?? [],
+      models: unwrap(body.models),
       categories: unwrap(body.categories),
       products: unwrap(body.products),
       stores: unwrap(body.stores),

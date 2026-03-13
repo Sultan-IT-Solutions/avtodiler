@@ -319,12 +319,25 @@ export const ShopHomePage = () => {
             <Link
               key={model.id}
               to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
-              className="card-luxury p-5"
+              className="card-luxury group relative overflow-hidden p-6"
             >
-              <p className="text-xl font-semibold text-white">
-                {localizedText(model.name, { lng: i18n.language })}
-              </p>
-              <p className="mt-2 text-sm text-white/55">{t('shop.home.models.link')}</p>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.16),transparent_35%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="relative z-10 flex h-full min-h-[180px] flex-col justify-between">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xl font-semibold text-white transition-colors duration-300 group-hover:text-luxury-cream">
+                    {localizedText(model.name, { lng: i18n.language })}
+                  </p>
+                  <span className="border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-luxury-burgundy">
+                    {model.code}
+                  </span>
+                </div>
+                <div className="mt-8">
+                  <div className="h-px w-full bg-gradient-to-r from-luxury-burgundy/50 via-white/10 to-transparent" />
+                  <p className="mt-4 text-sm leading-7 text-white/55">
+                    {t('shop.home.models.link')}
+                  </p>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
@@ -342,14 +355,35 @@ export const ShopHomePage = () => {
             <Link
               key={category.id}
               to={`/hongqi-parts/catalog/${category.slug}`}
-              className="card-luxury p-6"
+              className="card-luxury group relative overflow-hidden p-6"
             >
-              <h3 className="text-xl font-semibold text-white">
-                {localizedText(category.name, { lng: i18n.language })}
-              </h3>
-              <p className="mt-3 text-sm leading-7 text-white/60">
-                {localizedText(category.description, { lng: i18n.language })}
-              </p>
+              <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.03),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(168,18,52,0.16),transparent_38%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              <div className="relative z-10 flex h-full min-h-[240px] flex-col">
+                <div className="flex items-start justify-between gap-4">
+                  <h3 className="text-[26px] font-semibold leading-tight text-white">
+                    {localizedText(category.name, { lng: i18n.language })}
+                  </h3>
+                  <span className="shrink-0 border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/45">
+                    {String(category.subcategories.length).padStart(2, '0')}
+                  </span>
+                </div>
+                <p className="mt-4 text-sm leading-7 text-white/60">
+                  {localizedText(category.description, { lng: i18n.language })}
+                </p>
+                <div className="mt-auto pt-8">
+                  <div className="grid gap-2">
+                    {category.subcategories.slice(0, 3).map((subcategory) => (
+                      <div
+                        key={subcategory.id}
+                        className="flex items-center gap-3 text-sm text-white/50"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-luxury-burgundy" />
+                        <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
@@ -1197,7 +1231,15 @@ const ProductEditor = ({
   );
 };
 
-const SeoEditor = ({ page, onSave }: { page: SeoPage; onSave: (item: SeoPage) => void }) => {
+const SeoEditor = ({
+  page,
+  onSave,
+  onDelete,
+}: {
+  page: SeoPage;
+  onSave: (item: SeoPage) => void;
+  onDelete: (id: string) => void;
+}) => {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(page);
 
@@ -1231,9 +1273,14 @@ const SeoEditor = ({ page, onSave }: { page: SeoPage; onSave: (item: SeoPage) =>
           />
         ))}
       </div>
-      <button className="btn-primary mt-6" onClick={() => onSave(draft)}>
-        {t('shop.actions.save')}
-      </button>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button className="btn-primary" onClick={() => onSave(draft)}>
+          {t('shop.actions.save')}
+        </button>
+        <button className="btn-outline" onClick={() => onDelete(page.id)}>
+          {t('shop.actions.delete')}
+        </button>
+      </div>
     </div>
   );
 };
@@ -1317,13 +1364,17 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
     saveProduct,
     deleteProduct,
     saveCategory,
+    deleteCategory,
     saveModel,
+    deleteModel,
     saveStore,
+    deleteStore,
     saveReview,
     deleteReview,
     updateOrderStatus,
     addInventoryMovement,
     saveSeoPage,
+    deleteSeoPage,
     loadAdminData,
     isLoading,
     loadError,
@@ -1333,6 +1384,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
   >('products');
   const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
   const [selectedReviewId, setSelectedReviewId] = useState<string | undefined>(undefined);
+  const confirmDelete = (message: string, onConfirm: () => void) => {
+    if (!window.confirm(message)) return;
+    onConfirm();
+  };
 
   useEffect(() => {
     void loadAdminData().catch(() => undefined);
@@ -1414,8 +1469,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     setSelectedProductId(item.id);
                   }}
                   onDelete={(id) => {
-                    deleteProduct(id);
-                    setSelectedProductId(state.products.find((product) => product.id !== id)?.id);
+                    confirmDelete('Удалить товар?', () => {
+                      deleteProduct(id);
+                      setSelectedProductId(state.products.find((product) => product.id !== id)?.id);
+                    });
                   }}
                 />
               </div>
@@ -1496,12 +1553,14 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                             <button
                               className="btn-outline justify-center px-4 py-3 text-[11px]"
                               onClick={() =>
-                                saveCategory({
-                                  ...category,
-                                  subcategories: category.subcategories.filter(
-                                    (_, itemIndex) => itemIndex !== subIndex
-                                  ),
-                                })
+                                confirmDelete('Удалить подкатегорию?', () =>
+                                  saveCategory({
+                                    ...category,
+                                    subcategories: category.subcategories.filter(
+                                      (_, itemIndex) => itemIndex !== subIndex
+                                    ),
+                                  })
+                                )
                               }
                             >
                               Удалить
@@ -1553,6 +1612,19 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                         Добавить подкатегорию
                       </button>
                     </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button className="btn-primary" onClick={() => saveCategory(category)}>
+                        {t('shop.actions.save')}
+                      </button>
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          confirmDelete('Удалить категорию?', () => deleteCategory(category.id))
+                        }
+                      >
+                        {t('shop.actions.delete')}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1579,6 +1651,19 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                           }
                         />
                       ))}
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button className="btn-primary" onClick={() => saveModel(model)}>
+                        {t('shop.actions.save')}
+                      </button>
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          confirmDelete('Удалить модель?', () => deleteModel(model.id))
+                        }
+                      >
+                        {t('shop.actions.delete')}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1714,6 +1799,19 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                         onChange={(event) => saveStore({ ...store, city: event.target.value })}
                       />
                     </div>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <button className="btn-primary" onClick={() => saveStore(store)}>
+                        {t('shop.actions.save')}
+                      </button>
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          confirmDelete('Удалить магазин?', () => deleteStore(store.id))
+                        }
+                      >
+                        {t('shop.actions.delete')}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1748,8 +1846,10 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     setSelectedReviewId(item.id);
                   }}
                   onDelete={(id) => {
-                    deleteReview(id);
-                    setSelectedReviewId(state.reviews.find((review) => review.id !== id)?.id);
+                    confirmDelete('Удалить отзыв?', () => {
+                      deleteReview(id);
+                      setSelectedReviewId(state.reviews.find((review) => review.id !== id)?.id);
+                    });
                   }}
                 />
               </div>
@@ -1775,7 +1875,14 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
             {tab === 'seo' ? (
               <div className="grid gap-4">
                 {state.seoPages.map((page) => (
-                  <SeoEditor key={page.id} page={page} onSave={saveSeoPage} />
+                  <SeoEditor
+                    key={page.id}
+                    page={page}
+                    onSave={saveSeoPage}
+                    onDelete={(id) =>
+                      confirmDelete('Удалить SEO-страницу?', () => deleteSeoPage(id))
+                    }
+                  />
                 ))}
               </div>
             ) : null}
