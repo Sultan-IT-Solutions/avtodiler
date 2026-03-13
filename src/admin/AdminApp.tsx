@@ -487,7 +487,7 @@ const AdminApp = () => {
               syncing={isSyncing}
             />
           )}
-          {activeSection === 'reviews' && <ShopReviewsSection />}
+          {activeSection === 'reviews' && <ShopReviewsSection notify={notify} />}
           {activeSection === 'seo' && (
             <SeoSection
               title={activeLabel}
@@ -512,7 +512,11 @@ const AdminApp = () => {
   );
 };
 
-const ShopReviewsSection = () => {
+const ShopReviewsSection = ({
+  notify,
+}: {
+  notify: (message: string, actionLabel?: string, onAction?: () => void) => void;
+}) => {
   const { state, saveReview, deleteReview, loadAdminData } = useShop();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<ReviewItem | null>(null);
@@ -616,7 +620,11 @@ const ShopReviewsSection = () => {
           />
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => saveReview(draft)}
+              onClick={() => {
+                if (!window.confirm('Сохранить изменения?')) return;
+                saveReview(draft);
+                notify('Изменения сохранены', 'ОК');
+              }}
               className="btn-primary flex items-center gap-2"
             >
               <Save size={16} />
@@ -628,6 +636,7 @@ const ShopReviewsSection = () => {
                   if (!window.confirm('Удалить отзыв?')) return;
                   deleteReview(selectedId);
                   setSelectedId(null);
+                  notify('Заявка удалена', 'ОК');
                 }}
                 className="btn-outline text-white/70 border-white/20 flex items-center gap-2"
               >

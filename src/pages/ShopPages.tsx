@@ -2042,6 +2042,20 @@ export const ShopAdminPage = ({
 
             {tab === 'categories' ? (
               <div className="grid gap-4">
+                <button
+                  className="btn-outline"
+                  onClick={() =>
+                    saveCategory({
+                      id: `category-${Date.now()}`,
+                      slug: `category-${Date.now()}`,
+                      name: emptyLocale(),
+                      description: emptyLocale(),
+                      subcategories: [],
+                    })
+                  }
+                >
+                  {t('shop.admin.addCategory', 'Добавить категорию')}
+                </button>
                 {state.categories.map((category) => (
                   <div key={category.id} className="card-luxury p-6">
                     <div className="grid gap-4 lg:grid-cols-3">
@@ -2197,20 +2211,6 @@ export const ShopAdminPage = ({
                     </div>
                   </div>
                 ))}
-                <button
-                  className="btn-outline"
-                  onClick={() =>
-                    saveCategory({
-                      id: `category-${Date.now()}`,
-                      slug: `category-${Date.now()}`,
-                      name: emptyLocale(),
-                      description: emptyLocale(),
-                      subcategories: [],
-                    })
-                  }
-                >
-                  {t('shop.admin.addCategory', 'Добавить категорию')}
-                </button>
               </div>
             ) : null}
 
