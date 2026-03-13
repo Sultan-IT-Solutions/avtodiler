@@ -768,6 +768,7 @@
       "price": "Цена",
       "stock": "Остаток",
       "modelsComma": "Модели через запятую",
+      "addCategory": "Добавить категорию",
       "addSubcategory": "Добавить подкатегорию",
       "addModel": "Добавить модель",
       "summarySku": "SKU",

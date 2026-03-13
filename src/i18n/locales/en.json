@@ -766,6 +766,7 @@
       "price": "Price",
       "stock": "Stock",
       "modelsComma": "Models separated by comma",
+      "addCategory": "Add category",
       "addSubcategory": "Add subcategory",
       "addModel": "Add model",
       "summarySku": "SKU",

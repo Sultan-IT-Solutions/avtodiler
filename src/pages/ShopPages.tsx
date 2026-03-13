@@ -1872,7 +1872,13 @@ const SeoEditor = ({
   );
 };
 
-export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
+export const ShopAdminPage = ({
+  embedded = false,
+  notify,
+}: {
+  embedded?: boolean;
+  notify?: (message: string, actionLabel?: string, onAction?: () => void) => void;
+}) => {
   const { t, i18n } = useTranslation();
   const {
     state,
@@ -1905,8 +1911,15 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
     if (!window.confirm('Сохранить изменения?')) return;
     onConfirm();
   };
+  const pushNotice = (message: string) => {
+    if (notify) {
+      notify(message, 'ОК');
+      return;
+    }
+    setSaveNotice(message);
+  };
   const notifySaved = () => {
-    setSaveNotice(t('shop.admin.savedSuccess'));
+    pushNotice(t('shop.admin.savedSuccess'));
   };
 
   useEffect(() => {
@@ -2184,6 +2197,20 @@ export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
                     </div>
                   </div>
                 ))}
+                <button
+                  className="btn-outline"
+                  onClick={() =>
+                    saveCategory({
+                      id: `category-${Date.now()}`,
+                      slug: `category-${Date.now()}`,
+                      name: emptyLocale(),
+                      description: emptyLocale(),
+                      subcategories: [],
+                    })
+                  }
+                >
+                  {t('shop.admin.addCategory', 'Добавить категорию')}
+                </button>
               </div>
             ) : null}
 

@@ -505,7 +505,7 @@ const AdminApp = () => {
               syncing={isSyncing}
             />
           )}
-          {activeSection === 'shop' && <ShopAdminPage embedded />}
+          {activeSection === 'shop' && <ShopAdminPage embedded notify={notify} />}
         </main>
       </div>
     </div>
