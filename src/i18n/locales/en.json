@@ -769,6 +769,7 @@
       "addCategory": "Add category",
       "addSubcategory": "Add subcategory",
       "addModel": "Add model",
+      "addSeoPage": "Add SEO page",
       "summarySku": "SKU",
       "summaryTotalStock": "Total stock",
       "summaryLowStock": "Low stock",
@@ -807,7 +808,9 @@
       "date": "Date",
       "operation": "Operation",
       "quantity": "Quantity",
+      "orderDeleted": "Order deleted",
       "noOrders": "No orders yet",
+      "requestDeleted": "Request deleted",
       "noRequests": "No requests yet",
       "seoTitle": "SEO Title",
       "seoDescription": "SEO Description"

@@ -50,6 +50,8 @@ type ShopContextValue = {
   saveReview: (item: ReviewItem) => void;
   deleteReview: (id: string) => void;
   updateOrderStatus: (orderId: string, status: OrderItem['status']) => void;
+  deleteOrder: (orderId: string) => void;
+  deleteRequest: (requestId: string) => void;
   addInventoryMovement: (payload: Omit<InventoryMovement, 'id' | 'date'>) => void;
   saveSeoPage: (item: SeoPage) => void;
   deleteSeoPage: (id: string) => void;
@@ -294,7 +296,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
       ...current,
       categories: current.categories.some((category) => category.id === item.id)
         ? current.categories.map((category) => category.id === item.id ? item : category)
-        : [...current.categories, item]
+        : [item, ...current.categories]
     }));
   };
 
@@ -369,6 +371,22 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     });
   };
 
+  const deleteOrder = (orderId: string) => {
+    void shopAdminApi.remove('orders', orderId);
+    setState((current) => ({
+      ...current,
+      orders: current.orders.filter((order) => order.id !== orderId)
+    }));
+  };
+
+  const deleteRequest = (requestId: string) => {
+    void shopAdminApi.remove('requests', requestId);
+    setState((current) => ({
+      ...current,
+      requests: current.requests.filter((request) => request.id !== requestId)
+    }));
+  };
+
   const addInventoryMovement = (payload: Omit<InventoryMovement, 'id' | 'date'>) => {
     const movement = { id: createId('mv'), date: new Date().toISOString(), ...payload };
     void shopAdminApi.upsert('inventoryMovements', movement.id, movement);
@@ -432,6 +450,8 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     saveReview,
     deleteReview,
     updateOrderStatus,
+    deleteOrder,
+    deleteRequest,
     addInventoryMovement,
     saveSeoPage,
     deleteSeoPage,

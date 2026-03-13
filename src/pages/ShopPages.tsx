@@ -1891,6 +1891,8 @@ export const ShopAdminPage = ({
     saveStore,
     deleteStore,
     updateOrderStatus,
+    deleteOrder,
+    deleteRequest,
     addInventoryMovement,
     saveSeoPage,
     deleteSeoPage,
@@ -2385,6 +2387,19 @@ export const ShopAdminPage = ({
                         </p>
                       </div>
                     </div>
+                    <div className="mt-5 flex flex-wrap gap-3 border-t border-white/10 pt-5">
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          confirmDelete('Удалить заказ?', () => {
+                            deleteOrder(order.id);
+                            pushNotice(t('shop.admin.orderDeleted'));
+                          })
+                        }
+                      >
+                        {t('shop.actions.delete')}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2467,6 +2482,19 @@ export const ShopAdminPage = ({
                       {request.phone} • {request.vin}
                     </p>
                     <p className="mt-3 text-white/70">{request.comment}</p>
+                    <div className="mt-5 flex flex-wrap gap-3 border-t border-white/10 pt-5">
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          confirmDelete('Удалить заявку?', () => {
+                            deleteRequest(request.id);
+                            pushNotice(t('shop.admin.requestDeleted'));
+                          })
+                        }
+                      >
+                        {t('shop.actions.delete')}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2474,6 +2502,20 @@ export const ShopAdminPage = ({
 
             {tab === 'seo' ? (
               <div className="grid gap-4">
+                <button
+                  className="btn-outline"
+                  onClick={() =>
+                    saveSeoPage({
+                      id: `seo-${Date.now()}`,
+                      slug: `/hongqi-parts/page-${Date.now()}`,
+                      title: emptyLocale(),
+                      description: emptyLocale(),
+                      h1: emptyLocale(),
+                    })
+                  }
+                >
+                  {t('shop.admin.addSeoPage')}
+                </button>
                 {state.seoPages.map((page) => (
                   <SeoEditor
                     key={page.id}

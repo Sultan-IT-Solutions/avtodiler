@@ -771,6 +771,7 @@
       "addCategory": "Добавить категорию",
       "addSubcategory": "Добавить подкатегорию",
       "addModel": "Добавить модель",
+      "addSeoPage": "Добавить SEO-страницу",
       "summarySku": "SKU",
       "summaryTotalStock": "Общий остаток",
       "summaryLowStock": "Низкий остаток",
@@ -817,7 +818,9 @@
       "orderItemsCount": "Позиций",
       "orderUnitsCount": "Единиц",
       "orderComment": "Комментарий",
+      "orderDeleted": "Заказ удален",
       "noOrders": "Заказов пока нет",
+      "requestDeleted": "Заявка удалена",
       "noRequests": "Заявок пока нет",
       "seoTitle": "SEO Title",
       "seoDescription": "SEO Description"

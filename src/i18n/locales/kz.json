@@ -769,6 +769,7 @@
       "addCategory": "Санат қосу",
       "addSubcategory": "Ішкі санат қосу",
       "addModel": "Модель қосу",
+      "addSeoPage": "SEO бет қосу",
       "summarySku": "SKU",
       "summaryTotalStock": "Жалпы қалдық",
       "summaryLowStock": "Аз қалдық",
@@ -807,7 +808,9 @@
       "date": "Күні",
       "operation": "Операция",
       "quantity": "Саны",
+      "orderDeleted": "Тапсырыс жойылды",
       "noOrders": "Тапсырыс әлі жоқ",
+      "requestDeleted": "Сұраныс жойылды",
       "noRequests": "Сұраныс әлі жоқ",
       "seoTitle": "SEO Title",
       "seoDescription": "SEO Description"
