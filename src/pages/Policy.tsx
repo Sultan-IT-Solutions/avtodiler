@@ -35,12 +35,12 @@ export const Policy = () => {
 
   return (
     <div className="bg-luxury-black">
-      <section className="border-b border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_100%)] pt-32 lg:pt-40">
+      <section className="border-b border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_100%)] pt-40 sm:pt-44 lg:pt-40">
         <div className="container mx-auto px-6 pb-16 lg:px-16 lg:pb-20">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+          <p className="text-[10px] uppercase tracking-[0.2em] sm:text-[11px] sm:tracking-[0.28em] text-luxury-burgundy">
             {t('policy.eyebrow')}
           </p>
-          <h1 className="mt-5 max-w-5xl text-[clamp(38px,5vw,68px)] font-display font-light leading-[1.02] text-white">
+          <h1 className="mt-5 max-w-5xl text-[clamp(34px,5vw,68px)] font-display font-light leading-[1.02] text-white">
             {t('policy.title')}
           </h1>
           <p className="mt-6 max-w-3xl text-base leading-7 text-white/60">

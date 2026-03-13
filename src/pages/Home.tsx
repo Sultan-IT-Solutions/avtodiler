@@ -15,6 +15,7 @@ import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { publicApi } from '../utils/publicApi';
+import { useShop } from '../context/ShopContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -83,6 +84,7 @@ const ParallaxImage = ({ src, alt, className = '', speed = 0.3, fallback = SITE_
    ================================================================ */
 export const Home = () => {
   const { t } = useTranslation();
+  const { state } = useShop();
   const [cars, setCars] = useState<Car[]>([]);
   const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
 
@@ -539,6 +541,42 @@ export const Home = () => {
               </MagneticButton>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="py-24 lg:py-32 border-t border-white/5 bg-luxury-surface">
+        <div className="container mx-auto px-6 lg:px-16">
+          <div className="text-center mb-16 gsap-reveal">
+            <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-4">
+              {t('shop.home.reviews.eyebrow')}
+            </span>
+            <h2
+              className="text-[clamp(34px,4.5vw,64px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
+              style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
+            >
+              {t('shop.home.reviews.title')}
+            </h2>
+          </div>
+          <div className="grid gap-6 lg:grid-cols-3">
+            {state.reviews.map((review, index) => (
+              <motion.article
+                key={review.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.7, delay: index * 0.08 }}
+                className="border border-white/10 bg-luxury-black p-8"
+              >
+                <p className="text-luxury-burgundy tracking-[0.2em]">{'★'.repeat(review.rating)}</p>
+                <p className="mt-5 text-base leading-8 text-white/75">
+                  {localizedText(review.text, { lng: i18n.language })}
+                </p>
+                <p className="mt-8 text-[11px] uppercase tracking-[0.22em] text-white/45">
+                  {review.name}
+                </p>
+              </motion.article>
+            ))}
+          </div>
         </div>
       </section>
 

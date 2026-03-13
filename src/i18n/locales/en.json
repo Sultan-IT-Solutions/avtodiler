@@ -613,11 +613,15 @@
       "models": {
         "eyebrow": "Pick by model",
         "title": "Select your Hongqi model",
-        "link": "Open model parts"
+        "link": "Open model parts",
+        "mobileSelectLabel": "Hongqi model",
+        "mobileCta": "Open catalog"
       },
       "categories": {
         "eyebrow": "Parts categories",
-        "title": "8 primary catalog sections"
+        "title": "8 primary catalog sections",
+        "mobileLabel": "Catalog category",
+        "mobileCta": "View category"
       },
       "popular": {
         "eyebrow": "Popular products",
@@ -721,8 +725,7 @@
       "manager": "Through manager",
       "statusHint": "After checkout, the manager will contact you to confirm the order and delivery details.",
       "successTitle": "Order created",
-      "successSubtitle": "Order number: {{orderId}}. The manager will receive a notification and contact you.",
-      "openAdmin": "Open admin"
+      "successSubtitle": "Order number: {{orderId}}. The manager will receive a notification and contact you."
     },
     "stores": {
       "title": "Stores",

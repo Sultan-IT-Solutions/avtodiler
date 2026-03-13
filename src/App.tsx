@@ -462,8 +462,8 @@ function AnimatedRoutes() {
           <Route path="/hongqi-parts/catalog" element={<ShopCatalogPage />} />
           <Route path="/hongqi-parts/catalog/:categorySlug" element={<ShopCatalogPage />} />
           <Route path="/hongqi-parts/catalog/:categorySlug/:subcategorySlug" element={<ShopCatalogPage />} />
-          <Route path="/hongqi-parts/cart" element={<ShopCartPage />} />
-          <Route path="/hongqi-parts/checkout" element={<ShopCheckoutPage />} />
+          <Route path="/cart" element={<ShopCartPage />} />
+          <Route path="/checkout" element={<ShopCheckoutPage />} />
           <Route path="/hongqi-parts/stores" element={<ShopStoresPage />} />
           <Route path="/hongqi-parts/request" element={<ShopRequestPage />} />
           <Route path="/hongqi-parts/:slug" element={<ShopCatalogResolverPage />} />

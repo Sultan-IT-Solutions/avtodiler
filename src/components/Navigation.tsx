@@ -61,9 +61,9 @@ export const Navigation = () => {
 
   const renderCartLink = () => (
     <Link
-      to="/hongqi-parts/cart"
+      to="/cart"
       className={`relative inline-flex h-11 w-11 items-center justify-center border transition-all duration-300 ${
-        location.pathname === '/hongqi-parts/cart'
+        location.pathname === '/cart'
           ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
           : 'border-white/10 text-white/80 hover:border-white/25 hover:text-white'
       }`}
@@ -249,9 +249,9 @@ export const Navigation = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="fixed inset-0 z-40 bg-luxury-black lg:hidden"
           >
-            <div className="h-full flex flex-col justify-center px-12">
+            <div className="h-full overflow-y-auto px-8 pb-10 pt-32 sm:px-12 sm:pt-36">
               {/* Nav Links */}
-              <div className="space-y-2 mb-16">
+              <div className="space-y-2">
                 {navLinks.map((link, index) => (
                   <motion.div
                     key={link.path}
@@ -290,7 +290,7 @@ export const Navigation = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.5, delay: 0.45 }}
-                className="mb-10 flex items-center justify-between border border-white/10 bg-white/[0.03] px-5 py-4"
+                className="mt-10 flex items-center justify-between gap-4 border border-white/10 bg-white/[0.03] px-5 py-4"
               >
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-subtle">
@@ -308,7 +308,7 @@ export const Navigation = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="flex gap-4"
+                className="mt-8 flex flex-wrap gap-4"
               >
                 {languages.map((lang) => (
                   <button
@@ -330,10 +330,20 @@ export const Navigation = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="absolute bottom-12 left-12 right-12 flex justify-between items-end text-luxury-muted text-micro tracking-ultra"
+                className="mt-8 grid gap-3 border-t border-white/10 pt-6 text-luxury-muted text-micro tracking-ultra"
               >
-                <span>hongqiparts@gmail.com</span>
-                <span>+7 (775) 381-38-39</span>
+                <a
+                  href="mailto:hongqiparts@gmail.com"
+                  className="break-all text-luxury-muted transition-colors hover:text-white"
+                >
+                  hongqiparts@gmail.com
+                </a>
+                <a
+                  href="tel:+77753813839"
+                  className="text-luxury-muted transition-colors hover:text-white"
+                >
+                  +7 (775) 381-38-39
+                </a>
               </motion.div>
             </div>
           </motion.div>

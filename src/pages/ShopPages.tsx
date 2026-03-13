@@ -2,12 +2,14 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type InputHTMLAttributes,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SITE_IMAGES } from '../data/siteImages';
 import { useShop } from '../context/ShopContext';
@@ -38,6 +40,19 @@ const Textarea = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
 
 const Select = (props: SelectHTMLAttributes<HTMLSelectElement>) => (
   <select {...props} className={`input-luxury appearance-none ${props.className ?? ''}`.trim()} />
+);
+
+const ChevronDownIcon = ({ open = false }: { open?: boolean }) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 20 20"
+    className={`h-5 w-5 text-white/60 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+  >
+    <path d="M5 7.5 10 12.5l5-5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
 );
 
 const useShopSeo = (path: string) => {
@@ -86,6 +101,242 @@ const ShopSectionIntro = ({
     {subtitle ? <p className="mt-4 text-base leading-7 text-white/60">{subtitle}</p> : null}
   </div>
 );
+
+const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
+  const { t, i18n } = useTranslation();
+  const [selectedId, setSelectedId] = useState(models[0]?.id ?? '');
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const selectedModel = models.find((model) => model.id === selectedId) ?? models[0];
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen]);
+
+  if (!selectedModel) {
+    return null;
+  }
+
+  return (
+    <div className="md:hidden">
+      <div ref={dropdownRef} className="card-luxury overflow-hidden p-4">
+        <label className="block text-[10px] uppercase tracking-[0.28em] text-white/35">
+          {t('shop.home.models.mobileSelectLabel')}
+        </label>
+        <div className="relative mt-3">
+          <button
+            type="button"
+            aria-expanded={isOpen}
+            aria-haspopup="listbox"
+            onClick={() => setIsOpen((value) => !value)}
+            className="group flex min-h-15 w-full items-center justify-between gap-4 border border-white/10 bg-white/[0.02] px-4 py-4 text-left transition-colors duration-300 hover:border-white/20"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-lg font-semibold text-white">
+                {localizedText(selectedModel.name, { lng: i18n.language })}
+              </p>
+              <p className="mt-1 text-[11px] uppercase tracking-[0.24em] text-white/40">
+                {selectedModel.code}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-luxury-burgundy">
+                {models.length}
+              </span>
+              <ChevronDownIcon open={isOpen} />
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {isOpen ? (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute left-0 right-0 top-[calc(100%+12px)] z-30 overflow-hidden border border-white/10 bg-luxury-black/95 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+              >
+                <div
+                  role="listbox"
+                  aria-label={t('shop.home.models.mobileSelectLabel')}
+                  className="max-h-[320px] overflow-y-auto p-2"
+                >
+                  {models.map((model) => {
+                    const isSelected = model.id === selectedModel.id;
+                    return (
+                      <button
+                        key={model.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => {
+                          setSelectedId(model.id);
+                          setIsOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors duration-200 ${
+                          isSelected
+                            ? 'bg-luxury-burgundy/12 text-white'
+                            : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-base font-semibold leading-tight">
+                            {localizedText(model.name, { lng: i18n.language })}
+                          </p>
+                          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-white/35">
+                            {model.code}
+                          </p>
+                        </div>
+                        <span
+                          className={`shrink-0 border px-3 py-1 text-[10px] uppercase tracking-[0.22em] ${
+                            isSelected
+                              ? 'border-luxury-burgundy/50 bg-luxury-burgundy/10 text-luxury-burgundy'
+                              : 'border-white/10 text-white/35'
+                          }`}
+                        >
+                          {model.code}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedModel.id}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 overflow-hidden border border-white/10 bg-white/[0.02] p-5"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-2xl font-semibold leading-tight text-white">
+                  {localizedText(selectedModel.name, { lng: i18n.language })}
+                </p>
+                <p className="mt-3 max-w-[20rem] text-sm leading-7 text-white/55">
+                  {t('shop.home.models.link')}
+                </p>
+              </div>
+              <span className="shrink-0 border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-luxury-burgundy">
+                {selectedModel.code}
+              </span>
+            </div>
+            <Link
+              to={`/hongqi-parts/catalog?model=${encodeURIComponent(selectedModel.code)}`}
+              className="mt-5 inline-flex min-h-11 items-center justify-center border border-luxury-burgundy/40 px-4 text-[11px] uppercase tracking-[0.24em] text-white transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/10"
+            >
+              {t('shop.home.models.mobileCta')}
+            </Link>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
+const MobileCategoryAccordion = ({ categories }: { categories: CategoryItem[] }) => {
+  const { t, i18n } = useTranslation();
+  const [openId, setOpenId] = useState(categories[0]?.id ?? '');
+
+  if (!categories.length) {
+    return null;
+  }
+
+  return (
+    <div className="md:hidden">
+      <div className="space-y-3">
+        {categories.map((category) => {
+          const isOpen = openId === category.id;
+          return (
+            <div key={category.id} className="card-luxury overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setOpenId(isOpen ? '' : category.id)}
+                className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
+              >
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-white/35">
+                    {t('shop.home.categories.mobileLabel')}
+                  </p>
+                  <p className="mt-2 text-xl font-semibold leading-tight text-white">
+                    {localizedText(category.name, { lng: i18n.language })}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-white/50">
+                    {localizedText(category.description, { lng: i18n.language })}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <span className="border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-white/45">
+                    {String(category.subcategories.length).padStart(2, '0')}
+                  </span>
+                  <ChevronDownIcon open={isOpen} />
+                </div>
+              </button>
+
+              <AnimatePresence initial={false}>
+                {isOpen ? (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden border-t border-white/10"
+                  >
+                    <div className="space-y-3 px-4 py-4">
+                      {category.subcategories.slice(0, 4).map((subcategory) => (
+                        <div
+                          key={subcategory.id}
+                          className="flex items-center gap-3 text-sm leading-6 text-white/60"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-luxury-burgundy" />
+                          <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
+                        </div>
+                      ))}
+                      <Link
+                        to={`/hongqi-parts/catalog/${category.slug}`}
+                        className="mt-2 inline-flex min-h-11 items-center justify-center border border-luxury-burgundy/40 px-4 text-[11px] uppercase tracking-[0.24em] text-white transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/10"
+                      >
+                        {t('shop.home.categories.mobileCta')}
+                      </Link>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 const ShopAsyncState = ({ embedded = false }: { embedded?: boolean }) => {
   const { t } = useTranslation();
@@ -354,7 +605,8 @@ export const ShopHomePage = () => {
           </p>
           <h2 className="mt-4 text-h2 text-white">{t('shop.home.models.title')}</h2>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <MobileModelPicker models={state.models} />
+        <div className="hidden gap-4 md:grid md:grid-cols-2 xl:grid-cols-5">
           {state.models.map((model) => (
             <Link
               key={model.id}
@@ -390,7 +642,8 @@ export const ShopHomePage = () => {
           </p>
           <h2 className="mt-4 text-h2 text-white">{t('shop.home.categories.title')}</h2>
         </div>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <MobileCategoryAccordion categories={state.categories} />
+        <div className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
           {state.categories.map((category) => (
             <Link
               key={category.id}
@@ -478,28 +731,6 @@ export const ShopHomePage = () => {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            {t('shop.home.reviews.eyebrow')}
-          </p>
-          <h2 className="mt-4 text-h2 text-white">{t('shop.home.reviews.title')}</h2>
-        </div>
-        <div className="grid gap-6 lg:grid-cols-3">
-          {state.reviews.map((review) => (
-            <article key={review.id} className="card-luxury p-6">
-              <p className="text-luxury-burgundy">{'★'.repeat(review.rating)}</p>
-              <p className="mt-4 text-white/75">
-                {localizedText(review.text, { lng: i18n.language })}
-              </p>
-              <p className="mt-6 text-sm uppercase tracking-[0.2em] text-white/45">
-                {review.name}
-              </p>
-            </article>
-          ))}
         </div>
       </section>
 
@@ -921,7 +1152,7 @@ export const ShopProductPage = () => {
                   {t('shop.actions.buyKaspi')}
                 </a>
               ) : null}
-              <Link to="/hongqi-parts/checkout" className="btn-outline">
+              <Link to="/checkout" className="btn-outline">
                 {t('shop.actions.quickOrder')}
               </Link>
             </div>
@@ -1197,7 +1428,7 @@ export const ShopCartPage = () => {
                 {t('shop.cart.secureHint', 'После оформления менеджер подтвердит наличие, доставку и детали оплаты.')}
               </p>
               <Link
-                to="/hongqi-parts/checkout"
+                to="/checkout"
                 className="btn-primary mt-8 inline-flex w-full justify-center"
               >
                 {t('shop.actions.checkout')}
@@ -1218,7 +1449,6 @@ export const ShopCartPage = () => {
 
 export const ShopCheckoutPage = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { cart, cartTotal, createOrder } = useShop();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -1249,9 +1479,6 @@ export const ShopCheckoutPage = () => {
               <Link to="/hongqi-parts/catalog" className="btn-primary">
                 {t('shop.actions.goCatalog')}
               </Link>
-              <button className="btn-outline" onClick={() => navigate('/admin')}>
-                {t('shop.checkout.openAdmin')}
-              </button>
             </div>
           </div>
         </div>

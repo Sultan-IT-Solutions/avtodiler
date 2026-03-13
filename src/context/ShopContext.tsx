@@ -170,7 +170,10 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     let cancelled = false;
     const isShopRoute =
-      location.pathname.startsWith('/hongqi-parts') || location.pathname === '/cart';
+      location.pathname === '/' ||
+      location.pathname.startsWith('/hongqi-parts') ||
+      location.pathname === '/cart' ||
+      location.pathname === '/checkout';
 
     const load = async () => {
       if (!isShopRoute) {
