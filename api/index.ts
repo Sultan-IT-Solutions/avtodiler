@@ -7,6 +7,8 @@ import adminLeads from './_handlers/admin/leads.js';
 import adminOffers from './_handlers/admin/offers.js';
 import adminServices from './_handlers/admin/services.js';
 import adminSeo from './_handlers/admin/seo.js';
+import adminShopBootstrap from './_handlers/admin/shop_bootstrap.js';
+import adminShopDocuments from './_handlers/admin/shop_documents.js';
 import adminPing from './_handlers/admin/ping.js';
 import adminLoginCallback from './_handlers/admin/login/callback.js';
 import adminLoginRequest from './_handlers/admin/login/request.js';
@@ -16,6 +18,9 @@ import publicDealers from './_handlers/public/dealers.js';
 import publicOffers from './_handlers/public/offers.js';
 import publicServices from './_handlers/public/services.js';
 import publicSeo from './_handlers/public/seo.js';
+import publicShopBootstrap from './_handlers/public/shop_bootstrap.js';
+import publicShopOrder from './_handlers/public/shop_order.js';
+import publicShopRequest from './_handlers/public/shop_request.js';
 import telegramLead from './_handlers/telegram/lead.js';
 
 type ApiRequest = IncomingMessage & {
@@ -56,6 +61,8 @@ const routes: Record<string, Handler> = {
   '/admin/offers': adminOffers,
   '/admin/services': adminServices,
   '/admin/seo': adminSeo,
+  '/admin/shop/bootstrap': adminShopBootstrap,
+  '/admin/shop/documents': adminShopDocuments,
   '/admin/login/request': adminLoginRequest,
   '/admin/login/status': adminLoginStatus,
   '/admin/login/callback': adminLoginCallback,
@@ -65,6 +72,9 @@ const routes: Record<string, Handler> = {
   '/public/offers': publicOffers,
   '/public/services': publicServices,
   '/public/seo': publicSeo,
+  '/public/shop/bootstrap': publicShopBootstrap,
+  '/public/shop/order': publicShopOrder,
+  '/public/shop/request': publicShopRequest,
 
   '/telegram/lead': telegramLead,
 };

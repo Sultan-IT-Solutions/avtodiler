@@ -1,0 +1,1801 @@
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { SITE_IMAGES } from '../data/siteImages';
+import { useShop } from '../context/ShopContext';
+import type { CategoryItem, HongqiModel, OrderItem, ProductItem, ReviewItem, SeoPage } from '../types/shop';
+import { localizedText } from '../utils/localizedText';
+
+const formatPrice = (value: number) =>
+  new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'KZT',
+    maximumFractionDigits: 0,
+  }).format(value);
+
+const shopFallbackImages = [SITE_IMAGES.secondary, SITE_IMAGES.cta, SITE_IMAGES.hero];
+
+const Input = (props: InputHTMLAttributes<HTMLInputElement>) => (
+  <input {...props} className={`input-luxury ${props.className ?? ''}`.trim()} />
+);
+
+const Textarea = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea
+    {...props}
+    className={`input-luxury min-h-[140px] resize-y py-4 ${props.className ?? ''}`.trim()}
+  />
+);
+
+const Select = (props: SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select {...props} className={`input-luxury appearance-none ${props.className ?? ''}`.trim()} />
+);
+
+const useShopSeo = (path: string) => {
+  const { state } = useShop();
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    const page = state.seoPages.find((item) => item.slug === path);
+    if (!page) return;
+
+    document.title = localizedText(page.title, { lng: i18n.language, fallbackLng: 'en' });
+    const meta = document.querySelector('meta[name="description"]') ?? document.createElement('meta');
+    meta.setAttribute('name', 'description');
+    meta.setAttribute(
+      'content',
+      localizedText(page.description, { lng: i18n.language, fallbackLng: 'en' })
+    );
+
+    if (!meta.parentElement) {
+      document.head.appendChild(meta);
+    }
+  }, [i18n.language, path, state.seoPages]);
+};
+
+const stockLabel = (stock: number, t: (key: string) => string) =>
+  stock > 0 ? t('shop.stock.inStock') : t('shop.stock.outOfStock');
+
+const ShopSectionIntro = ({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+}) => (
+  <div className="max-w-3xl">
+    {eyebrow ? (
+      <p className="text-[11px] uppercase tracking-[0.3em] text-luxury-burgundy">{eyebrow}</p>
+    ) : null}
+    <h1 className="mt-4 text-[clamp(32px,5vw,56px)] font-display font-light leading-[1.05] text-white">
+      {title}
+    </h1>
+    {subtitle ? <p className="mt-4 text-base leading-7 text-white/60">{subtitle}</p> : null}
+  </div>
+);
+
+const ShopAsyncState = ({ embedded = false }: { embedded?: boolean }) => {
+  const { t } = useTranslation();
+  const { isLoading, loadError } = useShop();
+
+  if (!isLoading && !loadError) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`card-luxury ${embedded ? '' : 'mt-8'} p-6 text-white/65`}
+      role={loadError ? 'alert' : 'status'}
+    >
+      {isLoading ? t('common.loading', 'Загрузка...') : loadError}
+    </div>
+  );
+};
+
+const SmartImage = ({
+  src,
+  alt,
+  className,
+}: {
+  src?: string;
+  alt: string;
+  className?: string;
+}) => {
+  const [index, setIndex] = useState(0);
+  const sources = useMemo(
+    () => [src, ...shopFallbackImages].filter((item): item is string => Boolean(item)),
+    [src]
+  );
+
+  useEffect(() => {
+    setIndex(0);
+  }, [src]);
+
+  return (
+    <img
+      src={sources[Math.min(index, sources.length - 1)]}
+      alt={alt}
+      loading="lazy"
+      className={className}
+      onError={() => {
+        setIndex((current) => (current < sources.length - 1 ? current + 1 : current));
+      }}
+    />
+  );
+};
+
+const ProductCard = ({ product }: { product: ProductItem }) => {
+  const { t, i18n } = useTranslation();
+  const { addToCart } = useShop();
+  const name = localizedText(product.name, { lng: i18n.language });
+
+  return (
+    <article className="card-luxury flex h-full flex-col overflow-hidden">
+      <Link to={`/hongqi-parts/${product.slug}`} className="block overflow-hidden">
+        <SmartImage
+          src={product.images[0]}
+          alt={name}
+          className="h-64 w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+        />
+      </Link>
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.24em] text-white/45">
+          <span>{product.article}</span>
+          <span className={product.stock > 0 ? 'text-white/75' : 'text-luxury-burgundy'}>
+            {stockLabel(product.stock, t)}
+          </span>
+        </div>
+        <Link
+          to={`/hongqi-parts/${product.slug}`}
+          className="mt-4 line-clamp-3 text-2xl font-semibold leading-tight text-white"
+        >
+          {name}
+        </Link>
+        <p className="mt-3 text-sm text-white/50">{product.oem}</p>
+        <div className="mt-6 grid gap-2 text-sm text-white/60">
+          <p>{product.manufacturer}</p>
+          <p>{product.models.join(', ') || 'Hongqi'}</p>
+        </div>
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-8">
+          <span className="text-2xl font-semibold text-white">{formatPrice(product.price)}</span>
+          <button
+            onClick={() => addToCart(product.id)}
+            className="btn-primary px-5 py-3 text-[11px]"
+            disabled={product.stock <= 0}
+          >
+            {t('shop.actions.addToCart')}
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
+  const { t } = useTranslation();
+  const { submitPartRequest } = useShop();
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [vin, setVin] = useState('');
+  const [comment, setComment] = useState('');
+  const [sent, setSent] = useState(false);
+
+  return (
+    <form
+      className={`mt-8 grid gap-5 ${compact ? '' : 'lg:grid-cols-2'}`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        submitPartRequest({ name, phone, vin, comment });
+        setSent(true);
+        setName('');
+        setPhone('');
+        setVin('');
+        setComment('');
+      }}
+    >
+      <Input
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        placeholder={t('shop.forms.name')}
+        required
+      />
+      <Input
+        value={phone}
+        onChange={(event) => setPhone(event.target.value)}
+        placeholder={t('shop.forms.phone')}
+        required
+      />
+      <Input
+        value={vin}
+        onChange={(event) => setVin(event.target.value)}
+        placeholder={t('shop.forms.vin')}
+        required
+      />
+      <Input
+        value={comment}
+        onChange={(event) => setComment(event.target.value)}
+        placeholder={t('shop.forms.comment')}
+      />
+      <div className={`${compact ? '' : 'lg:col-span-2'} flex flex-wrap items-center gap-4`}>
+        <button className="btn-primary" type="submit">
+          {t('shop.actions.sendRequest')}
+        </button>
+        {sent ? <span className="text-sm text-white/60">{t('shop.forms.success')}</span> : null}
+      </div>
+    </form>
+  );
+};
+
+const Breadcrumbs = ({
+  category,
+  subcategory,
+}: {
+  category?: CategoryItem;
+  subcategory?: CategoryItem['subcategories'][number];
+}) => {
+  const { t, i18n } = useTranslation();
+
+  return (
+    <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-white/40">
+      <Link to="/">{t('nav.home')}</Link>
+      <span>/</span>
+      <Link to="/hongqi-parts">{t('shop.routes.shop')}</Link>
+      {category ? (
+        <>
+          <span>/</span>
+          <Link to={`/hongqi-parts/catalog/${category.slug}`}>
+            {localizedText(category.name, { lng: i18n.language })}
+          </Link>
+        </>
+      ) : null}
+      {subcategory ? (
+        <>
+          <span>/</span>
+          <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
+        </>
+      ) : null}
+    </div>
+  );
+};
+
+export const ShopHomePage = () => {
+  const { t, i18n } = useTranslation();
+  const { state } = useShop();
+  useShopSeo('/hongqi-parts');
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <section className="relative overflow-hidden border-y border-white/5">
+        <div className="absolute inset-0">
+          <SmartImage
+            src={SITE_IMAGES.hero}
+            alt="Hongqi"
+            className="h-full w-full object-cover opacity-30"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,5,0.55)_0%,rgba(5,5,5,0.88)_55%,rgba(5,5,5,0.98)_100%)]" />
+        </div>
+        <div className="relative z-10 container mx-auto px-6 py-20 sm:py-24 lg:px-16 lg:py-28">
+          <div className="max-w-5xl">
+            <p className="mb-5 text-[11px] uppercase tracking-[0.3em] text-luxury-burgundy">
+              {t('shop.home.hero.eyebrow')}
+            </p>
+            <h1 className="text-[clamp(42px,7vw,88px)] font-display font-light leading-[0.98] text-white">
+              {t('shop.home.hero.title')}
+            </h1>
+            <p className="mt-6 max-w-3xl text-base leading-7 text-white/60">
+              {t('shop.home.hero.subtitle')}
+            </p>
+            <div className="mt-10 flex flex-wrap gap-4">
+              <Link to="/hongqi-parts/catalog" className="btn-primary">
+                {t('shop.actions.goCatalog')}
+              </Link>
+              <Link to="/hongqi-parts/request" className="btn-outline">
+                {t('shop.actions.pickByModel')}
+              </Link>
+            </div>
+          </div>
+          <ShopAsyncState />
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="mb-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            {t('shop.home.models.eyebrow')}
+          </p>
+          <h2 className="mt-4 text-h2 text-white">{t('shop.home.models.title')}</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {state.models.map((model) => (
+            <Link
+              key={model.id}
+              to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
+              className="card-luxury p-5"
+            >
+              <p className="text-xl font-semibold text-white">
+                {localizedText(model.name, { lng: i18n.language })}
+              </p>
+              <p className="mt-2 text-sm text-white/55">{t('shop.home.models.link')}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="mb-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            {t('shop.home.categories.eyebrow')}
+          </p>
+          <h2 className="mt-4 text-h2 text-white">{t('shop.home.categories.title')}</h2>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {state.categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/hongqi-parts/catalog/${category.slug}`}
+              className="card-luxury p-6"
+            >
+              <h3 className="text-xl font-semibold text-white">
+                {localizedText(category.name, { lng: i18n.language })}
+              </h3>
+              <p className="mt-3 text-sm leading-7 text-white/60">
+                {localizedText(category.description, { lng: i18n.language })}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="mb-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            {t('shop.home.popular.eyebrow')}
+          </p>
+          <h2 className="mt-4 text-h2 text-white">{t('shop.home.popular.title')}</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {state.products.filter((product) => product.popular).map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+          <div className="card-luxury p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.home.advantages.eyebrow')}
+            </p>
+            <h2 className="mt-4 text-h2 text-white">{t('shop.home.advantages.title')}</h2>
+            <div className="mt-8 grid gap-4">
+              {['original', 'china', 'delivery', 'guarantee', 'payments'].map((key) => (
+                <div
+                  key={key}
+                  className="grid gap-3 border border-white/10 bg-white/[0.02] p-4 text-white/75 sm:grid-cols-[24px_1fr] sm:items-start"
+                >
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-luxury-burgundy/50 bg-luxury-burgundy/10 text-sm text-luxury-burgundy">
+                    ✓
+                  </span>
+                  <span>{t(`shop.home.advantages.items.${key}`)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card-luxury p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.home.steps.eyebrow')}
+            </p>
+            <h2 className="mt-4 text-h2 text-white">{t('shop.home.steps.title')}</h2>
+            <div className="mt-8 grid gap-4">
+              {[1, 2, 3, 4].map((index) => (
+                <div key={index} className="grid gap-3 border border-white/10 p-4 sm:grid-cols-[56px_1fr]">
+                  <span className="text-lg text-luxury-burgundy">{String(index).padStart(2, '0')}</span>
+                  <span className="text-white/75">{t(`shop.home.steps.items.${index}`)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 pb-20 lg:px-16 lg:pb-24">
+        <div className="card-luxury overflow-hidden p-8 lg:p-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            {t('shop.home.request.eyebrow')}
+          </p>
+          <h2 className="mt-4 text-h2 text-white">{t('shop.home.request.title')}</h2>
+          <p className="mt-4 max-w-3xl text-white/60">{t('shop.home.request.subtitle')}</p>
+          <QuickRequestForm />
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export const ShopCatalogPage = () => {
+  const { t, i18n } = useTranslation();
+  const { state } = useShop();
+  const location = useLocation();
+  const { categorySlug, subcategorySlug } = useParams();
+  useShopSeo('/hongqi-parts/catalog');
+
+  const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const [query, setQuery] = useState(params.get('q') ?? '');
+  const [model, setModel] = useState(params.get('model') ?? '');
+  const [availability, setAvailability] = useState<'all' | 'inStock' | 'outOfStock'>('all');
+  const [sort, setSort] = useState<'popular' | 'priceAsc' | 'priceDesc'>('popular');
+  const [page, setPage] = useState(1);
+  const deferredQuery = useDeferredValue(query);
+
+  useEffect(() => {
+    setQuery(params.get('q') ?? '');
+    setModel(params.get('model') ?? '');
+  }, [params]);
+
+  const category = state.categories.find((item) => item.slug === categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
+
+  const filtered = useMemo(() => {
+    const q = deferredQuery.trim().toLowerCase();
+    const items = state.products.filter((product) => {
+      const queryMatch =
+        !q ||
+        localizedText(product.name, { lng: i18n.language }).toLowerCase().includes(q) ||
+        product.article.toLowerCase().includes(q) ||
+        product.oem.toLowerCase().includes(q);
+      const modelMatch = !model || product.models.includes(model);
+      const categoryMatch = !categorySlug || product.categorySlug === categorySlug;
+      const subcategoryMatch = !subcategorySlug || product.subcategorySlug === subcategorySlug;
+      const availabilityMatch =
+        availability === 'all' ||
+        (availability === 'inStock' ? product.stock > 0 : product.stock === 0);
+
+      return queryMatch && modelMatch && categoryMatch && subcategoryMatch && availabilityMatch;
+    });
+
+    switch (sort) {
+      case 'priceAsc':
+        items.sort((a, b) => a.price - b.price);
+        break;
+      case 'priceDesc':
+        items.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        items.sort((a, b) => Number(Boolean(b.popular)) - Number(Boolean(a.popular)));
+        break;
+    }
+
+    return items;
+  }, [
+    availability,
+    categorySlug,
+    deferredQuery,
+    i18n.language,
+    model,
+    sort,
+    state.products,
+    subcategorySlug,
+  ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [availability, categorySlug, deferredQuery, model, sort, subcategorySlug]);
+
+  const pageSize = 6;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const items = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <section className="border-y border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%)]">
+        <div className="container mx-auto px-6 py-14 lg:px-16 lg:py-16">
+          <ShopSectionIntro
+            eyebrow={t('shop.catalog.eyebrow')}
+            title={
+              subcategory
+                ? localizedText(subcategory.name, { lng: i18n.language })
+                : category
+                  ? localizedText(category.name, { lng: i18n.language })
+                  : t('shop.catalog.title')
+            }
+            subtitle={t('shop.catalog.subtitle')}
+          />
+          <Breadcrumbs category={category} subcategory={subcategory} />
+          <ShopAsyncState />
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <div className="grid gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <aside className="xl:sticky xl:top-28 xl:self-start">
+            <div className="card-luxury p-6">
+              <div className="grid gap-5">
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={t('shop.catalog.searchPlaceholder')}
+                />
+                <Select value={model} onChange={(event) => setModel(event.target.value)}>
+                  <option value="">{t('shop.catalog.allModels')}</option>
+                  {state.models.map((item) => (
+                    <option key={item.id} value={item.code}>
+                      {localizedText(item.name, { lng: i18n.language })}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  value={availability}
+                  onChange={(event) =>
+                    setAvailability(event.target.value as 'all' | 'inStock' | 'outOfStock')
+                  }
+                >
+                  <option value="all">{t('shop.catalog.allAvailability')}</option>
+                  <option value="inStock">{t('shop.stock.inStock')}</option>
+                  <option value="outOfStock">{t('shop.stock.outOfStock')}</option>
+                </Select>
+                <Select
+                  value={sort}
+                  onChange={(event) =>
+                    setSort(event.target.value as 'popular' | 'priceAsc' | 'priceDesc')
+                  }
+                >
+                  <option value="popular">{t('shop.catalog.sortPopular')}</option>
+                  <option value="priceAsc">{t('shop.catalog.sortPriceAsc')}</option>
+                  <option value="priceDesc">{t('shop.catalog.sortPriceDesc')}</option>
+                </Select>
+              </div>
+            </div>
+          </aside>
+
+          <div className="min-w-0">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm text-white/55">{t('shop.catalog.found', { count: filtered.length })}</p>
+              {(query || model || availability !== 'all' || sort !== 'popular') ? (
+                <button
+                  className="btn-outline px-4 py-2 text-[11px]"
+                  onClick={() => {
+                    setQuery('');
+                    setModel('');
+                    setAvailability('all');
+                    setSort('popular');
+                  }}
+                >
+                  {t('catalog.reset', 'Сбросить фильтры')}
+                </button>
+              ) : null}
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+              {items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            {items.length === 0 ? (
+              <div className="card-luxury mt-6 p-8 text-white/55">{t('shop.catalog.empty')}</div>
+            ) : null}
+            {pageCount > 1 ? (
+              <div className="mt-10 flex flex-wrap gap-3">
+                {Array.from({ length: pageCount }, (_, index) => index + 1).map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => setPage(value)}
+                    className={`h-11 w-11 border text-sm ${
+                      safePage === value
+                        ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
+                        : 'border-white/15 text-white/60'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export const ShopProductPage = () => {
+  const { t, i18n } = useTranslation();
+  const { state, addToCart } = useShop();
+  const { slug } = useParams();
+  const [activeImage, setActiveImage] = useState(0);
+  const product = state.products.find((item) => item.slug === slug);
+  const category = state.categories.find((item) => item.slug === product?.categorySlug);
+  const related = state.products
+    .filter((item) => item.id !== product?.id && item.categorySlug === product?.categorySlug)
+    .slice(0, 4);
+
+  useEffect(() => {
+    setActiveImage(0);
+  }, [product?.id]);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-luxury-black pt-32">
+        <div className="container mx-auto px-6 py-20 text-white/70 lg:px-16">
+          {t('shop.product.notFound')}
+        </div>
+      </div>
+    );
+  }
+
+  const productName = localizedText(product.name, { lng: i18n.language });
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <Breadcrumbs category={category} />
+
+        <div className="mt-8 grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="overflow-hidden border border-white/10 bg-luxury-elevated">
+              <SmartImage
+                src={product.images[activeImage]}
+                alt={productName}
+                className="h-[320px] w-full object-cover sm:h-[420px] xl:h-[560px]"
+              />
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {product.images.map((image, index) => (
+                <button
+                  key={`${image}-${index}`}
+                  onClick={() => setActiveImage(index)}
+                  className={`overflow-hidden border ${
+                    activeImage === index ? 'border-luxury-burgundy' : 'border-white/10'
+                  }`}
+                >
+                  <SmartImage
+                    src={image}
+                    alt={`${productName} ${index + 1}`}
+                    className="h-24 w-full object-cover sm:h-28"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card-luxury p-6 sm:p-8">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
+              {category ? localizedText(category.name, { lng: i18n.language }) : 'Hongqi Parts'}
+            </p>
+            <h1 className="mt-4 text-[clamp(30px,4vw,52px)] font-display font-light leading-[1.05] text-white">
+              {productName}
+            </h1>
+            <div className="mt-6 grid gap-3 border-y border-white/10 py-6 text-sm text-white/65 sm:grid-cols-2">
+              <p>
+                {t('shop.product.article')}: <span className="text-white">{product.article}</span>
+              </p>
+              <p>
+                {t('shop.product.oem')}: <span className="text-white">{product.oem}</span>
+              </p>
+              <p>
+                {t('shop.product.manufacturer')}:{' '}
+                <span className="text-white">{product.manufacturer}</span>
+              </p>
+              <p>
+                {t('shop.product.availability')}:{' '}
+                <span className="text-white">{stockLabel(product.stock, t)}</span>
+              </p>
+              <p className="sm:col-span-2">
+                {t('shop.product.stock')}: <span className="text-white">{product.stock}</span>
+              </p>
+            </div>
+            <p className="mt-8 text-3xl font-semibold text-white">{formatPrice(product.price)}</p>
+            <p className="mt-4 text-base leading-7 text-white/70">
+              {localizedText(product.description, { lng: i18n.language })}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                className="btn-primary"
+                onClick={() => addToCart(product.id)}
+                disabled={product.stock <= 0}
+              >
+                {t('shop.actions.addToCart')}
+              </button>
+              {product.kaspiUrl ? (
+                <a href={product.kaspiUrl} target="_blank" rel="noreferrer" className="btn-outline">
+                  {t('shop.actions.buyKaspi')}
+                </a>
+              ) : null}
+              <Link to="/hongqi-parts/checkout" className="btn-outline">
+                {t('shop.actions.quickOrder')}
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <section className="mt-16 grid gap-8 xl:grid-cols-2">
+          <div className="card-luxury p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.product.characteristicsEyebrow')}
+            </p>
+            <h2 className="mt-4 text-h3 text-white">{t('shop.product.characteristics')}</h2>
+            <div className="mt-8 overflow-hidden rounded-sm border border-white/10">
+              {product.specs.map((spec) => (
+                <div
+                  key={spec.id}
+                  className="grid grid-cols-1 border-b border-white/10 last:border-b-0 sm:grid-cols-2"
+                >
+                  <div className="bg-white/5 px-4 py-3 text-white/60">
+                    {localizedText(spec.label, { lng: i18n.language })}
+                  </div>
+                  <div className="px-4 py-3 text-white">
+                    {localizedText(spec.value, { lng: i18n.language })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card-luxury overflow-hidden p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.product.compatibilityEyebrow')}
+            </p>
+            <h2 className="mt-4 text-h3 text-white">{t('shop.product.compatibility')}</h2>
+            <div className="mt-8 overflow-x-auto">
+              <table className="w-full min-w-[540px] text-left text-sm">
+                <thead className="text-white/45">
+                  <tr>
+                    <th className="pb-3">{t('shop.product.table.model')}</th>
+                    <th className="pb-3">{t('shop.product.table.year')}</th>
+                    <th className="pb-3">{t('shop.product.table.engine')}</th>
+                    <th className="pb-3">{t('shop.product.table.note')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {product.compatibility.map((item, index) => (
+                    <tr
+                      key={`${item.modelCode}-${index}`}
+                      className="border-t border-white/10 text-white/75"
+                    >
+                      <td className="py-3">{item.modelCode}</td>
+                      <td className="py-3">{item.year}</td>
+                      <td className="py-3">{item.engine}</td>
+                      <td className="py-3">{localizedText(item.note, { lng: i18n.language })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-16">
+          <div className="card-luxury p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.product.seoEyebrow')}
+            </p>
+            <h2 className="mt-4 text-h3 text-white">{t('shop.product.descriptionTitle')}</h2>
+            <p className="mt-6 max-w-5xl text-base leading-7 text-white/70">
+              {localizedText(product.seoText, { lng: i18n.language })}
+            </p>
+          </div>
+        </section>
+
+        {related.length ? (
+          <section className="mt-16">
+            <h2 className="text-h3 text-white">{t('shop.product.related')}</h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+              {related.map((item) => (
+                <ProductCard key={item.id} product={item} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+export const ShopCartPage = () => {
+  const { t, i18n } = useTranslation();
+  const { cart, getProduct, removeFromCart, updateCartQuantity, cartTotal } = useShop();
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <ShopSectionIntro title={t('shop.cart.title')} />
+        {cart.length === 0 ? (
+          <div className="card-luxury mt-8 p-8 text-white/65">{t('shop.cart.empty')}</div>
+        ) : (
+          <div className="mt-8 grid gap-8 xl:grid-cols-[1fr_360px]">
+            <div className="grid gap-4">
+              {cart.map((item) => {
+                const product = getProduct(item.productId);
+                if (!product) return null;
+
+                return (
+                  <div
+                    key={item.productId}
+                    className="card-luxury grid gap-5 p-5 sm:grid-cols-[180px_1fr_auto] sm:items-center"
+                  >
+                    <SmartImage
+                      src={product.images[0]}
+                      alt={localizedText(product.name, { lng: i18n.language })}
+                      className="h-36 w-full object-cover"
+                    />
+                    <div>
+                      <p className="text-xl font-semibold text-white">
+                        {localizedText(product.name, { lng: i18n.language })}
+                      </p>
+                      <p className="mt-2 text-sm text-white/45">{product.article}</p>
+                      <p className="mt-3 text-white">{formatPrice(product.price)}</p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <input
+                        type="number"
+                        min={1}
+                        value={item.quantity}
+                        onChange={(event) =>
+                          updateCartQuantity(item.productId, Number(event.target.value))
+                        }
+                        className="h-11 w-24 border border-white/15 bg-transparent px-3 text-white"
+                      />
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        className="text-sm text-luxury-burgundy"
+                      >
+                        {t('shop.actions.remove')}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="card-luxury h-fit p-6 xl:sticky xl:top-28">
+              <p className="text-sm uppercase tracking-[0.2em] text-white/45">
+                {t('shop.cart.summary')}
+              </p>
+              <p className="mt-6 text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
+              <Link
+                to="/hongqi-parts/checkout"
+                className="btn-primary mt-8 inline-flex w-full justify-center"
+              >
+                {t('shop.actions.checkout')}
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export const ShopCheckoutPage = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { cart, cartTotal, createOrder } = useShop();
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
+  const [comment, setComment] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<OrderItem['paymentMethod']>('card');
+  const [bank, setBank] = useState('Kaspi Bank');
+  const [orderId, setOrderId] = useState('');
+
+  if (cart.length === 0 && !orderId) {
+    return (
+      <div className="min-h-screen bg-luxury-black pt-32">
+        <div className="container mx-auto px-6 py-20 text-white/70 lg:px-16">
+          {t('shop.checkout.empty')}
+        </div>
+      </div>
+    );
+  }
+
+  if (orderId) {
+    return (
+      <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+        <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+          <div className="card-luxury max-w-3xl p-8">
+            <h1 className="text-3xl font-semibold text-white">{t('shop.checkout.successTitle')}</h1>
+            <p className="mt-4 text-white/65">{t('shop.checkout.successSubtitle', { orderId })}</p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Link to="/hongqi-parts/catalog" className="btn-primary">
+                {t('shop.actions.goCatalog')}
+              </Link>
+              <button className="btn-outline" onClick={() => navigate('/admin')}>
+                {t('shop.checkout.openAdmin')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <div className="grid gap-8 xl:grid-cols-[1fr_360px]">
+          <form
+            className="card-luxury p-8"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const created = createOrder({ name, phone, city, comment, paymentMethod, bank });
+              setOrderId(created);
+            }}
+          >
+            <h1 className="text-h2 text-white">{t('shop.checkout.title')}</h1>
+            <div className="mt-8 grid gap-5 lg:grid-cols-2">
+              <Input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder={t('shop.forms.name')}
+                required
+              />
+              <Input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder={t('shop.forms.phone')}
+                required
+              />
+              <Input
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                placeholder={t('shop.forms.city')}
+                required
+              />
+              <Select
+                value={paymentMethod}
+                onChange={(event) => setPaymentMethod(event.target.value as OrderItem['paymentMethod'])}
+              >
+                <option value="card">{t('shop.checkout.card')}</option>
+                <option value="kaspi">{t('shop.checkout.kaspi')}</option>
+                <option value="manager">{t('shop.checkout.manager')}</option>
+              </Select>
+              <div className="lg:col-span-2">
+                <Select value={bank} onChange={(event) => setBank(event.target.value)}>
+                  <option>Kaspi Bank</option>
+                  <option>Halyk Bank</option>
+                  <option>Freedom Bank Kazakhstan</option>
+                </Select>
+              </div>
+              <div className="lg:col-span-2">
+                <Textarea
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                  placeholder={t('shop.forms.comment')}
+                />
+              </div>
+            </div>
+            <button type="submit" className="btn-primary mt-8">
+              {t('shop.actions.payCard')}
+            </button>
+          </form>
+          <div className="card-luxury h-fit p-6 xl:sticky xl:top-28">
+            <p className="text-sm uppercase tracking-[0.2em] text-white/45">
+              {t('shop.cart.summary')}
+            </p>
+            <p className="mt-6 text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
+            <p className="mt-4 text-sm leading-6 text-white/60">{t('shop.checkout.statusHint')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ShopStoresPage = () => {
+  const { t, i18n } = useTranslation();
+  const { state } = useShop();
+  useShopSeo('/hongqi-parts/stores');
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <ShopSectionIntro title={t('shop.stores.title')} subtitle={t('shop.stores.subtitle')} />
+        <ShopAsyncState />
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          {state.stores.map((store) => (
+            <article key={store.id} className="card-luxury p-6">
+              <h2 className="text-2xl font-semibold text-white">
+                {localizedText(store.name, { lng: i18n.language })}
+              </h2>
+              <p className="mt-4 text-white/70">{localizedText(store.address, { lng: i18n.language })}</p>
+              <p className="mt-3 text-white/60">{store.phone}</p>
+              <p className="mt-3 text-white/60">{localizedText(store.hours, { lng: i18n.language })}</p>
+              <p className="mt-6 text-sm uppercase tracking-[0.2em] text-luxury-burgundy">
+                {store.city}
+              </p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ShopRequestPage = () => {
+  const { t } = useTranslation();
+  useShopSeo('/hongqi-parts/request');
+
+  return (
+    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <div className="card-luxury max-w-4xl p-8 lg:p-10">
+          <ShopSectionIntro title={t('shop.request.title')} subtitle={t('shop.request.subtitle')} />
+          <QuickRequestForm />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const emptyLocale = () => ({ ru: '', en: '', kz: '' });
+
+const ProductEditor = ({
+  categories,
+  models,
+  product,
+  onSave,
+  onDelete,
+}: {
+  categories: CategoryItem[];
+  models: HongqiModel[];
+  product?: ProductItem;
+  onSave: (item: ProductItem) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const { t } = useTranslation();
+  const createDraft = (): ProductItem => ({
+    id: `p-${Date.now()}`,
+    slug: '',
+    name: emptyLocale(),
+    categorySlug: categories[0]?.slug ?? '',
+    subcategorySlug: categories[0]?.subcategories[0]?.slug ?? '',
+    article: '',
+    oem: '',
+    manufacturer: 'Hongqi Genuine Parts',
+    price: 0,
+    stock: 0,
+    images: [SITE_IMAGES.secondary, SITE_IMAGES.cta, SITE_IMAGES.hero],
+    models: [],
+    description: emptyLocale(),
+    seoText: emptyLocale(),
+    specs: [],
+    compatibility: [],
+  });
+  const [draft, setDraft] = useState<ProductItem>(product ?? createDraft());
+
+  useEffect(() => {
+    setDraft(product ?? createDraft());
+  }, [product]);
+
+  const currentCategory = categories.find((category) => category.slug === draft.categorySlug);
+
+  return (
+    <div className="card-luxury p-6">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Input
+          value={draft.slug}
+          onChange={(event) => setDraft({ ...draft, slug: event.target.value })}
+          placeholder={t('shop.admin.productSlug')}
+        />
+        <Input
+          value={draft.article}
+          onChange={(event) => setDraft({ ...draft, article: event.target.value })}
+          placeholder={t('shop.product.article')}
+        />
+        <Input
+          value={draft.oem}
+          onChange={(event) => setDraft({ ...draft, oem: event.target.value })}
+          placeholder={t('shop.product.oem')}
+        />
+        <Input
+          value={draft.manufacturer}
+          onChange={(event) => setDraft({ ...draft, manufacturer: event.target.value })}
+          placeholder={t('shop.product.manufacturer')}
+        />
+        <Input
+          type="number"
+          value={draft.price}
+          onChange={(event) => setDraft({ ...draft, price: Number(event.target.value) })}
+          placeholder={t('shop.admin.price')}
+        />
+        <Input
+          type="number"
+          value={draft.stock}
+          onChange={(event) => setDraft({ ...draft, stock: Number(event.target.value) })}
+          placeholder={t('shop.admin.stock')}
+        />
+        <Select
+          value={draft.categorySlug}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              categorySlug: event.target.value,
+              subcategorySlug:
+                categories.find((category) => category.slug === event.target.value)?.subcategories[0]
+                  ?.slug ?? '',
+            })
+          }
+        >
+          {categories.map((category) => (
+            <option key={category.id} value={category.slug}>
+              {category.slug}
+            </option>
+          ))}
+        </Select>
+        <Select
+          value={draft.subcategorySlug}
+          onChange={(event) => setDraft({ ...draft, subcategorySlug: event.target.value })}
+        >
+          {(currentCategory?.subcategories ?? []).map((subcategory) => (
+            <option key={subcategory.id} value={subcategory.slug}>
+              {subcategory.slug}
+            </option>
+          ))}
+        </Select>
+        <Input
+          value={draft.models.join(', ')}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              models: event.target.value
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean),
+            })
+          }
+          placeholder={t('shop.admin.modelsComma')}
+        />
+        <Input
+          value={draft.kaspiUrl ?? ''}
+          onChange={(event) => setDraft({ ...draft, kaspiUrl: event.target.value })}
+          placeholder="Kaspi URL"
+        />
+      </div>
+      <div className="mt-4 grid gap-4">
+        {(['ru', 'en', 'kz'] as const).map((locale) => (
+          <Input
+            key={`name-${locale}`}
+            value={draft.name[locale]}
+            onChange={(event) =>
+              setDraft({ ...draft, name: { ...draft.name, [locale]: event.target.value } })
+            }
+            placeholder={`${t('shop.admin.productName')} ${locale.toUpperCase()}`}
+          />
+        ))}
+        {(['ru', 'en', 'kz'] as const).map((locale) => (
+          <Textarea
+            key={`desc-${locale}`}
+            value={draft.description[locale]}
+            onChange={(event) =>
+              setDraft({
+                ...draft,
+                description: { ...draft.description, [locale]: event.target.value },
+              })
+            }
+            placeholder={`${t('shop.admin.shortDescription')} ${locale.toUpperCase()}`}
+          />
+        ))}
+      </div>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button className="btn-primary" onClick={() => onSave(draft)}>
+          {t('shop.actions.save')}
+        </button>
+        {product ? (
+          <button className="btn-outline" onClick={() => onDelete(product.id)}>
+            {t('shop.actions.delete')}
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-4 text-sm text-white/45">{models.map((model) => model.code).join(', ')}</p>
+    </div>
+  );
+};
+
+const SeoEditor = ({ page, onSave }: { page: SeoPage; onSave: (item: SeoPage) => void }) => {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState(page);
+
+  useEffect(() => setDraft(page), [page]);
+
+  return (
+    <div className="card-luxury p-6">
+      <p className="mb-4 text-sm text-white/45">{page.slug}</p>
+      <div className="grid gap-4">
+        {(['ru', 'en', 'kz'] as const).map((locale) => (
+          <Input
+            key={`title-${locale}`}
+            value={draft.title[locale]}
+            onChange={(event) =>
+              setDraft({ ...draft, title: { ...draft.title, [locale]: event.target.value } })
+            }
+            placeholder={`${t('shop.admin.seoTitle')} ${locale.toUpperCase()}`}
+          />
+        ))}
+        {(['ru', 'en', 'kz'] as const).map((locale) => (
+          <Textarea
+            key={`description-${locale}`}
+            value={draft.description[locale]}
+            onChange={(event) =>
+              setDraft({
+                ...draft,
+                description: { ...draft.description, [locale]: event.target.value },
+              })
+            }
+            placeholder={`${t('shop.admin.seoDescription')} ${locale.toUpperCase()}`}
+          />
+        ))}
+      </div>
+      <button className="btn-primary mt-6" onClick={() => onSave(draft)}>
+        {t('shop.actions.save')}
+      </button>
+    </div>
+  );
+};
+
+const ReviewEditor = ({
+  item,
+  onSave,
+  onDelete,
+}: {
+  item?: ReviewItem;
+  onSave: (item: ReviewItem) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const [draft, setDraft] = useState<ReviewItem>(
+    item ?? {
+      id: `review-${Date.now()}`,
+      name: '',
+      rating: 5,
+      text: emptyLocale(),
+    }
+  );
+
+  useEffect(() => {
+    setDraft(
+      item ?? {
+        id: `review-${Date.now()}`,
+        name: '',
+        rating: 5,
+        text: emptyLocale(),
+      }
+    );
+  }, [item]);
+
+  return (
+    <div className="card-luxury p-6">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Input
+          value={draft.name}
+          onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+          placeholder="Имя клиента"
+        />
+        <Input
+          type="number"
+          min={1}
+          max={5}
+          value={draft.rating}
+          onChange={(event) => setDraft({ ...draft, rating: Number(event.target.value) })}
+          placeholder="Рейтинг"
+        />
+      </div>
+      <div className="mt-4 grid gap-4">
+        {(['ru', 'en', 'kz'] as const).map((locale) => (
+          <Textarea
+            key={`review-${locale}`}
+            value={draft.text[locale]}
+            onChange={(event) =>
+              setDraft({ ...draft, text: { ...draft.text, [locale]: event.target.value } })
+            }
+            placeholder={`Отзыв ${locale.toUpperCase()}`}
+          />
+        ))}
+      </div>
+      <div className="mt-6 flex flex-wrap gap-3">
+        <button className="btn-primary" onClick={() => onSave(draft)}>
+          Сохранить
+        </button>
+        {item ? (
+          <button className="btn-outline" onClick={() => onDelete(item.id)}>
+            Удалить
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+export const ShopAdminPage = ({ embedded = false }: { embedded?: boolean }) => {
+  const { t, i18n } = useTranslation();
+  const {
+    state,
+    saveProduct,
+    deleteProduct,
+    saveCategory,
+    saveModel,
+    saveStore,
+    saveReview,
+    deleteReview,
+    updateOrderStatus,
+    addInventoryMovement,
+    saveSeoPage,
+    loadAdminData,
+    isLoading,
+    loadError,
+  } = useShop();
+  const [tab, setTab] = useState<
+    'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'reviews' | 'requests' | 'seo'
+  >('products');
+  const [selectedProductId, setSelectedProductId] = useState<string | undefined>(undefined);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    void loadAdminData().catch(() => undefined);
+  }, [loadAdminData]);
+
+  useEffect(() => {
+    if (!selectedProductId && state.products[0]?.id) {
+      setSelectedProductId(state.products[0].id);
+    }
+  }, [selectedProductId, state.products]);
+
+  const selectedProduct = state.products.find((item) => item.id === selectedProductId);
+  const selectedReview = state.reviews.find((item) => item.id === selectedReviewId);
+  const lowStock = state.products.filter((product) => product.stock <= 2);
+
+  const content = (
+    <div className="grid gap-6">
+      <div className={embedded ? '' : 'container mx-auto px-6 py-12 lg:px-16'}>
+        <div className={embedded ? 'mb-6' : 'mb-8'}>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+            Shop Admin
+          </p>
+          <h2 className="mt-3 text-3xl font-semibold text-white">{t('shop.routes.shop')}</h2>
+          <p className="mt-3 max-w-3xl text-white/55">
+            Управление каталогом, заказами, складом и SEO магазина запчастей.
+          </p>
+        </div>
+
+        {(isLoading || loadError) && <ShopAsyncState embedded />}
+
+        <div className="mt-6 grid gap-6 xl:grid-cols-[260px_minmax(0,1fr)]">
+          <aside className="card-luxury h-fit p-4 xl:sticky xl:top-10">
+            {(
+              ['products', 'categories', 'models', 'orders', 'warehouse', 'stores', 'reviews', 'requests', 'seo'] as const
+            ).map((item) => (
+              <button
+                key={item}
+                onClick={() => setTab(item)}
+                className={`mb-2 block w-full border px-4 py-3 text-left text-sm ${
+                  tab === item
+                    ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
+                    : 'border-white/10 text-white/65'
+                }`}
+              >
+                {t(`shop.admin.tabs.${item}`)}
+              </button>
+            ))}
+          </aside>
+
+          <main className="min-w-0 grid gap-6">
+            {tab === 'products' ? (
+              <div className="grid gap-6 2xl:grid-cols-[300px_minmax(0,1fr)]">
+                <div className="card-luxury p-4">
+                  <div className="max-h-[640px] overflow-auto pr-1">
+                    {state.products.map((product) => (
+                      <button
+                        key={product.id}
+                        onClick={() => setSelectedProductId(product.id)}
+                        className={`mb-2 block w-full border px-3 py-3 text-left ${
+                          selectedProductId === product.id
+                            ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
+                            : 'border-white/10 text-white/65'
+                        }`}
+                      >
+                        {localizedText(product.name, { lng: i18n.language })}
+                      </button>
+                    ))}
+                  </div>
+                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedProductId(undefined)}>
+                    {t('shop.admin.newProduct')}
+                  </button>
+                </div>
+                <ProductEditor
+                  categories={state.categories}
+                  models={state.models}
+                  product={selectedProduct}
+                  onSave={(item) => {
+                    saveProduct(item);
+                    setSelectedProductId(item.id);
+                  }}
+                  onDelete={(id) => {
+                    deleteProduct(id);
+                    setSelectedProductId(state.products.find((product) => product.id !== id)?.id);
+                  }}
+                />
+              </div>
+            ) : null}
+
+            {tab === 'categories' ? (
+              <div className="grid gap-4">
+                {state.categories.map((category) => (
+                  <div key={category.id} className="card-luxury p-6">
+                    <div className="grid gap-4 lg:grid-cols-3">
+                      {(['ru', 'en', 'kz'] as const).map((locale) => (
+                        <Input
+                          key={locale}
+                          value={category.name[locale]}
+                          onChange={(event) =>
+                            saveCategory({
+                              ...category,
+                              name: { ...category.name, [locale]: event.target.value },
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-4 grid gap-4">
+                      {(['ru', 'en', 'kz'] as const).map((locale) => (
+                        <Textarea
+                          key={`category-description-${category.id}-${locale}`}
+                          value={category.description[locale]}
+                          onChange={(event) =>
+                            saveCategory({
+                              ...category,
+                              description: {
+                                ...category.description,
+                                [locale]: event.target.value,
+                              },
+                            })
+                          }
+                          placeholder={`Описание ${locale.toUpperCase()}`}
+                          className="min-h-[96px]"
+                        />
+                      ))}
+                    </div>
+                    <div className="mt-6 space-y-4">
+                      {category.subcategories.map((subcategory, subIndex) => (
+                        <div
+                          key={subcategory.id}
+                          className="border border-white/10 bg-white/[0.02] p-4"
+                        >
+                          <div className="grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+                            <Input
+                              value={subcategory.slug}
+                              onChange={(event) =>
+                                saveCategory({
+                                  ...category,
+                                  subcategories: category.subcategories.map((item, itemIndex) =>
+                                    itemIndex === subIndex
+                                      ? { ...item, slug: event.target.value }
+                                      : item
+                                  ),
+                                })
+                              }
+                              placeholder="Slug подкатегории"
+                            />
+                            <Input
+                              value={subcategory.id}
+                              onChange={(event) =>
+                                saveCategory({
+                                  ...category,
+                                  subcategories: category.subcategories.map((item, itemIndex) =>
+                                    itemIndex === subIndex
+                                      ? { ...item, id: event.target.value }
+                                      : item
+                                  ),
+                                })
+                              }
+                              placeholder="ID подкатегории"
+                            />
+                            <button
+                              className="btn-outline justify-center px-4 py-3 text-[11px]"
+                              onClick={() =>
+                                saveCategory({
+                                  ...category,
+                                  subcategories: category.subcategories.filter(
+                                    (_, itemIndex) => itemIndex !== subIndex
+                                  ),
+                                })
+                              }
+                            >
+                              Удалить
+                            </button>
+                          </div>
+                          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                            {(['ru', 'en', 'kz'] as const).map((locale) => (
+                              <Input
+                                key={`${subcategory.id}-${locale}`}
+                                value={subcategory.name[locale]}
+                                onChange={(event) =>
+                                  saveCategory({
+                                    ...category,
+                                    subcategories: category.subcategories.map((item, itemIndex) =>
+                                      itemIndex === subIndex
+                                        ? {
+                                            ...item,
+                                            name: {
+                                              ...item.name,
+                                              [locale]: event.target.value,
+                                            },
+                                          }
+                                        : item
+                                    ),
+                                  })
+                                }
+                                placeholder={`Подкатегория ${locale.toUpperCase()}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        className="btn-outline"
+                        onClick={() =>
+                          saveCategory({
+                            ...category,
+                            subcategories: [
+                              ...category.subcategories,
+                              {
+                                id: `subcategory-${Date.now()}`,
+                                slug: `subcategory-${category.subcategories.length + 1}`,
+                                name: emptyLocale(),
+                              },
+                            ],
+                          })
+                        }
+                      >
+                        Добавить подкатегорию
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {tab === 'models' ? (
+              <div className="grid gap-4">
+                {state.models.map((model) => (
+                  <div key={model.id} className="card-luxury p-6">
+                    <div className="grid gap-4 lg:grid-cols-4">
+                      <Input
+                        value={model.code}
+                        onChange={(event) => saveModel({ ...model, code: event.target.value })}
+                      />
+                      {(['ru', 'en', 'kz'] as const).map((locale) => (
+                        <Input
+                          key={locale}
+                          value={model.name[locale]}
+                          onChange={(event) =>
+                            saveModel({
+                              ...model,
+                              name: { ...model.name, [locale]: event.target.value },
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <button
+                  className="btn-outline"
+                  onClick={() =>
+                    saveModel({
+                      id: `model-${Date.now()}`,
+                      code: '',
+                      slug: `model-${Date.now()}`,
+                      name: emptyLocale(),
+                    })
+                  }
+                >
+                  Добавить модель
+                </button>
+              </div>
+            ) : null}
+
+            {tab === 'orders' ? (
+              <div className="grid gap-4">
+                {state.orders.length === 0 ? (
+                  <div className="card-luxury p-6 text-white/55">{t('shop.admin.noOrders')}</div>
+                ) : null}
+                {state.orders.map((order) => (
+                  <div key={order.id} className="card-luxury p-6">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-white font-semibold">{order.id}</p>
+                        <p className="mt-1 text-sm text-white/55">
+                          {order.name} • {order.phone} • {order.city}
+                        </p>
+                      </div>
+                      <Select
+                        value={order.status}
+                        onChange={(event) =>
+                          updateOrderStatus(order.id, event.target.value as OrderItem['status'])
+                        }
+                      >
+                        <option value="new">new</option>
+                        <option value="paid">paid</option>
+                        <option value="shipped">shipped</option>
+                        <option value="completed">completed</option>
+                      </Select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {tab === 'warehouse' ? (
+              <div className="grid gap-4">
+                <div className="card-luxury p-6">
+                  <h2 className="text-xl font-semibold text-white">{t('shop.admin.lowStock')}</h2>
+                  <div className="mt-4 grid gap-3">
+                    {lowStock.map((product) => (
+                      <div
+                        key={product.id}
+                        className="flex flex-wrap items-center justify-between gap-3 border border-white/10 p-4"
+                      >
+                        <span className="text-white">
+                          {localizedText(product.name, { lng: i18n.language })}
+                        </span>
+                        <div className="flex gap-2">
+                          <span className="text-white/55">{product.stock}</span>
+                          <button
+                            className="btn-outline px-4 py-2"
+                            onClick={() =>
+                              addInventoryMovement({
+                                productId: product.id,
+                                operation: 'income',
+                                quantity: 1,
+                                comment: 'Manual restock',
+                              })
+                            }
+                          >
+                            +1
+                          </button>
+                          <button
+                            className="btn-outline px-4 py-2"
+                            onClick={() =>
+                              addInventoryMovement({
+                                productId: product.id,
+                                operation: 'expense',
+                                quantity: 1,
+                                comment: 'Manual write-off',
+                              })
+                            }
+                          >
+                            -1
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="card-luxury overflow-x-auto p-6">
+                  <table className="w-full min-w-[640px] text-left text-sm">
+                    <thead className="text-white/45">
+                      <tr>
+                        <th className="pb-3">{t('shop.admin.date')}</th>
+                        <th className="pb-3">{t('shop.admin.operation')}</th>
+                        <th className="pb-3">{t('shop.admin.quantity')}</th>
+                        <th className="pb-3">{t('shop.forms.comment')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {state.inventoryMovements.map((movement) => (
+                        <tr key={movement.id} className="border-t border-white/10 text-white/70">
+                          <td className="py-3">{new Date(movement.date).toLocaleString()}</td>
+                          <td className="py-3">{movement.operation}</td>
+                          <td className="py-3">{movement.quantity}</td>
+                          <td className="py-3">{movement.comment}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+
+            {tab === 'stores' ? (
+              <div className="grid gap-4">
+                {state.stores.map((store) => (
+                  <div key={store.id} className="card-luxury p-6">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <Input
+                        value={store.phone}
+                        onChange={(event) => saveStore({ ...store, phone: event.target.value })}
+                      />
+                      <Input
+                        value={store.city}
+                        onChange={(event) => saveStore({ ...store, city: event.target.value })}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {tab === 'reviews' ? (
+              <div className="grid gap-6 2xl:grid-cols-[300px_minmax(0,1fr)]">
+                <div className="card-luxury p-4">
+                  <div className="max-h-[640px] overflow-auto pr-1">
+                    {state.reviews.map((review) => (
+                      <button
+                        key={review.id}
+                        onClick={() => setSelectedReviewId(review.id)}
+                        className={`mb-2 block w-full border px-3 py-3 text-left ${
+                          selectedReviewId === review.id
+                            ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
+                            : 'border-white/10 text-white/65'
+                        }`}
+                      >
+                        {review.name || review.id}
+                      </button>
+                    ))}
+                  </div>
+                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedReviewId(undefined)}>
+                    Новый отзыв
+                  </button>
+                </div>
+                <ReviewEditor
+                  item={selectedReview}
+                  onSave={(item) => {
+                    saveReview(item);
+                    setSelectedReviewId(item.id);
+                  }}
+                  onDelete={(id) => {
+                    deleteReview(id);
+                    setSelectedReviewId(state.reviews.find((review) => review.id !== id)?.id);
+                  }}
+                />
+              </div>
+            ) : null}
+
+            {tab === 'requests' ? (
+              <div className="grid gap-4">
+                {state.requests.length === 0 ? (
+                  <div className="card-luxury p-6 text-white/55">{t('shop.admin.noRequests')}</div>
+                ) : null}
+                {state.requests.map((request) => (
+                  <div key={request.id} className="card-luxury p-6">
+                    <p className="text-white font-semibold">{request.name}</p>
+                    <p className="mt-2 text-white/55">
+                      {request.phone} • {request.vin}
+                    </p>
+                    <p className="mt-3 text-white/70">{request.comment}</p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {tab === 'seo' ? (
+              <div className="grid gap-4">
+                {state.seoPages.map((page) => (
+                  <SeoEditor key={page.id} page={page} onSave={saveSeoPage} />
+                ))}
+              </div>
+            ) : null}
+          </main>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
+  return <div className="min-h-screen bg-luxury-black pt-24">{content}</div>;
+};
+
+export const ShopCatalogResolverPage = () => {
+  const { slug } = useParams();
+  const { state } = useShop();
+  const isCategory = state.categories.some((item) => item.slug === slug);
+
+  return isCategory ? <ShopCatalogPage /> : <ShopProductPage />;
+};

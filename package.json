@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "node --loader ts-node/esm dev/api-server.mjs",
-  "build": "node scripts/generate-sitemap.mjs && tsc && vite build",
+    "build": "node scripts/generate-sitemap.mjs && tsc && vite build",
+    "db:apply": "psql \"$DATABASE_URL\" -f db/schema.sql",
     "preview": "vite preview",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
   },

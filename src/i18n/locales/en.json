@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
+    "parts": "Parts",
     "brands": "Brand",
     "service": "Service",
     "offers": "Offers",
@@ -350,10 +351,22 @@
       "titleLine2": "way to contact"
     },
     "methods": {
-      "phone": { "label": "Phone", "description": "Call us during business hours" },
-      "whatsapp": { "label": "WhatsApp", "description": "Message us on WhatsApp 24/7" },
-      "email": { "label": "Email", "description": "We'll reply within 24 hours" },
-      "address": { "label": "Address", "description": "Alatau Ave., 1a/5, Shugyla, Almaty" }
+      "phone": {
+        "label": "Phone",
+        "description": "Call us during business hours"
+      },
+      "whatsapp": {
+        "label": "WhatsApp",
+        "description": "Message us on WhatsApp 24/7"
+      },
+      "email": {
+        "label": "Email",
+        "description": "We'll reply within 24 hours"
+      },
+      "address": {
+        "label": "Address",
+        "description": "Alatau Ave., 1a/5, Shugyla, Almaty"
+      }
     },
     "consultation": {
       "eyebrow": "Book",
@@ -409,7 +422,7 @@
     "filters": {
       "apply": "Apply"
     },
-      "social": "Social",
+    "social": "Social",
     "card": {
       "priceFrom": "from {{price}}",
       "creditLabel": "On credit",
@@ -450,5 +463,171 @@
     "contact": "Contact Information",
     "address": "Alatau Ave., 1a/5, Shugyla, Almaty",
     "rights": "All rights reserved"
+  },
+  "shop": {
+    "routes": {
+      "shop": "Parts store"
+    },
+    "actions": {
+      "goCatalog": "Open catalog",
+      "pickByModel": "Pick by model",
+      "addToCart": "Add to cart",
+      "buyKaspi": "Buy in Kaspi",
+      "quickOrder": "Quick order",
+      "sendRequest": "Send request",
+      "remove": "Remove",
+      "checkout": "Checkout",
+      "payCard": "Pay by card",
+      "save": "Save",
+      "delete": "Delete"
+    },
+    "stock": {
+      "inStock": "In stock",
+      "outOfStock": "Out of stock"
+    },
+    "forms": {
+      "name": "Name",
+      "phone": "Phone",
+      "vin": "VIN number",
+      "comment": "Comment",
+      "city": "City",
+      "success": "Request sent"
+    },
+    "home": {
+      "hero": {
+        "eyebrow": "Hongqi parts online store",
+        "title": "Genuine Hongqi parts in Kazakhstan",
+        "subtitle": "Catalog with article and OEM search, live stock, card payments, and Kaspi product links."
+      },
+      "models": {
+        "eyebrow": "Pick by model",
+        "title": "Select your Hongqi model",
+        "link": "Open model parts"
+      },
+      "categories": {
+        "eyebrow": "Parts categories",
+        "title": "8 primary catalog sections"
+      },
+      "popular": {
+        "eyebrow": "Popular products",
+        "title": "Catalog bestsellers"
+      },
+      "advantages": {
+        "eyebrow": "Advantages",
+        "title": "Why customers choose us",
+        "items": {
+          "original": "Genuine Hongqi parts and OEM alternatives.",
+          "china": "Direct sourcing from China with fewer middlemen.",
+          "delivery": "Delivery across Kazakhstan and store pickup.",
+          "guarantee": "Clear warranty and VIN-based fitment help.",
+          "payments": "Card payments, Kaspi flow, or manager-assisted orders."
+        }
+      },
+      "steps": {
+        "eyebrow": "How to order",
+        "title": "From search to delivery",
+        "items": {
+          "1": "Find the part in the catalog or by OEM number.",
+          "2": "Add it to the cart or submit a fitment request.",
+          "3": "Pay by card, via Kaspi, or confirm the order with a manager.",
+          "4": "Receive delivery in Kazakhstan or pick up in store."
+        }
+      },
+      "reviews": {
+        "eyebrow": "Reviews",
+        "title": "What customers say"
+      },
+      "request": {
+        "eyebrow": "Parts request",
+        "title": "Did not find the part in the catalog?",
+        "subtitle": "Leave your VIN and comment, and a manager will source the correct parts for you."
+      }
+    },
+    "catalog": {
+      "eyebrow": "Catalog",
+      "title": "Hongqi parts catalog",
+      "subtitle": "Client-side filtering by model, category, subcategory, stock, and search query without page reload.",
+      "searchPlaceholder": "Name, article, or OEM",
+      "allModels": "All models",
+      "allAvailability": "Any availability",
+      "sortPopular": "Popular first",
+      "sortPriceAsc": "Price ascending",
+      "sortPriceDesc": "Price descending",
+      "found": "Found: {{count}}",
+      "empty": "No products found for the selected filters."
+    },
+    "product": {
+      "article": "Article",
+      "oem": "OEM number",
+      "manufacturer": "Manufacturer",
+      "availability": "Status",
+      "stock": "Stock quantity",
+      "characteristicsEyebrow": "Characteristics",
+      "characteristics": "Specification table",
+      "compatibilityEyebrow": "Compatibility",
+      "compatibility": "Model compatibility",
+      "descriptionTitle": "Product description",
+      "seoEyebrow": "SEO text",
+      "related": "Products from the same category",
+      "notFound": "Product not found",
+      "table": {
+        "model": "Model",
+        "year": "Year",
+        "engine": "Engine",
+        "note": "Note"
+      }
+    },
+    "cart": {
+      "title": "Cart",
+      "empty": "Your cart is empty.",
+      "summary": "Order total"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "empty": "Add products to the cart first.",
+      "card": "Bank card",
+      "kaspi": "Kaspi",
+      "manager": "Through manager",
+      "statusHint": "When paid by card, the order is immediately marked as paid. Admin statuses: new, paid, shipped, completed.",
+      "successTitle": "Order created",
+      "successSubtitle": "Order number: {{orderId}}. The manager will receive a notification and contact you.",
+      "openAdmin": "Open admin"
+    },
+    "stores": {
+      "title": "Stores",
+      "subtitle": "Addresses of Hongqi Parts stores and pickup points."
+    },
+    "request": {
+      "title": "Parts fitment request",
+      "subtitle": "Send your VIN and comment if the required item is missing from the catalog."
+    },
+    "admin": {
+      "tabs": {
+        "products": "Products",
+        "categories": "Categories",
+        "models": "Models",
+        "orders": "Orders",
+        "warehouse": "Warehouse",
+        "stores": "Stores",
+        "reviews": "Reviews",
+        "requests": "Requests",
+        "seo": "SEO"
+      },
+      "newProduct": "New product",
+      "productSlug": "Product slug",
+      "productName": "Product name",
+      "shortDescription": "Short description",
+      "price": "Price",
+      "stock": "Stock",
+      "modelsComma": "Models separated by comma",
+      "lowStock": "Low stock items",
+      "date": "Date",
+      "operation": "Operation",
+      "quantity": "Quantity",
+      "noOrders": "No orders yet",
+      "noRequests": "No requests yet",
+      "seoTitle": "SEO Title",
+      "seoDescription": "SEO Description"
+    }
   }
 }

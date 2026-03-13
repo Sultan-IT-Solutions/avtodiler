@@ -137,6 +137,7 @@ export interface AdminData {
   dealers: DealerItem[];
   leads: LeadItem[];
   seo: SeoItem[];
+  shop: null;
 }
 
 export type AdminSectionKey = keyof AdminData;

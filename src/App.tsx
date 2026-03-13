@@ -10,6 +10,7 @@ import { TestDrive } from './pages/TestDrive';
 import { Offers } from './pages/Offers';
 import { Dealers } from './pages/Dealers';
 import AdminApp from './admin/AdminApp';
+import { ShopProvider } from './context/ShopContext';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,15 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navigation } from './components/Navigation';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import {
+  ShopCartPage,
+  ShopCatalogPage,
+  ShopCatalogResolverPage,
+  ShopCheckoutPage,
+  ShopHomePage,
+  ShopRequestPage,
+  ShopStoresPage,
+} from './pages/ShopPages';
 import { publicApi } from './utils/publicApi';
 import { localizedText } from './utils/localizedText';
 import type { SeoItem } from './types/admin';
@@ -446,6 +456,15 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/hongqi-parts" element={<ShopHomePage />} />
+          <Route path="/hongqi-parts/catalog" element={<ShopCatalogPage />} />
+          <Route path="/hongqi-parts/catalog/:categorySlug" element={<ShopCatalogPage />} />
+          <Route path="/hongqi-parts/catalog/:categorySlug/:subcategorySlug" element={<ShopCatalogPage />} />
+          <Route path="/hongqi-parts/cart" element={<ShopCartPage />} />
+          <Route path="/hongqi-parts/checkout" element={<ShopCheckoutPage />} />
+          <Route path="/hongqi-parts/stores" element={<ShopStoresPage />} />
+          <Route path="/hongqi-parts/request" element={<ShopRequestPage />} />
+          <Route path="/hongqi-parts/:slug" element={<ShopCatalogResolverPage />} />
           <Route path="/car/:id" element={<CarDetail />} />
           <Route path="/brands" element={<Brands />} />
           <Route path="/service" element={<Service />} />
@@ -525,8 +544,10 @@ function App() {
 
       {!isLoading && (
         <Router>
-          <ScrollToTop />
-          <AppShell />
+          <ShopProvider>
+            <ScrollToTop />
+            <AppShell />
+          </ShopProvider>
         </Router>
       )}
     </>

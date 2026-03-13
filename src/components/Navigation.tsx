@@ -38,6 +38,7 @@ export const Navigation = () => {
   const navLinks = [
     { path: '/', label: t('nav.home') },
     { path: '/catalog', label: t('nav.catalog') },
+    { path: '/hongqi-parts', label: t('nav.parts') },
     { path: '/brands', label: t('nav.brands') },
     { path: '/service', label: t('nav.service') },
     { path: '/offers', label: t('nav.offers') },

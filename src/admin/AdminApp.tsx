@@ -12,6 +12,7 @@ import type {
   ServiceItem,
   SeoItem,
 } from '../types/admin';
+import { ShopAdminPage } from '../pages/ShopPages';
 import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi, seoApi, servicesApi } from '../utils/adminApi';
 
@@ -252,6 +253,7 @@ const AdminApp = () => {
     dealers: [],
     leads: [],
     seo: [],
+    shop: null,
   }));
   const [activeSection, setActiveSection] = useState<AdminSectionKey>('cars');
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
@@ -341,6 +343,7 @@ const AdminApp = () => {
       { key: 'offers', label: 'Предложения / акции' },
       { key: 'dealers', label: 'Дилерские центры' },
       { key: 'leads', label: 'Заявки' },
+      { key: 'shop', label: 'Shop / запчасти' },
       { key: 'seo', label: 'SEO' },
     ],
     []
@@ -497,6 +500,7 @@ const AdminApp = () => {
               syncing={isSyncing}
             />
           )}
+          {activeSection === 'shop' && <ShopAdminPage embedded />}
         </main>
       </div>
     </div>
