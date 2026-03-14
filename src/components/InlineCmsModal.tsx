@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { LocaleText } from '../types/admin';
 
@@ -12,28 +12,43 @@ export const InlineCmsModal = ({
   children: ReactNode;
   onClose: () => void;
   actions: ReactNode;
-}) => (
-  <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 px-4 py-8" onClick={onClose}>
+}) => {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  return (
     <div
-      className="max-h-[88vh] w-full max-w-4xl overflow-y-auto border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
-      onClick={(event) => event.stopPropagation()}
+      className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-black/75 px-4 py-8"
+      onClick={onClose}
     >
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <h3 className="text-2xl font-semibold text-white">{title}</h3>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex h-10 w-10 items-center justify-center border border-white/10 text-white/70 transition hover:border-white/25 hover:text-white"
-          aria-label="Закрыть"
+      <div className="flex min-h-full items-center justify-center">
+        <div
+          className="max-h-[88vh] w-full max-w-4xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
+          onClick={(event) => event.stopPropagation()}
         >
-          <X size={16} />
-        </button>
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <h3 className="text-2xl font-semibold text-white">{title}</h3>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center border border-white/10 text-white/70 transition hover:border-white/25 hover:text-white"
+              aria-label="Закрыть"
+            >
+              <X size={16} />
+            </button>
+          </div>
+          <div className="grid gap-5">{children}</div>
+          <div className="mt-8 flex flex-wrap gap-3">{actions}</div>
+        </div>
       </div>
-      <div className="grid gap-5">{children}</div>
-      <div className="mt-8 flex flex-wrap gap-3">{actions}</div>
     </div>
-  </div>
-);
+  );
+};
 
 export const InlineCmsInput = ({
   value,

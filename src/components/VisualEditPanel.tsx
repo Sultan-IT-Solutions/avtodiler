@@ -57,7 +57,7 @@ export const VisualEditPanel = ({
             className="inline-flex items-center gap-2 border border-white/10 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/75 transition hover:border-white/25 hover:text-white"
           >
             <Settings size={14} />
-            Админка
+            admin панель
           </Link>
           {actions.map((action) =>
             action.onClick ? (

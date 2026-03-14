@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
 import { Footer } from '../components/Footer';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
@@ -56,7 +55,6 @@ const ease = [0.16, 1, 0.3, 1] as const;
 export const Contact = () => {
   const { t } = useTranslation();
   const { enabled, authed } = useVisualAdmin();
-  const location = useLocation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -264,13 +262,7 @@ export const Contact = () => {
         <VisualEditPanel
           title="Страница контактов"
           description="Редактирование дилеров, входящих заявок и SEO страницы контактов."
-          details={[
-            { label: 'Текущий URL', value: location.pathname },
-            { label: 'SEO привязка', value: '/contact' },
-          ]}
           actions={[
-            { label: 'Дилеры', onClick: () => setIsDealersMenuOpen(true), kind: 'primary' },
-            { label: 'Заявки', onClick: () => setIsLeadsMenuOpen(true) },
             { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />

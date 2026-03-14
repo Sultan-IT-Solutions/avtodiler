@@ -2194,7 +2194,6 @@ export const ShopProductPage = () => {
 
 export const ShopCartPage = () => {
   const { t, i18n } = useTranslation();
-  const location = useLocation();
   const { state, cart, getProduct, removeFromCart, updateCartQuantity, cartTotal, cartCount, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
@@ -2214,14 +2213,8 @@ export const ShopCartPage = () => {
         <VisualEditPanel
           title="Корзина"
           description="Быстрый переход к товарам, заказам и SEO страницы корзины."
-          details={[
-            { label: 'Текущий URL', value: location.pathname },
-            { label: 'SEO привязка', value: '/cart' },
-          ]}
           actions={[
-            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true), kind: 'primary' },
-            { label: 'Заказы', onClick: () => setIsOrdersMenuOpen(true) },
-            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
           className="mt-8"
         />
