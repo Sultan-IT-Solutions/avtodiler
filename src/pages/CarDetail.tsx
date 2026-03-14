@@ -527,9 +527,9 @@ export const CarDetail = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="lg:col-span-7"
+              className="relative lg:col-span-7"
             >
-              <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Автомобиль" />
+              <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Автомобиль" className="right-0 top-0" />
               <div className="flex items-center gap-3 mb-8">
                 <span className="w-12 h-px bg-luxury-burgundy" />
                 <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.philosophy')}</span>
@@ -553,9 +553,7 @@ export const CarDetail = () => {
               transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-5"
             >
-              <div className="relative">
-                <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" />
-              </div>
+              <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" className="right-0 top-0" />
               <div className="space-y-8">
                 {[
                   { label: t('carDetail.specs.engine'), value: car.specifications.engine },
@@ -579,8 +577,8 @@ export const CarDetail = () => {
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
-        <div className="container mx-auto px-6 lg:px-16 relative z-10">
-          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" />
+        <div className="container relative z-10 mx-auto px-6 lg:px-16">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" className="right-6 top-0 lg:right-16" />
           {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -640,8 +638,8 @@ export const CarDetail = () => {
 
       {/* ===================== CONFIGURATOR ===================== */}
       <section id="section-config" ref={configRef} className="py-24 lg:py-40">
-        <div className="container mx-auto px-6 lg:px-16">
-          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Конфигурация" />
+        <div className="container relative mx-auto px-6 lg:px-16">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Конфигурация" className="right-6 top-0 lg:right-16" />
           {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -895,8 +893,8 @@ export const CarDetail = () => {
 
       {/* ===================== GALLERY / SIMILAR ===================== */}
       <section id="section-gallery" ref={galleryRef} className="py-24 lg:py-40 bg-luxury-surface">
-        <div className="container mx-auto px-6 lg:px-16">
-          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Галерея" />
+        <div className="container relative mx-auto px-6 lg:px-16">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Галерея" className="right-6 top-0 lg:right-16" />
           {similarCars.length > 0 && (
             <>
               <motion.div

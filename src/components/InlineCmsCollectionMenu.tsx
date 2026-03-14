@@ -41,11 +41,13 @@ export const InlineCmsCollectionMenu = ({
     <div
       className="fixed inset-0 z-[78] overflow-y-auto overscroll-contain bg-black/70 px-4 py-8"
       onClick={onClose}
+      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
     >
-      <div className="flex min-h-full items-center justify-center">
+      <div className="flex min-h-full items-start justify-center">
         <div
           className="max-h-[86vh] w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
           onClick={(event) => event.stopPropagation()}
+          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
         >
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
