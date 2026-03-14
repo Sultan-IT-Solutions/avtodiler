@@ -2,12 +2,23 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { Footer } from '../components/Footer';
 import { VisualEditPanel } from '../components/VisualEditPanel';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
+import { useVisualAdmin } from '../context/VisualAdminContext';
 import { submitLead } from '../utils/leads';
 import { publicApi } from '../utils/publicApi';
+import { dealersApi, leadsApi } from '../utils/adminApi';
 import type { Car } from '../types/car';
-import { buildAdminUrl } from '../utils/visualAdmin';
+import type { DealerItem, LeadItem } from '../types/admin';
 
 const contactMethods = [
   {
@@ -44,6 +55,8 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Contact = () => {
   const { t } = useTranslation();
+  const { enabled, authed } = useVisualAdmin();
+  const location = useLocation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -62,8 +75,16 @@ export const Contact = () => {
   });
 
   const [cars, setCars] = useState<Car[]>([]);
+  const [dealers, setDealers] = useState<DealerItem[]>([]);
+  const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [editingDealer, setEditingDealer] = useState<DealerItem | null>(null);
+  const [editingLead, setEditingLead] = useState<LeadItem | null>(null);
+  const [isDealersMenuOpen, setIsDealersMenuOpen] = useState(false);
+  const [isLeadsMenuOpen, setIsLeadsMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   useEffect(() => {
+    if (!enabled || !authed) return;
     let cancelled = false;
     void publicApi
       .cars()
@@ -72,6 +93,29 @@ export const Contact = () => {
       })
       .catch(() => {
         if (!cancelled) setCars([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, enabled]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void dealersApi
+      .list()
+      .then((items) => {
+        if (!cancelled) setDealers(items);
+      })
+      .catch(() => {
+        if (!cancelled) setDealers([]);
+      });
+    void leadsApi
+      .list()
+      .then((items) => {
+        if (!cancelled) setLeads(items.filter((item) => item.type === 'contact'));
+      })
+      .catch(() => {
+        if (!cancelled) setLeads([]);
       });
     return () => {
       cancelled = true;
@@ -108,6 +152,15 @@ export const Contact = () => {
   const emailError = emailTouched && !isEmailValid;
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const createDealerDraft = (): DealerItem => ({
+    id: `dealer-${Date.now()}`,
+    name: { ru: '', kz: '', en: '' },
+    address: { ru: '', kz: '', en: '' },
+    phone: '',
+    hours: '',
+    services: [],
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,10 +264,14 @@ export const Contact = () => {
         <VisualEditPanel
           title="Страница контактов"
           description="Редактирование дилеров, входящих заявок и SEO страницы контактов."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/contact' },
+          ]}
           actions={[
-            { label: 'Дилеры', href: buildAdminUrl('dealers'), kind: 'primary' },
-            { label: 'Заявки', href: buildAdminUrl('leads') },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Дилеры', onClick: () => setIsDealersMenuOpen(true), kind: 'primary' },
+            { label: 'Заявки', onClick: () => setIsLeadsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -497,6 +554,200 @@ export const Contact = () => {
           </motion.div>
         </div>
       </section>
+
+      <InlineCmsCollectionMenu
+        title="Дилеры"
+        open={isDealersMenuOpen}
+        onClose={() => setIsDealersMenuOpen(false)}
+        addLabel="Добавить дилера"
+        onAdd={() => {
+          setEditingDealer(createDealerDraft());
+          setIsDealersMenuOpen(false);
+        }}
+        items={dealers.map((dealer) => ({
+          id: dealer.id,
+          title: dealer.name.ru || dealer.name.en || dealer.name.kz || dealer.id,
+          subtitle: dealer.phone || dealer.hours,
+        }))}
+        onEdit={(id) => {
+          const dealer = dealers.find((item) => item.id === id);
+          if (!dealer) return;
+          setEditingDealer(dealer);
+          setIsDealersMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const dealer = dealers.find((item) => item.id === id);
+          if (!dealer || !window.confirm('Удалить дилера?')) return;
+          void dealersApi.remove(id);
+          setDealers((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Контактные заявки"
+        open={isLeadsMenuOpen}
+        onClose={() => setIsLeadsMenuOpen(false)}
+        items={leads.map((lead) => ({
+          id: lead.id,
+          title: `${lead.name} • ${lead.phone}`,
+          subtitle: lead.createdAt ? new Date(lead.createdAt).toLocaleString('ru-RU') : lead.comment ?? '',
+        }))}
+        onEdit={(id) => {
+          const lead = leads.find((item) => item.id === id);
+          if (!lead) return;
+          setEditingLead(lead);
+          setIsLeadsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const lead = leads.find((item) => item.id === id);
+          if (!lead || !window.confirm('Удалить заявку?')) return;
+          void leadsApi.remove(id);
+          setLeads((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      {editingDealer ? (
+        <InlineCmsModal
+          title="Редактирование дилера"
+          onClose={() => setEditingDealer(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  void dealersApi.upsert(editingDealer);
+                  setDealers((current) =>
+                    current.some((item) => item.id === editingDealer.id)
+                      ? current.map((item) => (item.id === editingDealer.id ? editingDealer : item))
+                      : [editingDealer, ...current]
+                  );
+                  setEditingDealer(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить дилера?')) return;
+                  void dealersApi.remove(editingDealer.id);
+                  setDealers((current) => current.filter((item) => item.id !== editingDealer.id));
+                  setEditingDealer(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название дилера"
+            value={editingDealer.name}
+            onChange={(name) => setEditingDealer({ ...editingDealer, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Адрес"
+            value={editingDealer.address}
+            multiline
+            onChange={(address) => setEditingDealer({ ...editingDealer, address })}
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingDealer.phone}
+              onChange={(phone) => setEditingDealer({ ...editingDealer, phone })}
+              placeholder="Телефон"
+            />
+            <InlineCmsInput
+              value={editingDealer.hours}
+              onChange={(hours) => setEditingDealer({ ...editingDealer, hours })}
+              placeholder="Часы работы"
+            />
+          </div>
+          <InlineCmsTextarea
+            value={editingDealer.services.join(', ')}
+            onChange={(services) =>
+              setEditingDealer({
+                ...editingDealer,
+                services: services
+                  .split(',')
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="Услуги через запятую"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      {editingLead ? (
+        <InlineCmsModal
+          title="Заявка с формы контактов"
+          onClose={() => setEditingLead(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  void leadsApi.upsert(editingLead);
+                  setLeads((current) =>
+                    current.map((item) => (item.id === editingLead.id ? editingLead : item))
+                  );
+                  setEditingLead(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить заявку?')) return;
+                  void leadsApi.remove(editingLead.id);
+                  setLeads((current) => current.filter((item) => item.id !== editingLead.id));
+                  setEditingLead(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingLead.name}
+              onChange={(name) => setEditingLead({ ...editingLead, name })}
+              placeholder="Имя"
+            />
+            <InlineCmsInput
+              value={editingLead.phone}
+              onChange={(phone) => setEditingLead({ ...editingLead, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingLead.car ?? ''}
+              onChange={(car) => setEditingLead({ ...editingLead, car })}
+              placeholder="Модель"
+            />
+            <InlineCmsInput
+              value={editingLead.dealer ?? ''}
+              onChange={(dealer) => setEditingLead({ ...editingLead, dealer })}
+              placeholder="Дилер"
+            />
+          </div>
+          <InlineCmsTextarea
+            value={editingLead.comment ?? ''}
+            onChange={(comment) => setEditingLead({ ...editingLead, comment })}
+            placeholder="Комментарий"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineSeoEditorModal slug="/contact" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
 
       <Footer />
     </div>

@@ -1,86 +1,9 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Edit3, Eye, Settings, X } from 'lucide-react';
-import { buildAdminUrl } from '../utils/visualAdmin';
+import { Link } from 'react-router-dom';
+import { Eye, Settings, X } from 'lucide-react';
 import { useVisualAdmin } from '../context/VisualAdminContext';
 
-type ToolbarAction = {
-  label: string;
-  href: string;
-};
-
-const getToolbarActions = (pathname: string): ToolbarAction[] => {
-  if (pathname === '/') {
-    return [
-      { label: 'Отзывы', href: buildAdminUrl('reviews') },
-      { label: 'Автомобили', href: buildAdminUrl('cars') },
-      { label: 'SEO', href: buildAdminUrl('seo') },
-    ];
-  }
-
-  if (pathname === '/catalog' || pathname.startsWith('/car/')) {
-    return [
-      { label: 'Автомобили', href: buildAdminUrl('cars') },
-      { label: 'SEO', href: buildAdminUrl('seo') },
-    ];
-  }
-
-  if (pathname.startsWith('/hongqi-parts/stores')) {
-    return [
-      { label: 'Товары', href: buildAdminUrl('shop', 'products') },
-      { label: 'Магазины', href: buildAdminUrl('shop', 'stores') },
-      { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
-    ];
-  }
-
-  if (pathname.startsWith('/hongqi-parts/request')) {
-    return [
-      { label: 'Заявки', href: buildAdminUrl('shop', 'requests') },
-      { label: 'Товары', href: buildAdminUrl('shop', 'products') },
-      { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
-    ];
-  }
-
-  if (
-    pathname.startsWith('/hongqi-parts') ||
-    pathname === '/cart' ||
-    pathname === '/checkout'
-  ) {
-    return [
-      { label: 'Товары', href: buildAdminUrl('shop', 'products') },
-      { label: 'Категории', href: buildAdminUrl('shop', 'categories') },
-      { label: 'Заказы', href: buildAdminUrl('shop', 'orders') },
-      { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
-    ];
-  }
-
-  if (pathname === '/offers') {
-    return [
-      { label: 'Предложения', href: buildAdminUrl('offers') },
-      { label: 'SEO', href: buildAdminUrl('seo') },
-    ];
-  }
-
-  if (pathname === '/service' || pathname === '/test-drive') {
-    return [
-      { label: 'Сервисы', href: buildAdminUrl('services') },
-      { label: 'SEO', href: buildAdminUrl('seo') },
-    ];
-  }
-
-  if (pathname === '/dealers' || pathname === '/contact') {
-    return [
-      { label: 'Дилеры', href: buildAdminUrl('dealers') },
-      { label: 'SEO', href: buildAdminUrl('seo') },
-    ];
-  }
-
-  return [{ label: 'SEO', href: buildAdminUrl('seo') }];
-};
-
 export const VisualAdminToolbar = () => {
-  const location = useLocation();
   const { disable } = useVisualAdmin();
-  const actions = getToolbarActions(location.pathname);
 
   return (
     <div className="fixed bottom-5 left-5 z-[65] max-w-[calc(100vw-2.5rem)]">
@@ -108,21 +31,11 @@ export const VisualAdminToolbar = () => {
             <Settings size={14} />
             Админка
           </Link>
-          {actions.map((action) => (
-            <Link
-              key={action.href}
-              to={action.href}
-              className="inline-flex items-center gap-2 border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.18em] text-white/75 transition hover:border-white/25 hover:text-white"
-            >
-              <Edit3 size={14} />
-              {action.label}
-            </Link>
-          ))}
         </div>
 
         <div className="flex items-center gap-2 border-t border-white/10 px-4 py-3 text-xs text-white/45">
           <Eye size={13} />
-          Переходы открывают нужный раздел админки по текущей странице.
+          Остальные инструменты редактирования доступны прямо на текущей странице.
         </div>
       </div>
     </div>

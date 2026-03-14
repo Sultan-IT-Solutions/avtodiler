@@ -14,14 +14,16 @@ import { useTranslation } from 'react-i18next';
 import { SITE_IMAGES } from '../data/siteImages';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
   InlineCmsTextarea,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { useShop } from '../context/ShopContext';
-import type { CategoryItem, HongqiModel, OrderItem, ProductItem, SeoPage } from '../types/shop';
+import type { CategoryItem, HongqiModel, OrderItem, PartRequestItem, ProductItem, SeoPage } from '../types/shop';
 import { localizedText } from '../utils/localizedText';
 import { isValidPhone } from '../utils/phone';
 import { buildAdminUrl } from '../utils/visualAdmin';
@@ -609,6 +611,41 @@ export const ShopHomePage = () => {
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [editingModel, setEditingModel] = useState<HongqiModel | null>(null);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
+  const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(false);
+  const [isModelsMenuOpen, setIsModelsMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
+  const createModelDraft = (): HongqiModel => ({
+    id: `model-${Date.now()}`,
+    code: '',
+    slug: '',
+    name: emptyLocale(),
+  });
+  const createCategoryDraft = (): CategoryItem => ({
+    id: `category-${Date.now()}`,
+    slug: '',
+    name: emptyLocale(),
+    description: emptyLocale(),
+    subcategories: [],
+  });
+  const createProductDraft = (): ProductItem => ({
+    id: `product-${Date.now()}`,
+    slug: '',
+    name: emptyLocale(),
+    categorySlug: state.categories[0]?.slug ?? '',
+    subcategorySlug: state.categories[0]?.subcategories[0]?.slug ?? '',
+    article: '',
+    oem: '',
+    manufacturer: '',
+    price: 0,
+    stock: 0,
+    images: [SITE_IMAGES.hero],
+    models: [],
+    description: emptyLocale(),
+    seoText: emptyLocale(),
+    specs: [],
+    compatibility: [],
+  });
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -652,12 +689,15 @@ export const ShopHomePage = () => {
         <VisualEditPanel
           title="Главная страница каталога"
           description="Управление товарами, категориями, моделями, магазинами, заявками, заказами и SEO."
+          details={[
+            { label: 'Текущий URL', value: '/hongqi-parts' },
+            { label: 'SEO привязка', value: '/hongqi-parts' },
+          ]}
           actions={[
-            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
-            { label: 'Категории', href: buildAdminUrl('shop', 'categories') },
-            { label: 'Модели', href: buildAdminUrl('shop', 'models') },
-            { label: 'Магазины', href: buildAdminUrl('shop', 'stores') },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true), kind: 'primary' },
+            { label: 'Категории', onClick: () => setIsCategoriesMenuOpen(true) },
+            { label: 'Модели', onClick: () => setIsModelsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -1142,17 +1182,106 @@ export const ShopHomePage = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Модели Hongqi"
+        open={isModelsMenuOpen}
+        onClose={() => setIsModelsMenuOpen(false)}
+        addLabel="Добавить модель"
+        onAdd={() => {
+          setIsModelsMenuOpen(false);
+          setEditingModel(createModelDraft());
+        }}
+        items={state.models.map((item) => ({
+          id: item.id,
+          title: localizedText(item.name, { lng: i18n.language }),
+          subtitle: item.slug,
+        }))}
+        onEdit={(id) => {
+          const item = state.models.find((model) => model.id === id);
+          if (!item) return;
+          setIsModelsMenuOpen(false);
+          setEditingModel(item);
+        }}
+        onDelete={(id) => {
+          const item = state.models.find((model) => model.id === id);
+          if (!item || !window.confirm('Удалить модель?')) return;
+          deleteModel(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Категории и подкатегории"
+        open={isCategoriesMenuOpen}
+        onClose={() => setIsCategoriesMenuOpen(false)}
+        addLabel="Добавить категорию"
+        onAdd={() => {
+          setIsCategoriesMenuOpen(false);
+          setEditingCategory(createCategoryDraft());
+        }}
+        items={state.categories.map((item) => ({
+          id: item.id,
+          title: localizedText(item.name, { lng: i18n.language }),
+          subtitle: `/hongqi-parts/catalog/${item.slug}`,
+        }))}
+        onEdit={(id) => {
+          const item = state.categories.find((category) => category.id === id);
+          if (!item) return;
+          setIsCategoriesMenuOpen(false);
+          setEditingCategory(item);
+        }}
+        onDelete={(id) => {
+          const item = state.categories.find((category) => category.id === id);
+          if (!item || !window.confirm('Удалить категорию?')) return;
+          deleteCategory(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Товары"
+        open={isProductsMenuOpen}
+        onClose={() => setIsProductsMenuOpen(false)}
+        addLabel="Добавить товар"
+        onAdd={() => {
+          setIsProductsMenuOpen(false);
+          setEditingProduct(createProductDraft());
+        }}
+        items={state.products.map((item) => ({
+          id: item.id,
+          title: localizedText(item.name, { lng: i18n.language }),
+          subtitle: `/hongqi-parts/${item.slug}`,
+        }))}
+        onEdit={(id) => {
+          const item = state.products.find((product) => product.id === id);
+          if (!item) return;
+          setIsProductsMenuOpen(false);
+          setEditingProduct(item);
+        }}
+        onDelete={(id) => {
+          const item = state.products.find((product) => product.id === id);
+          if (!item || !window.confirm('Удалить товар?')) return;
+          deleteProduct(id);
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/hongqi-parts" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
 
 export const ShopCatalogPage = () => {
   const { t, i18n } = useTranslation();
-  const { state, saveProduct, deleteProduct } = useShop();
+  const { state, saveProduct, deleteProduct, saveCategory, deleteCategory } = useShop();
   const location = useLocation();
   const { categorySlug, subcategorySlug } = useParams();
   const seoPage = useShopSeo('/hongqi-parts/catalog');
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
+  const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
+  const currentPublicUrl = `${location.pathname}${location.search}`;
+  const currentSeoBinding = location.pathname;
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
@@ -1273,10 +1402,14 @@ export const ShopCatalogPage = () => {
         <VisualEditPanel
           title="Каталог запчастей"
           description="Редактирование каталога, категорий, товаров и SEO текущего раздела."
+          details={[
+            { label: 'Текущий URL', value: currentPublicUrl },
+            { label: 'SEO привязка', value: currentSeoBinding },
+          ]}
           actions={[
-            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
-            { label: 'Категории', href: buildAdminUrl('shop', 'categories') },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true), kind: 'primary' },
+            { label: 'Категории', onClick: () => setIsCategoriesMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -1483,6 +1616,207 @@ export const ShopCatalogPage = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      {editingCategory ? (
+        <InlineCmsModal
+          title="Редактирование категории"
+          onClose={() => setEditingCategory(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveCategory(editingCategory);
+                  setEditingCategory(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить категорию?')) return;
+                  deleteCategory(editingCategory.id);
+                  setEditingCategory(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsInput
+            value={editingCategory.slug}
+            onChange={(slugValue) => setEditingCategory({ ...editingCategory, slug: slugValue })}
+            placeholder="Slug категории"
+          />
+          <InlineCmsLocaleFields
+            label="Название категории"
+            value={editingCategory.name}
+            onChange={(name) => setEditingCategory({ ...editingCategory, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Описание категории"
+            value={editingCategory.description}
+            multiline
+            onChange={(description) => setEditingCategory({ ...editingCategory, description })}
+          />
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Подкатегории</p>
+              <button
+                type="button"
+                className="btn-outline px-4 py-2 text-[11px]"
+                onClick={() =>
+                  setEditingCategory({
+                    ...editingCategory,
+                    subcategories: [
+                      ...editingCategory.subcategories,
+                      { id: `sub-${Date.now()}`, slug: '', name: emptyLocale() },
+                    ],
+                  })
+                }
+              >
+                Добавить подкатегорию
+              </button>
+            </div>
+            <div className="grid gap-4">
+              {editingCategory.subcategories.map((subcategory, index) => (
+                <div key={subcategory.id} className="border border-white/10 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-sm text-white/70">Подкатегория {index + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm text-luxury-burgundy"
+                      onClick={() =>
+                        setEditingCategory({
+                          ...editingCategory,
+                          subcategories: editingCategory.subcategories.filter(
+                            (item) => item.id !== subcategory.id
+                          ),
+                        })
+                      }
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                  <InlineCmsInput
+                    value={subcategory.slug}
+                    onChange={(slugValue) =>
+                      setEditingCategory({
+                        ...editingCategory,
+                        subcategories: editingCategory.subcategories.map((item) =>
+                          item.id === subcategory.id ? { ...item, slug: slugValue } : item
+                        ),
+                      })
+                    }
+                    placeholder="Slug подкатегории"
+                  />
+                  <div className="mt-3">
+                    <InlineCmsLocaleFields
+                      label="Название подкатегории"
+                      value={subcategory.name}
+                      onChange={(name) =>
+                        setEditingCategory({
+                          ...editingCategory,
+                          subcategories: editingCategory.subcategories.map((item) =>
+                            item.id === subcategory.id ? { ...item, name } : item
+                          ),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Категории и подкатегории"
+        open={isCategoriesMenuOpen}
+        onClose={() => setIsCategoriesMenuOpen(false)}
+        addLabel="Добавить категорию"
+        onAdd={() => {
+          setIsCategoriesMenuOpen(false);
+          setEditingCategory({
+            id: `category-${Date.now()}`,
+            slug: '',
+            name: emptyLocale(),
+            description: emptyLocale(),
+            subcategories: [],
+          });
+        }}
+        items={state.categories.map((item) => ({
+          id: item.id,
+          title: localizedText(item.name, { lng: i18n.language }),
+          subtitle: `/hongqi-parts/catalog/${item.slug}`,
+        }))}
+        onEdit={(id) => {
+          const item = state.categories.find((categoryItem) => categoryItem.id === id);
+          if (!item) return;
+          setIsCategoriesMenuOpen(false);
+          setEditingCategory(item);
+        }}
+        onDelete={(id) => {
+          const item = state.categories.find((categoryItem) => categoryItem.id === id);
+          if (!item || !window.confirm('Удалить категорию?')) return;
+          deleteCategory(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Товары текущего каталога"
+        open={isProductsMenuOpen}
+        onClose={() => setIsProductsMenuOpen(false)}
+        addLabel="Добавить товар"
+        onAdd={() => {
+          setIsProductsMenuOpen(false);
+          setEditingProduct({
+            id: `product-${Date.now()}`,
+            slug: '',
+            name: emptyLocale(),
+            categorySlug: category?.slug ?? state.categories[0]?.slug ?? '',
+            subcategorySlug:
+              subcategory?.slug ??
+              category?.subcategories[0]?.slug ??
+              state.categories[0]?.subcategories[0]?.slug ??
+              '',
+            article: '',
+            oem: '',
+            manufacturer: '',
+            price: 0,
+            stock: 0,
+            images: [SITE_IMAGES.hero],
+            models: [],
+            description: emptyLocale(),
+            seoText: emptyLocale(),
+            specs: [],
+            compatibility: [],
+          });
+        }}
+        items={filtered.map((item) => ({
+          id: item.id,
+          title: localizedText(item.name, { lng: i18n.language }),
+          subtitle: `/hongqi-parts/${item.slug}`,
+        }))}
+        onEdit={(id) => {
+          const item = state.products.find((productItem) => productItem.id === id);
+          if (!item) return;
+          setIsProductsMenuOpen(false);
+          setEditingProduct(item);
+        }}
+        onDelete={(id) => {
+          const item = state.products.find((productItem) => productItem.id === id);
+          if (!item || !window.confirm('Удалить товар?')) return;
+          deleteProduct(id);
+        }}
+      />
+
+      <InlineSeoEditorModal slug={currentSeoBinding} open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
@@ -1490,10 +1824,12 @@ export const ShopCatalogPage = () => {
 export const ShopProductPage = () => {
   const { t, i18n } = useTranslation();
   const { state, addToCart, saveProduct, deleteProduct } = useShop();
+  const location = useLocation();
   const { slug } = useParams();
   const [activeImage, setActiveImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const product = state.products.find((item) => item.slug === slug);
   const category = state.categories.find((item) => item.slug === product?.categorySlug);
   const sameCategoryProducts = state.products
@@ -1562,6 +1898,19 @@ export const ShopProductPage = () => {
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <VisualEditPanel
+          title="Карточка товара"
+          description="Редактирование этой карточки товара, его URL и контента для поиска."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: location.pathname },
+          ]}
+          actions={[
+            { label: 'Товар', onClick: () => setEditingProduct(product), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
+          ]}
+          className="mb-8"
+        />
         <Breadcrumbs category={category} />
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
@@ -1838,13 +2187,20 @@ export const ShopProductPage = () => {
           />
         </InlineCmsModal>
       ) : null}
+      <InlineSeoEditorModal slug={location.pathname} open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
 
 export const ShopCartPage = () => {
   const { t, i18n } = useTranslation();
-  const { cart, getProduct, removeFromCart, updateCartQuantity, cartTotal, cartCount } = useShop();
+  const location = useLocation();
+  const { state, cart, getProduct, removeFromCart, updateCartQuantity, cartTotal, cartCount, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
+  const [isOrdersMenuOpen, setIsOrdersMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const subtotal = cartTotal;
 
   return (
@@ -1858,10 +2214,14 @@ export const ShopCartPage = () => {
         <VisualEditPanel
           title="Корзина"
           description="Быстрый переход к товарам, заказам и SEO страницы корзины."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/cart' },
+          ]}
           actions={[
-            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
-            { label: 'Заказы', href: buildAdminUrl('shop', 'orders') },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true), kind: 'primary' },
+            { label: 'Заказы', onClick: () => setIsOrdersMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
           className="mt-8"
         />
@@ -2014,13 +2374,166 @@ export const ShopCartPage = () => {
           </div>
         )}
       </div>
+
+      <InlineCmsCollectionMenu
+        title="Товары"
+        open={isProductsMenuOpen}
+        onClose={() => setIsProductsMenuOpen(false)}
+        addLabel="Добавить товар"
+        onAdd={() => {
+          setEditingProduct({
+            id: `p-${Date.now()}`,
+            slug: '',
+            name: emptyLocale(),
+            categorySlug: state.categories[0]?.slug ?? '',
+            subcategorySlug: state.categories[0]?.subcategories[0]?.slug ?? '',
+            article: '',
+            oem: '',
+            manufacturer: '',
+            price: 0,
+            stock: 0,
+            images: [''],
+            models: [],
+            description: emptyLocale(),
+            seoText: emptyLocale(),
+            specs: [],
+            compatibility: [],
+          });
+          setIsProductsMenuOpen(false);
+        }}
+        items={state.products.map((product) => ({
+          id: product.id,
+          title: product.name.ru || product.name.en || product.article,
+          subtitle: `${product.article} • ${formatPrice(product.price)}`,
+        }))}
+        onEdit={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product) return;
+          setEditingProduct(product);
+          setIsProductsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product || !window.confirm('Удалить товар?')) return;
+          deleteProduct(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Заказы"
+        open={isOrdersMenuOpen}
+        onClose={() => setIsOrdersMenuOpen(false)}
+        items={state.orders.map((order) => ({
+          id: order.id,
+          title: `${order.name} • ${formatPrice(order.total)}`,
+          subtitle: `${order.items.length} поз. • ${new Date(order.createdAt).toLocaleString('ru-RU')}`,
+        }))}
+        onEdit={(id) => {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order) return;
+          setEditingOrder(order);
+          setIsOrdersMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order || !window.confirm('Удалить заказ?')) return;
+          deleteOrder(id);
+        }}
+      />
+
+      {editingProduct ? (
+        <ProductEditor
+          categories={state.categories}
+          models={state.models}
+          product={editingProduct}
+          onSave={(item) => {
+            saveProduct(item);
+            setEditingProduct(null);
+          }}
+          onDelete={(id) => {
+            deleteProduct(id);
+            setEditingProduct(null);
+          }}
+        />
+      ) : null}
+
+      {editingOrder ? (
+        <InlineCmsModal
+          title="Редактирование заказа"
+          onClose={() => setEditingOrder(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveOrder(editingOrder);
+                  setEditingOrder(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить заказ?')) return;
+                  deleteOrder(editingOrder.id);
+                  setEditingOrder(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingOrder.name}
+              onChange={(name) => setEditingOrder({ ...editingOrder, name })}
+              placeholder="Имя"
+            />
+            <InlineCmsInput
+              value={editingOrder.phone}
+              onChange={(phone) => setEditingOrder({ ...editingOrder, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingOrder.city}
+              onChange={(city) => setEditingOrder({ ...editingOrder, city })}
+              placeholder="Город"
+            />
+            <Select
+              value={editingOrder.status}
+              onChange={(event) =>
+                setEditingOrder({ ...editingOrder, status: event.target.value as OrderItem['status'] })
+              }
+            >
+              <option value="new">new</option>
+              <option value="paid">paid</option>
+              <option value="shipped">shipped</option>
+              <option value="completed">completed</option>
+            </Select>
+          </div>
+          <InlineCmsTextarea
+            value={editingOrder.comment}
+            onChange={(comment) => setEditingOrder({ ...editingOrder, comment })}
+            placeholder="Комментарий"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineSeoEditorModal slug="/cart" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
 
 export const ShopCheckoutPage = () => {
   const { t } = useTranslation();
-  const { cart, cartTotal, createOrder } = useShop();
+  const location = useLocation();
+  const { state, cart, cartTotal, createOrder, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
@@ -2029,6 +2542,11 @@ export const ShopCheckoutPage = () => {
   const [bank, setBank] = useState('Kaspi Bank');
   const [orderId, setOrderId] = useState('');
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
+  const [isOrdersMenuOpen, setIsOrdersMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const phoneError = phoneTouched && !isValidPhone(phone);
 
   if (cart.length === 0 && !orderId) {
@@ -2065,10 +2583,14 @@ export const ShopCheckoutPage = () => {
         <VisualEditPanel
           title="Оформление заказа"
           description="Управление заказами, товарами и SEO checkout-сценария."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/checkout' },
+          ]}
           actions={[
-            { label: 'Заказы', href: buildAdminUrl('shop', 'orders'), kind: 'primary' },
-            { label: 'Товары', href: buildAdminUrl('shop', 'products') },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Заказы', onClick: () => setIsOrdersMenuOpen(true), kind: 'primary' },
+            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
           className="mb-8"
         />
@@ -2149,6 +2671,158 @@ export const ShopCheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      <InlineCmsCollectionMenu
+        title="Заказы"
+        open={isOrdersMenuOpen}
+        onClose={() => setIsOrdersMenuOpen(false)}
+        items={state.orders.map((order) => ({
+          id: order.id,
+          title: `${order.name} • ${formatPrice(order.total)}`,
+          subtitle: `${order.items.length} поз. • ${new Date(order.createdAt).toLocaleString('ru-RU')}`,
+        }))}
+        onEdit={(id) => {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order) return;
+          setEditingOrder(order);
+          setIsOrdersMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const order = state.orders.find((item) => item.id === id);
+          if (!order || !window.confirm('Удалить заказ?')) return;
+          deleteOrder(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Товары"
+        open={isProductsMenuOpen}
+        onClose={() => setIsProductsMenuOpen(false)}
+        addLabel="Добавить товар"
+        onAdd={() => {
+          setEditingProduct({
+            id: `p-${Date.now()}`,
+            slug: '',
+            name: emptyLocale(),
+            categorySlug: state.categories[0]?.slug ?? '',
+            subcategorySlug: state.categories[0]?.subcategories[0]?.slug ?? '',
+            article: '',
+            oem: '',
+            manufacturer: '',
+            price: 0,
+            stock: 0,
+            images: [''],
+            models: [],
+            description: emptyLocale(),
+            seoText: emptyLocale(),
+            specs: [],
+            compatibility: [],
+          });
+          setIsProductsMenuOpen(false);
+        }}
+        items={state.products.map((product) => ({
+          id: product.id,
+          title: product.name.ru || product.name.en || product.article,
+          subtitle: `${product.article} • ${formatPrice(product.price)}`,
+        }))}
+        onEdit={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product) return;
+          setEditingProduct(product);
+          setIsProductsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product || !window.confirm('Удалить товар?')) return;
+          deleteProduct(id);
+        }}
+      />
+
+      {editingProduct ? (
+        <ProductEditor
+          categories={state.categories}
+          models={state.models}
+          product={editingProduct}
+          onSave={(item) => {
+            saveProduct(item);
+            setEditingProduct(null);
+          }}
+          onDelete={(id) => {
+            deleteProduct(id);
+            setEditingProduct(null);
+          }}
+        />
+      ) : null}
+
+      {editingOrder ? (
+        <InlineCmsModal
+          title="Редактирование заказа"
+          onClose={() => setEditingOrder(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveOrder(editingOrder);
+                  setEditingOrder(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить заказ?')) return;
+                  deleteOrder(editingOrder.id);
+                  setEditingOrder(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingOrder.name}
+              onChange={(name) => setEditingOrder({ ...editingOrder, name })}
+              placeholder="Имя"
+            />
+            <InlineCmsInput
+              value={editingOrder.phone}
+              onChange={(phone) => setEditingOrder({ ...editingOrder, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingOrder.city}
+              onChange={(city) => setEditingOrder({ ...editingOrder, city })}
+              placeholder="Город"
+            />
+            <Select
+              value={editingOrder.status}
+              onChange={(event) =>
+                setEditingOrder({ ...editingOrder, status: event.target.value as OrderItem['status'] })
+              }
+            >
+              <option value="new">new</option>
+              <option value="paid">paid</option>
+              <option value="shipped">shipped</option>
+              <option value="completed">completed</option>
+            </Select>
+          </div>
+          <InlineCmsTextarea
+            value={editingOrder.comment}
+            onChange={(comment) => setEditingOrder({ ...editingOrder, comment })}
+            placeholder="Комментарий"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineSeoEditorModal slug="/checkout" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
@@ -2156,8 +2830,11 @@ export const ShopCheckoutPage = () => {
 export const ShopStoresPage = () => {
   const { t, i18n } = useTranslation();
   const { state, saveStore, deleteStore } = useShop();
+  const location = useLocation();
   const seoPage = useShopSeo('/hongqi-parts/stores');
   const [editingStore, setEditingStore] = useState<(typeof state.stores)[number] | null>(null);
+  const [isStoresMenuOpen, setIsStoresMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -2176,9 +2853,13 @@ export const ShopStoresPage = () => {
         <VisualEditPanel
           title="Страница магазинов"
           description="Редактирование магазинов и SEO страницы."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/hongqi-parts/stores' },
+          ]}
           actions={[
-            { label: 'Магазины', href: buildAdminUrl('shop', 'stores'), kind: 'primary' },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Магазины', onClick: () => setIsStoresMenuOpen(true), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
           className="mt-8"
         />
@@ -2200,6 +2881,40 @@ export const ShopStoresPage = () => {
           ))}
         </div>
       </div>
+
+      <InlineCmsCollectionMenu
+        title="Магазины"
+        open={isStoresMenuOpen}
+        onClose={() => setIsStoresMenuOpen(false)}
+        addLabel="Добавить магазин"
+        onAdd={() => {
+          setEditingStore({
+            id: `store-${Date.now()}`,
+            city: '',
+            name: emptyLocale(),
+            address: emptyLocale(),
+            phone: '',
+            hours: emptyLocale(),
+          });
+          setIsStoresMenuOpen(false);
+        }}
+        items={state.stores.map((store) => ({
+          id: store.id,
+          title: store.name.ru || store.name.en || store.city || store.id,
+          subtitle: `${store.city} • ${store.phone}`,
+        }))}
+        onEdit={(id) => {
+          const store = state.stores.find((item) => item.id === id);
+          if (!store) return;
+          setEditingStore(store);
+          setIsStoresMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const store = state.stores.find((item) => item.id === id);
+          if (!store || !window.confirm('Удалить магазин?')) return;
+          deleteStore(id);
+        }}
+      />
 
       {editingStore ? (
         <InlineCmsModal
@@ -2261,13 +2976,21 @@ export const ShopStoresPage = () => {
           />
         </InlineCmsModal>
       ) : null}
+      <InlineSeoEditorModal slug="/hongqi-parts/stores" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
 
 export const ShopRequestPage = () => {
   const { t, i18n } = useTranslation();
+  const { state, saveProduct, deleteProduct, saveRequest, deleteRequest } = useShop();
+  const location = useLocation();
   const seoPage = useShopSeo('/hongqi-parts/request');
+  const [editingRequest, setEditingRequest] = useState<PartRequestItem | null>(null);
+  const [isRequestsMenuOpen, setIsRequestsMenuOpen] = useState(false);
+  const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -2275,10 +2998,14 @@ export const ShopRequestPage = () => {
         <VisualEditPanel
           title="Заявка на подбор"
           description="Управление входящими заявками, товарами и SEO страницы."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/hongqi-parts/request' },
+          ]}
           actions={[
-            { label: 'Заявки', href: buildAdminUrl('shop', 'requests'), kind: 'primary' },
-            { label: 'Товары', href: buildAdminUrl('shop', 'products') },
-            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+            { label: 'Заявки', onClick: () => setIsRequestsMenuOpen(true), kind: 'primary' },
+            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
           className="mb-8"
         />
@@ -2297,6 +3024,123 @@ export const ShopRequestPage = () => {
           <QuickRequestForm />
         </div>
       </div>
+
+      <InlineCmsCollectionMenu
+        title="Заявки на подбор"
+        open={isRequestsMenuOpen}
+        onClose={() => setIsRequestsMenuOpen(false)}
+        items={state.requests.map((request) => ({
+          id: request.id,
+          title: `${request.name} • ${request.phone}`,
+          subtitle: `${request.vin || 'Без VIN'} • ${new Date(request.createdAt).toLocaleString('ru-RU')}`,
+        }))}
+        onEdit={(id) => {
+          const request = state.requests.find((item) => item.id === id);
+          if (!request) return;
+          setEditingRequest(request);
+          setIsRequestsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const request = state.requests.find((item) => item.id === id);
+          if (!request || !window.confirm('Удалить заявку?')) return;
+          deleteRequest(id);
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Товары"
+        open={isProductsMenuOpen}
+        onClose={() => setIsProductsMenuOpen(false)}
+        items={state.products.map((product) => ({
+          id: product.id,
+          title: product.name.ru || product.name.en || product.article,
+          subtitle: `${product.article} • ${formatPrice(product.price)}`,
+        }))}
+        onEdit={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product) return;
+          setEditingProduct(product);
+          setIsProductsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const product = state.products.find((item) => item.id === id);
+          if (!product || !window.confirm('Удалить товар?')) return;
+          deleteProduct(id);
+        }}
+      />
+
+      {editingRequest ? (
+        <InlineCmsModal
+          title="Заявка на подбор"
+          onClose={() => setEditingRequest(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveRequest(editingRequest);
+                  setEditingRequest(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить заявку?')) return;
+                  deleteRequest(editingRequest.id);
+                  setEditingRequest(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingRequest.name}
+              onChange={(name) => setEditingRequest({ ...editingRequest, name })}
+              placeholder="Имя"
+            />
+            <InlineCmsInput
+              value={editingRequest.phone}
+              onChange={(phone) => setEditingRequest({ ...editingRequest, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <InlineCmsInput
+            value={editingRequest.vin}
+            onChange={(vin) => setEditingRequest({ ...editingRequest, vin })}
+            placeholder="VIN"
+          />
+          <InlineCmsTextarea
+            value={editingRequest.comment}
+            onChange={(comment) => setEditingRequest({ ...editingRequest, comment })}
+            placeholder="Комментарий"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      {editingProduct ? (
+        <ProductEditor
+          categories={state.categories}
+          models={state.models}
+          product={editingProduct}
+          onSave={(item) => {
+            saveProduct(item);
+            setEditingProduct(null);
+          }}
+          onDelete={(id) => {
+            deleteProduct(id);
+            setEditingProduct(null);
+          }}
+        />
+      ) : null}
+
+      <InlineSeoEditorModal slug="/hongqi-parts/request" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

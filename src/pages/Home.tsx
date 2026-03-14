@@ -17,14 +17,15 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { publicApi } from '../utils/publicApi';
 import { useShop } from '../context/ShopContext';
-import { buildAdminUrl } from '../utils/visualAdmin';
 import { carsApi } from '../utils/adminApi';
 import type { ReviewItem } from '../types/shop';
 
@@ -99,6 +100,9 @@ export const Home = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [editingReview, setEditingReview] = useState<ReviewItem | null>(null);
   const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
+  const [isCarsMenuOpen, setIsCarsMenuOpen] = useState(false);
+  const [isReviewsMenuOpen, setIsReviewsMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
 
   useEffect(() => {
@@ -115,6 +119,41 @@ export const Home = () => {
       cancelled = true;
     };
   }, []);
+  const createCarDraft = (): AdminCar => ({
+    id: `car-${Date.now()}`,
+    brand: 'Hongqi',
+    makeId: 'hongqi',
+    model: '',
+    modelDisplay: '',
+    title: { ru: '', kz: '', en: '' },
+    year: new Date().getFullYear(),
+    price: 0,
+    availability: 'В наличии',
+    mileage: 0,
+    featured: false,
+    images: [SITE_IMAGES.hero],
+    specifications: {
+      engine: '',
+      power: '',
+      acceleration: '',
+      topSpeed: '',
+      transmission: '',
+      drivetrain: '',
+      fuelType: '',
+      consumption: '',
+      seats: 5,
+    },
+    colors: [],
+    interiors: [],
+    wheels: [],
+    description: { ru: '', kz: '', en: '' },
+  });
+  const createReviewDraft = (): ReviewItem => ({
+    id: `review-${Date.now()}`,
+    name: '',
+    rating: null,
+    text: { ru: '', kz: '', en: '' },
+  });
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
 
@@ -310,9 +349,9 @@ export const Home = () => {
           title="Главная страница"
           description="Редактирование автомобилей, отзывов и SEO главной страницы."
           actions={[
-            { label: 'Автомобили', href: buildAdminUrl('cars'), kind: 'primary' },
-            { label: 'Отзывы', href: buildAdminUrl('reviews') },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Автомобили', onClick: () => setIsCarsMenuOpen(true), kind: 'primary' },
+            { label: 'Отзывы', onClick: () => setIsReviewsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -722,6 +761,63 @@ export const Home = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Автомобили"
+        open={isCarsMenuOpen}
+        onClose={() => setIsCarsMenuOpen(false)}
+        addLabel="Добавить автомобиль"
+        onAdd={() => {
+          setIsCarsMenuOpen(false);
+          setEditingCar(createCarDraft());
+        }}
+        items={cars.map((car) => ({
+          id: car.id,
+          title: `${car.brand} ${car.model}`,
+          subtitle: String(car.price ?? ''),
+        }))}
+        onEdit={(id) => {
+          const car = cars.find((item) => item.id === id);
+          if (!car) return;
+          setIsCarsMenuOpen(false);
+          setEditingCar(car as unknown as AdminCar);
+        }}
+        onDelete={(id) => {
+          const car = cars.find((item) => item.id === id);
+          if (!car || !window.confirm('Удалить автомобиль?')) return;
+          void carsApi.remove(id);
+          setCars((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Отзывы"
+        open={isReviewsMenuOpen}
+        onClose={() => setIsReviewsMenuOpen(false)}
+        addLabel="Добавить отзыв"
+        onAdd={() => {
+          setIsReviewsMenuOpen(false);
+          setEditingReview(createReviewDraft());
+        }}
+        items={state.reviews.map((review) => ({
+          id: review.id,
+          title: review.name || 'Без имени',
+          subtitle: typeof review.rating === 'number' ? `Рейтинг: ${review.rating}` : 'Без рейтинга',
+        }))}
+        onEdit={(id) => {
+          const review = state.reviews.find((item) => item.id === id);
+          if (!review) return;
+          setIsReviewsMenuOpen(false);
+          setEditingReview(review);
+        }}
+        onDelete={(id) => {
+          const review = state.reviews.find((item) => item.id === id);
+          if (!review || !window.confirm('Удалить отзыв?')) return;
+          deleteReview(id);
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

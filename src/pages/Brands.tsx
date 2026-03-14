@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect } from 'react';
+import { useRef, useLayoutEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -8,8 +8,8 @@ import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { useTranslation } from 'react-i18next';
-import { buildAdminUrl } from '../utils/visualAdmin';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,6 +38,7 @@ const brandInfo = {
 
 export const Brands = () => {
   const { t } = useTranslation();
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const timelineLineRef = useRef<HTMLDivElement>(null);
@@ -110,7 +111,7 @@ export const Brands = () => {
           title="Страница бренда"
           description="Быстрый доступ к SEO и связанному бренд-контенту."
           actions={[
-            { label: 'SEO', href: buildAdminUrl('seo'), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
         />
       </section>
@@ -246,6 +247,7 @@ export const Brands = () => {
 
       <ContactFormSection />
       <Footer />
+      <InlineSeoEditorModal slug="/brands" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

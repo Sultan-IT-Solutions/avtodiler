@@ -5,11 +5,13 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { submitLead } from '../utils/leads';
 import { useTranslation } from 'react-i18next';
 import { publicApi } from '../utils/publicApi';
@@ -17,7 +19,6 @@ import { localizedText } from '../utils/localizedText';
 import { isValidPhone } from '../utils/phone';
 import type { ServiceItem } from '../types/admin';
 import { EmptyState } from '../components/EmptyState';
-import { buildAdminUrl } from '../utils/visualAdmin';
 import { servicesApi } from '../utils/adminApi';
 
 const serviceIcons = [Wrench, ShieldCheck, Cog, Paintbrush, Zap, CarFront];
@@ -26,6 +27,7 @@ const ease = [0.16, 1, 0.3, 1] as const;
 
 export const Service = () => {
   const { t, i18n } = useTranslation();
+  const lang = i18n.language as 'ru' | 'kz' | 'en';
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -46,6 +48,8 @@ export const Service = () => {
   const [phoneTouched, setPhoneTouched] = useState(false);
   const phoneError = phoneTouched && !isValidPhone(formData.phone);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
+  const [isServicesMenuOpen, setIsServicesMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,6 +76,13 @@ export const Service = () => {
       })),
     [services, i18n.language],
   );
+
+  const createServiceDraft = (): ServiceItem => ({
+    id: `service-${Date.now()}`,
+    title: { ru: '', kz: '', en: '' },
+    description: { ru: '', kz: '', en: '' },
+    price: '',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,9 +189,8 @@ export const Service = () => {
           title="Страница сервиса"
           description="Редактирование сервисных услуг и SEO страницы."
           actions={[
-            { label: 'Сервисы', href: buildAdminUrl('services'), kind: 'primary' },
-            { label: 'SEO', href: buildAdminUrl('seo') },
-            { label: 'Заявки', href: buildAdminUrl('leads') },
+            { label: 'Сервисы', onClick: () => setIsServicesMenuOpen(true), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -530,6 +540,36 @@ export const Service = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Сервисы"
+        open={isServicesMenuOpen}
+        onClose={() => setIsServicesMenuOpen(false)}
+        addLabel="Добавить сервис"
+        onAdd={() => {
+          setIsServicesMenuOpen(false);
+          setEditingService(createServiceDraft());
+        }}
+        items={services.map((service) => ({
+          id: service.id,
+          title: localizedText(service.title, { lng: lang, fallbackLng: 'ru' }),
+          subtitle: service.price,
+        }))}
+        onEdit={(id) => {
+          const service = services.find((item) => item.id === id);
+          if (!service) return;
+          setIsServicesMenuOpen(false);
+          setEditingService(service);
+        }}
+        onDelete={(id) => {
+          const service = services.find((item) => item.id === id);
+          if (!service || !window.confirm('Удалить сервис?')) return;
+          void servicesApi.remove(id);
+          setServices((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/service" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

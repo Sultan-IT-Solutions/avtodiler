@@ -1,7 +1,7 @@
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
 import { seedShopState } from '../data/shopSeed';
-import type { CartItem, CategoryItem, HongqiModel, InventoryMovement, OrderItem, ProductItem, ReviewItem, SeoPage, ShopState, StoreItem } from '../types/shop';
+import type { CartItem, CategoryItem, HongqiModel, InventoryMovement, OrderItem, PartRequestItem, ProductItem, ReviewItem, SeoPage, ShopState, StoreItem } from '../types/shop';
 import { shopAdminApi, shopPublicApi } from '../utils/shopApi';
 
 const createId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
@@ -49,8 +49,10 @@ type ShopContextValue = {
   deleteStore: (id: string) => void;
   saveReview: (item: ReviewItem) => void;
   deleteReview: (id: string) => void;
+  saveOrder: (item: OrderItem) => void;
   updateOrderStatus: (orderId: string, status: OrderItem['status']) => void;
   deleteOrder: (orderId: string) => void;
+  saveRequest: (item: PartRequestItem) => void;
   deleteRequest: (requestId: string) => void;
   addInventoryMovement: (payload: Omit<InventoryMovement, 'id' | 'date'>) => void;
   saveSeoPage: (item: SeoPage) => void;
@@ -371,11 +373,31 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     });
   };
 
+  const saveOrder = (item: OrderItem) => {
+    void shopAdminApi.upsert('orders', item.id, item);
+    setState((current) => ({
+      ...current,
+      orders: current.orders.some((order) => order.id === item.id)
+        ? current.orders.map((order) => order.id === item.id ? item : order)
+        : [item, ...current.orders]
+    }));
+  };
+
   const deleteOrder = (orderId: string) => {
     void shopAdminApi.remove('orders', orderId);
     setState((current) => ({
       ...current,
       orders: current.orders.filter((order) => order.id !== orderId)
+    }));
+  };
+
+  const saveRequest = (item: PartRequestItem) => {
+    void shopAdminApi.upsert('requests', item.id, item);
+    setState((current) => ({
+      ...current,
+      requests: current.requests.some((request) => request.id === item.id)
+        ? current.requests.map((request) => request.id === item.id ? item : request)
+        : [item, ...current.requests]
     }));
   };
 
@@ -449,8 +471,10 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     deleteStore,
     saveReview,
     deleteReview,
+    saveOrder,
     updateOrderStatus,
     deleteOrder,
+    saveRequest,
     deleteRequest,
     addInventoryMovement,
     saveSeoPage,

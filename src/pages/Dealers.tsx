@@ -5,16 +5,17 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
   InlineCmsTextarea,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { buildAdminUrl } from '../utils/visualAdmin';
 import { dealersApi } from '../utils/adminApi';
 import type { DealerItem } from '../types/admin';
 
@@ -49,8 +50,21 @@ export const Dealers = () => {
 
   const [selectedDealer, setSelectedDealer] = useState<(typeof dealers)[number] | undefined>(dealers[0]);
   const [editingDealer, setEditingDealer] = useState<DealerItem | null>(null);
+  const [isDealersMenuOpen, setIsDealersMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  const createDealerDraft = (): DealerItem => ({
+    id: `dealer-${Date.now()}`,
+    name: { ru: '', kz: '', en: '' },
+    address: { ru: '', kz: '', en: '' },
+    phone: '',
+    hours: '',
+    lat: 0,
+    lng: 0,
+    services: [],
+  });
 
   useEffect(() => {
     if (!selectedDealer && dealers.length > 0) setSelectedDealer(dealers[0]);
@@ -218,8 +232,8 @@ export const Dealers = () => {
           title="Страница дилеров"
           description="Редактирование дилерских центров и SEO страницы."
           actions={[
-            { label: 'Дилеры', href: buildAdminUrl('dealers'), kind: 'primary' },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Дилеры', onClick: () => setIsDealersMenuOpen(true), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -476,6 +490,37 @@ export const Dealers = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Дилеры"
+        open={isDealersMenuOpen}
+        onClose={() => setIsDealersMenuOpen(false)}
+        addLabel="Добавить дилера"
+        onAdd={() => {
+          setIsDealersMenuOpen(false);
+          setEditingDealer(createDealerDraft());
+        }}
+        items={dealers.map((dealer) => ({
+          id: dealer.id,
+          title: dealer.name[lang] || dealer.name.ru,
+          subtitle: dealer.phone,
+        }))}
+        onEdit={(id) => {
+          const dealer = dealers.find((item) => item.id === id);
+          if (!dealer) return;
+          setIsDealersMenuOpen(false);
+          setEditingDealer(dealer);
+        }}
+        onDelete={(id) => {
+          const dealer = dealers.find((item) => item.id === id);
+          if (!dealer || !window.confirm('Удалить дилера?')) return;
+          void dealersApi.remove(id);
+          setDealers((current) => current.filter((item) => item.id !== id));
+          setSelectedDealer((current) => (current?.id === id ? undefined : current));
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/dealers" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

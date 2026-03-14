@@ -12,14 +12,15 @@ import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
   InlineCmsTextarea,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import type { AdminCar } from '../types/admin';
-import { buildAdminUrl } from '../utils/visualAdmin';
 import { carsApi } from '../utils/adminApi';
 
 type SortOption = 'newest' | 'priceHigh' | 'priceLow';
@@ -55,6 +56,8 @@ export const Catalog = () => {
   const [sortBy, setSortBy] = useState<SortOption>('priceLow');
   const [showFilters, setShowFilters] = useState(false);
   const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
+  const [isCarsMenuOpen, setIsCarsMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
@@ -148,6 +151,36 @@ export const Catalog = () => {
     { value: 'priceLow', label: t('catalog.sortPriceLow') },
   ];
 
+  const createCarDraft = (): AdminCar => ({
+    id: `car-${Date.now()}`,
+    brand: 'Hongqi',
+    makeId: 'hongqi',
+    model: '',
+    modelDisplay: '',
+    title: { ru: '', kz: '', en: '' },
+    year: new Date().getFullYear(),
+    price: 0,
+    availability: 'В наличии',
+    mileage: 0,
+    featured: false,
+    images: [SITE_IMAGES.hero],
+    specifications: {
+      engine: '',
+      power: '',
+      acceleration: '',
+      topSpeed: '',
+      transmission: '',
+      drivetrain: '',
+      fuelType: '',
+      consumption: '',
+      seats: 5,
+    },
+    colors: [],
+    interiors: [],
+    wheels: [],
+    description: { ru: '', kz: '', en: '' },
+  });
+
   return (
     <div className="bg-luxury-black min-h-screen">
       {/* HERO */}
@@ -217,8 +250,8 @@ export const Catalog = () => {
           title="Каталог автомобилей"
           description="Быстрый переход к редактированию автомобилей и SEO каталога."
           actions={[
-            { label: 'Автомобили', href: buildAdminUrl('cars'), kind: 'primary' },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Автомобили', onClick: () => setIsCarsMenuOpen(true), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -564,6 +597,36 @@ export const Catalog = () => {
           />
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Автомобили"
+        open={isCarsMenuOpen}
+        onClose={() => setIsCarsMenuOpen(false)}
+        addLabel="Добавить автомобиль"
+        onAdd={() => {
+          setIsCarsMenuOpen(false);
+          setEditingCar(createCarDraft());
+        }}
+        items={cars.map((car) => ({
+          id: car.id,
+          title: `${car.brand} ${car.model}`,
+          subtitle: formatPrice(car.price ?? 0),
+        }))}
+        onEdit={(id) => {
+          const car = cars.find((item) => item.id === id);
+          if (!car) return;
+          setIsCarsMenuOpen(false);
+          setEditingCar(car);
+        }}
+        onDelete={(id) => {
+          const car = cars.find((item) => item.id === id);
+          if (!car || !window.confirm('Удалить автомобиль?')) return;
+          void carsApi.remove(id);
+          setCars((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/catalog" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

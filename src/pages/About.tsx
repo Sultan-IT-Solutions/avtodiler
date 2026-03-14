@@ -8,7 +8,7 @@ import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
-import { buildAdminUrl } from '../utils/visualAdmin';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -39,6 +39,7 @@ const Counter = ({ target, suffix = '' }: { target: number; suffix?: string }) =
    MAIN ABOUT COMPONENT
    ================================================================ */
 export const About = () => {
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const timelineLineRef = useRef<HTMLDivElement>(null);
@@ -169,7 +170,7 @@ export const About = () => {
           title="Страница о компании"
           description="Управление SEO и связанным контентом страницы бренда."
           actions={[
-            { label: 'SEO', href: buildAdminUrl('seo'), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
         />
       </section>
@@ -380,6 +381,7 @@ export const About = () => {
 
       <ContactFormSection />
       <Footer />
+      <InlineSeoEditorModal slug="/about" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

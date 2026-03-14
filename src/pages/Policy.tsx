@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Footer } from '../components/Footer';
 import { VisualEditPanel } from '../components/VisualEditPanel';
-import { buildAdminUrl } from '../utils/visualAdmin';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 
 const PolicySection = ({
   index,
@@ -27,6 +28,7 @@ const PolicySection = ({
 
 export const Policy = () => {
   const { t } = useTranslation();
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const definitions = t('policy.definitions.items', { returnObjects: true }) as Array<{
     term: string;
     text: string;
@@ -57,7 +59,7 @@ export const Policy = () => {
           title="Политика обработки данных"
           description="Редактирование SEO и содержимого юридической страницы через общую админку."
           actions={[
-            { label: 'SEO', href: buildAdminUrl('seo'), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
           className="mb-10"
         />
@@ -138,6 +140,7 @@ export const Policy = () => {
       </section>
 
       <Footer />
+      <InlineSeoEditorModal slug="/policy" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

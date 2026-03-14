@@ -4,7 +4,8 @@ import { useVisualAdmin } from '../context/VisualAdminContext';
 
 type VisualEditAction = {
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
   kind?: 'default' | 'primary' | 'add';
 };
 
@@ -13,12 +14,14 @@ export const VisualEditPanel = ({
   title,
   description,
   actions,
+  details = [],
   className = '',
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   actions: VisualEditAction[];
+  details?: Array<{ label: string; value: string }>;
   className?: string;
 }) => {
   const { enabled, authed } = useVisualAdmin();
@@ -32,6 +35,21 @@ export const VisualEditPanel = ({
           <p className="text-[10px] uppercase tracking-[0.28em] text-luxury-burgundy">{eyebrow}</p>
           <h2 className="mt-2 text-lg font-semibold text-white">{title}</h2>
           {description ? <p className="mt-2 text-sm leading-6 text-white/55">{description}</p> : null}
+          {details.length ? (
+            <div className="mt-4 grid gap-2">
+              {details.map((item) => (
+                <div
+                  key={`${item.label}-${item.value}`}
+                  className="flex flex-wrap items-center gap-2 text-xs text-white/50"
+                >
+                  <span className="uppercase tracking-[0.18em] text-white/35">{item.label}:</span>
+                  <code className="rounded border border-white/10 bg-white/[0.03] px-2 py-1 text-white/75">
+                    {item.value}
+                  </code>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -41,20 +59,36 @@ export const VisualEditPanel = ({
             <Settings size={14} />
             Админка
           </Link>
-          {actions.map((action) => (
-            <Link
-              key={action.href}
-              to={action.href}
-              className={`inline-flex items-center gap-2 px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition ${
-                action.kind === 'primary'
-                  ? 'border border-luxury-burgundy bg-luxury-burgundy/12 text-white hover:bg-luxury-burgundy/20'
-                  : 'border border-white/10 text-white/75 hover:border-white/25 hover:text-white'
-              }`}
-            >
-              {action.kind === 'add' ? <Plus size={14} /> : <Edit3 size={14} />}
-              {action.label}
-            </Link>
-          ))}
+          {actions.map((action) =>
+            action.onClick ? (
+              <button
+                key={`${action.label}-button`}
+                type="button"
+                onClick={action.onClick}
+                className={`inline-flex items-center gap-2 px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition ${
+                  action.kind === 'primary'
+                    ? 'border border-luxury-burgundy bg-luxury-burgundy/12 text-white hover:bg-luxury-burgundy/20'
+                    : 'border border-white/10 text-white/75 hover:border-white/25 hover:text-white'
+                }`}
+              >
+                {action.kind === 'add' ? <Plus size={14} /> : <Edit3 size={14} />}
+                {action.label}
+              </button>
+            ) : action.href ? (
+              <Link
+                key={action.href}
+                to={action.href}
+                className={`inline-flex items-center gap-2 px-3 py-2 text-[11px] uppercase tracking-[0.18em] transition ${
+                  action.kind === 'primary'
+                    ? 'border border-luxury-burgundy bg-luxury-burgundy/12 text-white hover:bg-luxury-burgundy/20'
+                    : 'border border-white/10 text-white/75 hover:border-white/25 hover:text-white'
+                }`}
+              >
+                {action.kind === 'add' ? <Plus size={14} /> : <Edit3 size={14} />}
+                {action.label}
+              </Link>
+            ) : null
+          )}
         </div>
       </div>
     </div>

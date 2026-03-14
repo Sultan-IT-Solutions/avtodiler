@@ -1,13 +1,24 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
+import { useVisualAdmin } from '../context/VisualAdminContext';
 import { submitLead } from '../utils/leads';
 import { isValidPhone } from '../utils/phone';
-import { buildAdminUrl } from '../utils/visualAdmin';
+import { carsApi, leadsApi } from '../utils/adminApi';
+import type { AdminCar, LeadItem } from '../types/admin';
 
 const dealers = [
   { id: 1, name: 'Hongqi Auto — Алматы', address: 'Алатау просп., 1а/5, Шугыла м-н, Наурызбайский район, Алматы' },
@@ -36,7 +47,38 @@ const steps = [
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
+const fallbackAdminCars: AdminCar[] = cars.map((car) => ({
+  id: car.id,
+  brand: car.brand,
+  makeId: 'hongqi',
+  model: car.model,
+  modelDisplay: car.modelDisplay,
+  title: {
+    ru: `${car.brand} ${car.modelDisplay ?? car.model}`,
+    kz: `${car.brand} ${car.modelDisplay ?? car.model}`,
+    en: `${car.brand} ${car.modelDisplay ?? car.model}`,
+  },
+  year: car.year,
+  price: car.price,
+  availability: car.availability ?? 'inStock',
+  mileage: car.mileage,
+  featured: car.featured,
+  images: car.images,
+  image360: car.image360,
+  specifications: car.specifications,
+  colors: car.colors,
+  interiors: car.interiors,
+  wheels: car.wheels,
+  description: {
+    ru: car.description ?? '',
+    kz: car.description ?? '',
+    en: car.description ?? '',
+  },
+}));
+
 export const TestDrive = () => {
+  const { enabled, authed } = useVisualAdmin();
+  const location = useLocation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -55,7 +97,56 @@ export const TestDrive = () => {
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [adminCars, setAdminCars] = useState<AdminCar[]>(fallbackAdminCars);
+  const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
+  const [editingLead, setEditingLead] = useState<LeadItem | null>(null);
+  const [isCarsMenuOpen, setIsCarsMenuOpen] = useState(false);
+  const [isLeadsMenuOpen, setIsLeadsMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
   const phoneError = phoneTouched && !isValidPhone(formData.phone);
+
+  const createCarDraft = (): AdminCar => ({
+    id: `car-${Date.now()}`,
+    brand: 'Hongqi',
+    makeId: 'hongqi',
+    model: '',
+    modelDisplay: '',
+    title: { ru: '', kz: '', en: '' },
+    year: new Date().getFullYear(),
+    price: 0,
+    availability: 'available',
+    mileage: 0,
+    featured: false,
+    images: [''],
+    specifications: {
+      engine: '',
+      power: '',
+      acceleration: '',
+      topSpeed: '',
+      transmission: '',
+      drivetrain: '',
+      fuelType: '',
+      consumption: '',
+      seats: 5,
+    },
+    colors: [],
+    interiors: [],
+    wheels: [],
+    description: { ru: '', kz: '', en: '' },
+  });
+
+  useEffect(() => {
+    if (!enabled || !authed) return;
+    void carsApi
+      .list()
+      .then((items) => setAdminCars(items))
+      .catch(() => setAdminCars(fallbackAdminCars));
+    void leadsApi
+      .list()
+      .then((items) => setLeads(items.filter((item) => item.type === 'test-drive')))
+      .catch(() => setLeads([]));
+  }, [authed, enabled]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,10 +251,14 @@ export const TestDrive = () => {
         <VisualEditPanel
           title="Страница тест-драйва"
           description="Быстрый доступ к заявкам, автомобилям и SEO страницы."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: '/test-drive' },
+          ]}
           actions={[
-            { label: 'Заявки', href: buildAdminUrl('leads'), kind: 'primary' },
-            { label: 'Автомобили', href: buildAdminUrl('cars') },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Заявки', onClick: () => setIsLeadsMenuOpen(true), kind: 'primary' },
+            { label: 'Автомобили', onClick: () => setIsCarsMenuOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -327,7 +422,7 @@ export const TestDrive = () => {
                     className="input-luxury"
                   >
                     <option value="">Выберите автомобиль</option>
-                    {cars.map((car) => (
+                    {adminCars.map((car) => (
                       <option key={car.id} value={`${car.brand} ${car.model}`}>
                         {car.brand} {car.model} ({car.year})
                       </option>
@@ -384,6 +479,206 @@ export const TestDrive = () => {
       </section>
 
       <ContactFormSection />
+
+      <InlineCmsCollectionMenu
+        title="Автомобили"
+        open={isCarsMenuOpen}
+        onClose={() => setIsCarsMenuOpen(false)}
+        addLabel="Добавить автомобиль"
+        onAdd={() => {
+          setEditingCar(createCarDraft());
+          setIsCarsMenuOpen(false);
+        }}
+        items={adminCars.map((car) => ({
+          id: car.id,
+          title: car.title.ru || car.modelDisplay || `${car.brand} ${car.model}`,
+          subtitle: `${car.brand} ${car.model} • ${car.year}`,
+        }))}
+        onEdit={(id) => {
+          const car = adminCars.find((item) => item.id === id);
+          if (!car) return;
+          setEditingCar(car);
+          setIsCarsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const car = adminCars.find((item) => item.id === id);
+          if (!car || !window.confirm('Удалить автомобиль?')) return;
+          void carsApi.remove(id);
+          setAdminCars((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineCmsCollectionMenu
+        title="Заявки на тест-драйв"
+        open={isLeadsMenuOpen}
+        onClose={() => setIsLeadsMenuOpen(false)}
+        items={leads.map((lead) => ({
+          id: lead.id,
+          title: `${lead.name} • ${lead.phone}`,
+          subtitle: `${lead.car ?? 'Без модели'} • ${lead.createdAt ? new Date(lead.createdAt).toLocaleString('ru-RU') : ''}`,
+        }))}
+        onEdit={(id) => {
+          const lead = leads.find((item) => item.id === id);
+          if (!lead) return;
+          setEditingLead(lead);
+          setIsLeadsMenuOpen(false);
+        }}
+        onDelete={(id) => {
+          const lead = leads.find((item) => item.id === id);
+          if (!lead || !window.confirm('Удалить заявку?')) return;
+          void leadsApi.remove(id);
+          setLeads((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      {editingCar ? (
+        <InlineCmsModal
+          title="Редактирование автомобиля"
+          onClose={() => setEditingCar(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  void carsApi.upsert(editingCar);
+                  setAdminCars((current) =>
+                    current.some((item) => item.id === editingCar.id)
+                      ? current.map((item) => (item.id === editingCar.id ? editingCar : item))
+                      : [editingCar, ...current]
+                  );
+                  setEditingCar(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить автомобиль?')) return;
+                  void carsApi.remove(editingCar.id);
+                  setAdminCars((current) => current.filter((item) => item.id !== editingCar.id));
+                  setEditingCar(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingCar.brand}
+              onChange={(brand) => setEditingCar({ ...editingCar, brand })}
+              placeholder="Бренд"
+            />
+            <InlineCmsInput
+              value={editingCar.model}
+              onChange={(model) => setEditingCar({ ...editingCar, model })}
+              placeholder="Модель"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Заголовок"
+            value={editingCar.title}
+            onChange={(title) => setEditingCar({ ...editingCar, title })}
+          />
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingCar.description}
+            multiline
+            onChange={(description) => setEditingCar({ ...editingCar, description })}
+          />
+          <div className="grid gap-4 lg:grid-cols-3">
+            <InlineCmsInput
+              type="number"
+              value={editingCar.year}
+              onChange={(year) => setEditingCar({ ...editingCar, year: Number(year) || new Date().getFullYear() })}
+              placeholder="Год"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingCar.price}
+              onChange={(price) => setEditingCar({ ...editingCar, price: Number(price) || 0 })}
+              placeholder="Цена"
+            />
+            <InlineCmsInput
+              value={editingCar.availability}
+              onChange={(availability) => setEditingCar({ ...editingCar, availability })}
+              placeholder="Статус"
+            />
+          </div>
+        </InlineCmsModal>
+      ) : null}
+
+      {editingLead ? (
+        <InlineCmsModal
+          title="Заявка на тест-драйв"
+          onClose={() => setEditingLead(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  void leadsApi.upsert(editingLead);
+                  setLeads((current) =>
+                    current.map((item) => (item.id === editingLead.id ? editingLead : item))
+                  );
+                  setEditingLead(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить заявку?')) return;
+                  void leadsApi.remove(editingLead.id);
+                  setLeads((current) => current.filter((item) => item.id !== editingLead.id));
+                  setEditingLead(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingLead.name}
+              onChange={(name) => setEditingLead({ ...editingLead, name })}
+              placeholder="Имя"
+            />
+            <InlineCmsInput
+              value={editingLead.phone}
+              onChange={(phone) => setEditingLead({ ...editingLead, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingLead.car ?? ''}
+              onChange={(car) => setEditingLead({ ...editingLead, car })}
+              placeholder="Автомобиль"
+            />
+            <InlineCmsInput
+              value={editingLead.dealer ?? ''}
+              onChange={(dealer) => setEditingLead({ ...editingLead, dealer })}
+              placeholder="Дилер"
+            />
+          </div>
+          <InlineCmsTextarea
+            value={editingLead.comment ?? ''}
+            onChange={(comment) => setEditingLead({ ...editingLead, comment })}
+            placeholder="Комментарий"
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineSeoEditorModal slug="/test-drive" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
       <Footer />
     </div>
   );

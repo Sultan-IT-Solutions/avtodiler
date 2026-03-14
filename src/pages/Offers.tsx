@@ -7,16 +7,17 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { VisualEditPanel } from '../components/VisualEditPanel';
 import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import { InlineCmsCollectionMenu } from '../components/InlineCmsCollectionMenu';
 import {
   InlineCmsInput,
   InlineCmsLocaleFields,
   InlineCmsModal,
 } from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import { useEffect, useState } from 'react';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
-import { buildAdminUrl } from '../utils/visualAdmin';
 import { offersApi } from '../utils/adminApi';
 import type { OfferItem } from '../types/admin';
 
@@ -27,6 +28,8 @@ export const Offers = () => {
   const { t, i18n } = useTranslation();
   const [offers, setOffers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.offers>>);
   const [editingOffer, setEditingOffer] = useState<OfferItem | null>(null);
+  const [isOffersMenuOpen, setIsOffersMenuOpen] = useState(false);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +54,15 @@ export const Offers = () => {
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+
+  const createOfferDraft = (): OfferItem => ({
+    id: `offer-${Date.now()}`,
+    title: { ru: '', kz: '', en: '' },
+    description: { ru: '', kz: '', en: '' },
+    badge: { ru: '', kz: '', en: '' },
+    validUntil: '',
+    image: SITE_IMAGES.hero,
+  });
 
   return (
     <div className="bg-luxury-black min-h-screen">
@@ -120,8 +132,8 @@ export const Offers = () => {
           title="Страница предложений"
           description="Редактирование акций и SEO этой страницы."
           actions={[
-            { label: 'Предложения', href: buildAdminUrl('offers'), kind: 'primary' },
-            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Предложения', onClick: () => setIsOffersMenuOpen(true), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
           ]}
         />
       </section>
@@ -336,6 +348,36 @@ export const Offers = () => {
           </div>
         </InlineCmsModal>
       ) : null}
+
+      <InlineCmsCollectionMenu
+        title="Предложения"
+        open={isOffersMenuOpen}
+        onClose={() => setIsOffersMenuOpen(false)}
+        addLabel="Добавить предложение"
+        onAdd={() => {
+          setIsOffersMenuOpen(false);
+          setEditingOffer(createOfferDraft());
+        }}
+        items={offers.map((offer) => ({
+          id: offer.id,
+          title: offer.title[lang] || offer.title.ru,
+          subtitle: offer.validUntil,
+        }))}
+        onEdit={(id) => {
+          const offer = offers.find((item) => item.id === id);
+          if (!offer) return;
+          setIsOffersMenuOpen(false);
+          setEditingOffer(offer);
+        }}
+        onDelete={(id) => {
+          const offer = offers.find((item) => item.id === id);
+          if (!offer || !window.confirm('Удалить акцию?')) return;
+          void offersApi.remove(id);
+          setOffers((current) => current.filter((item) => item.id !== id));
+        }}
+      />
+
+      <InlineSeoEditorModal slug="/offers" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };
