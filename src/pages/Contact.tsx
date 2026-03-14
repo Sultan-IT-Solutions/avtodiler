@@ -3,9 +3,11 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ArrowUpRight, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Footer } from '../components/Footer';
+import { VisualEditPanel } from '../components/VisualEditPanel';
 import { submitLead } from '../utils/leads';
 import { publicApi } from '../utils/publicApi';
 import type { Car } from '../types/car';
+import { buildAdminUrl } from '../utils/visualAdmin';
 
 const contactMethods = [
   {
@@ -203,6 +205,18 @@ export const Contact = () => {
         >
           <div className="scroll-line" />
         </motion.div>
+      </section>
+
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница контактов"
+          description="Редактирование дилеров, входящих заявок и SEO страницы контактов."
+          actions={[
+            { label: 'Дилеры', href: buildAdminUrl('dealers'), kind: 'primary' },
+            { label: 'Заявки', href: buildAdminUrl('leads') },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
       </section>
 
       {/* Contact Methods Grid */}

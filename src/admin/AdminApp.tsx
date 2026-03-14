@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { LogOut, Plus, Save, Trash2 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import type {
   AdminCar,
   AdminData,
@@ -14,6 +15,7 @@ import type {
 } from '../types/admin';
 import { ShopAdminPage } from '../pages/ShopPages';
 import { useShop } from '../context/ShopContext';
+import { useVisualAdmin } from '../context/VisualAdminContext';
 import type { ReviewItem } from '../types/shop';
 import { createId } from '../utils/adminStorage';
 import { carsApi, dealersApi, leadsApi, offersApi, seoApi, servicesApi } from '../utils/adminApi';
@@ -248,6 +250,8 @@ const EmptyState = ({ text }: { text: string }) => (
 type SectionInfo = { key: AdminSectionKey; label: string };
 
 const AdminApp = () => {
+  const location = useLocation();
+  const { enable: enableVisualAdmin } = useVisualAdmin();
   const [data, setData] = useState<AdminData>(() => ({
     cars: [],
     services: [],
@@ -262,6 +266,19 @@ const AdminApp = () => {
   const [isAuthed, setIsAuthed] = useState(() => readAuthOk());
   const [toast, setToast] = useState<ToastPayload | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const search = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const requestedSection = search.get('section') as AdminSectionKey | null;
+  const requestedShopTab = search.get('tab') as
+    | 'products'
+    | 'categories'
+    | 'models'
+    | 'orders'
+    | 'warehouse'
+    | 'stores'
+    | 'requests'
+    | 'seo'
+    | 'import'
+    | null;
   useEffect(() => {
     let cancelled = false;
     void fetch('/api/admin/login/status', { method: 'GET', cache: 'no-store' })
@@ -353,6 +370,13 @@ const AdminApp = () => {
     []
   );
 
+  useEffect(() => {
+    if (!requestedSection) return;
+    if (sections.some((section) => section.key === requestedSection)) {
+      setActiveSection(requestedSection);
+    }
+  }, [requestedSection, sections]);
+
   if (!isAuthed) {
     return <AdminLogin onSuccess={() => setIsAuthed(true)} />;
   }
@@ -361,6 +385,11 @@ const AdminApp = () => {
     if (!window.confirm('Выйти из админ-панели?')) return;
     setIsAuthed(false);
     notify('Вы вышли из админ-панели', 'ОК');
+  };
+
+  const openVisualMode = () => {
+    enableVisualAdmin();
+    window.open('/', '_blank', 'noopener,noreferrer');
   };
 
   const activeLabel = sections.find((section) => section.key === activeSection)?.label ?? '';
@@ -389,6 +418,12 @@ const AdminApp = () => {
               </button>
             ))}
           </nav>
+          <button
+            onClick={openVisualMode}
+            className="w-full border border-luxury-burgundy bg-luxury-burgundy/10 px-4 py-3 text-left text-sm text-white transition hover:bg-luxury-burgundy/20"
+          >
+            Открыть сайт в режиме редактирования
+          </button>
           <button
             onClick={logout}
             className="flex items-center gap-2 text-white/60 hover:text-white text-sm"
@@ -505,7 +540,9 @@ const AdminApp = () => {
               syncing={isSyncing}
             />
           )}
-          {activeSection === 'shop' && <ShopAdminPage embedded notify={notify} />}
+          {activeSection === 'shop' && (
+            <ShopAdminPage embedded notify={notify} initialTab={requestedShopTab ?? 'products'} />
+          )}
         </main>
       </div>
     </div>

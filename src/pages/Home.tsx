@@ -10,12 +10,23 @@ import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { Car } from '../types/car';
+import type { AdminCar } from '../types/admin';
 import { SITE_IMAGES } from '../data/siteImages';
 import { EmptyState } from '../components/EmptyState';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+} from '../components/InlineCmsModal';
 import { publicApi } from '../utils/publicApi';
 import { useShop } from '../context/ShopContext';
+import { buildAdminUrl } from '../utils/visualAdmin';
+import { carsApi } from '../utils/adminApi';
+import type { ReviewItem } from '../types/shop';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -84,8 +95,10 @@ const ParallaxImage = ({ src, alt, className = '', speed = 0.3, fallback = SITE_
    ================================================================ */
 export const Home = () => {
   const { t } = useTranslation();
-  const { state } = useShop();
+  const { state, saveReview, deleteReview } = useShop();
   const [cars, setCars] = useState<Car[]>([]);
+  const [editingReview, setEditingReview] = useState<ReviewItem | null>(null);
+  const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
   const featuredCars = useMemo<Car[]>(() => cars.filter((car) => car.featured), [cars]);
 
   useEffect(() => {
@@ -292,6 +305,18 @@ export const Home = () => {
         </div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Главная страница"
+          description="Редактирование автомобилей, отзывов и SEO главной страницы."
+          actions={[
+            { label: 'Автомобили', href: buildAdminUrl('cars'), kind: 'primary' },
+            { label: 'Отзывы', href: buildAdminUrl('reviews') },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
+      </section>
+
       {/* ============================================================
           SECTION: FLAGSHIP METRICS BAR
           ============================================================ */}
@@ -496,7 +521,7 @@ export const Home = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {cars.slice(0, 4).map((car, index) => (
-                <ModelGridCard key={car.id} car={car} index={index} />
+                <ModelGridCard key={car.id} car={car} index={index} onEdit={() => setEditingCar(car as unknown as AdminCar)} />
               ))}
             </div>
           )}
@@ -565,8 +590,9 @@ export const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.7, delay: index * 0.08 }}
-                className="border border-white/10 bg-luxury-black p-8"
+                className="relative border border-white/10 bg-luxury-black p-8"
               >
+                <VisualInlineEditLink onClick={() => setEditingReview(review)} label="Отзыв" />
                 {typeof review.rating === 'number' ? (
                   <p className="text-luxury-burgundy tracking-[0.2em]">
                     {'★'.repeat(Math.max(0, Math.min(5, review.rating)))}
@@ -586,6 +612,116 @@ export const Home = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingReview ? (
+        <InlineCmsModal
+          title="Редактирование отзыва"
+          onClose={() => setEditingReview(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveReview(editingReview);
+                  setEditingReview(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить отзыв?')) return;
+                  deleteReview(editingReview.id);
+                  setEditingReview(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsInput
+            value={editingReview.name}
+            onChange={(name) => setEditingReview({ ...editingReview, name })}
+            placeholder="Имя"
+          />
+          <InlineCmsInput
+            value={editingReview.rating ?? ''}
+            onChange={(rating) =>
+              setEditingReview({
+                ...editingReview,
+                rating: rating === '' ? null : Math.max(0, Math.min(5, Number(rating) || 0)),
+              })
+            }
+            placeholder="Рейтинг 0-5"
+            type="number"
+          />
+          <InlineCmsLocaleFields
+            label="Текст"
+            value={editingReview.text}
+            multiline
+            onChange={(text) => setEditingReview({ ...editingReview, text })}
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      {editingCar ? (
+        <InlineCmsModal
+          title="Редактирование автомобиля"
+          onClose={() => setEditingCar(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await carsApi.upsert(editingCar);
+                  setCars((current) =>
+                    current.map((item) =>
+                      item.id === editingCar.id ? (editingCar as unknown as Car) : item
+                    )
+                  );
+                  setEditingCar(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить автомобиль?')) return;
+                  await carsApi.remove(editingCar.id);
+                  setCars((current) => current.filter((item) => item.id !== editingCar.id));
+                  setEditingCar(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsInput
+            value={editingCar.brand}
+            onChange={(brand) => setEditingCar({ ...editingCar, brand })}
+            placeholder="Бренд"
+          />
+          <InlineCmsInput
+            value={editingCar.model}
+            onChange={(model) => setEditingCar({ ...editingCar, model })}
+            placeholder="Модель"
+          />
+          <InlineCmsInput
+            value={editingCar.price}
+            onChange={(price) => setEditingCar({ ...editingCar, price: Number(price) || 0 })}
+            placeholder="Цена"
+            type="number"
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
@@ -784,15 +920,16 @@ const FeaturedModelsCarousel = ({ cars }: { cars: Car[] }) => {
 /* ================================================================
    MODEL GRID CARD
    ================================================================ */
-const ModelGridCard = ({ car, index }: { car: Car; index: number }) => {
+const ModelGridCard = ({ car, index, onEdit }: { car: Car; index: number; onEdit: () => void }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'KZT', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 
   return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 60 }} animate={isInView ? { opacity: 1, y: 0 } : {}}
+    <motion.div ref={ref} initial={{ opacity: 0, y: 60 }} animate={isInView ? { opacity: 1, y: 0 } : {}} className="relative"
       transition={{ duration: 0.8, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}>
+      <VisualInlineEditLink onClick={onEdit} label="Авто" className="right-4 top-4" />
       <Link to={`/car/${car.id}`} className="block group relative overflow-hidden rounded-sm">
         <div className="relative aspect-[16/9] overflow-hidden bg-luxury-elevated">
           <img src={car.images[0]} alt={`${car.brand} ${car.model}`}

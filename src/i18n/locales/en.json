@@ -608,7 +608,7 @@
       "hero": {
         "eyebrow": "Hongqi parts online store",
         "title": "Genuine Hongqi parts in Kazakhstan",
-        "subtitle": "Catalog with article and OEM search, live stock, card payments, and Kaspi product links."
+        "subtitle": "Find the right Hongqi parts with current availability, convenient checkout, and delivery across Kazakhstan."
       },
       "models": {
         "eyebrow": "Pick by model",
@@ -661,7 +661,7 @@
     "catalog": {
       "eyebrow": "Catalog",
       "title": "Hongqi parts catalog",
-      "subtitle": "Client-side filtering by model, category, subcategory, stock, and search query without page reload.",
+      "subtitle": "Find the right parts by model, category, or article and quickly choose the best option.",
       "searchPlaceholder": "Name, article, or OEM",
       "priceFrom": "Price from",
       "priceTo": "Price to",

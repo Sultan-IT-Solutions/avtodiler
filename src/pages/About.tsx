@@ -7,6 +7,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { buildAdminUrl } from '../utils/visualAdmin';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -160,6 +162,16 @@ export const About = () => {
         <div className="absolute left-6 lg:left-16 top-0 bottom-0 z-[8] hidden lg:flex flex-col items-center justify-center">
           <div className="w-px h-24 bg-gradient-to-b from-transparent via-white/5 to-transparent" />
         </div>
+      </section>
+
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница о компании"
+          description="Управление SEO и связанным контентом страницы бренда."
+          actions={[
+            { label: 'SEO', href: buildAdminUrl('seo'), kind: 'primary' },
+          ]}
+        />
       </section>
 
       {/* MISSION */}

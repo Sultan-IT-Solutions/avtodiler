@@ -5,10 +5,20 @@ import { Link } from 'react-router-dom';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+} from '../components/InlineCmsModal';
 import { useEffect, useState } from 'react';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { buildAdminUrl } from '../utils/visualAdmin';
+import { offersApi } from '../utils/adminApi';
+import type { OfferItem } from '../types/admin';
 
 const HEADING_FONT = { fontFamily: "'Montserrat', system-ui, sans-serif" };
 const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
@@ -16,6 +26,7 @@ const MONO_FONT = { fontFamily: "'Space Grotesk', monospace" };
 export const Offers = () => {
   const { t, i18n } = useTranslation();
   const [offers, setOffers] = useState(() => [] as Awaited<ReturnType<typeof publicApi.offers>>);
+  const [editingOffer, setEditingOffer] = useState<OfferItem | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +115,17 @@ export const Offers = () => {
         </motion.div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница предложений"
+          description="Редактирование акций и SEO этой страницы."
+          actions={[
+            { label: 'Предложения', href: buildAdminUrl('offers'), kind: 'primary' },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
+      </section>
+
       {/* ====== OFFERS LIST ====== */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
@@ -122,8 +144,9 @@ export const Offers = () => {
                   delay: i * 0.08,
                   ease: [0.16, 1, 0.3, 1],
                 }}
-                className="group"
+                className="group relative"
               >
+                <VisualInlineEditLink onClick={() => setEditingOffer(offer)} label="Акция" />
                 <div className="bg-luxury-elevated border border-white/5 hover:border-white/10 overflow-hidden transition-all duration-600">
                   <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
                     {/* Image */}
@@ -248,6 +271,71 @@ export const Offers = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingOffer ? (
+        <InlineCmsModal
+          title="Редактирование акции"
+          onClose={() => setEditingOffer(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await offersApi.upsert(editingOffer);
+                  setOffers((current) =>
+                    current.map((item) => (item.id === editingOffer.id ? editingOffer : item))
+                  );
+                  setEditingOffer(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить акцию?')) return;
+                  await offersApi.remove(editingOffer.id);
+                  setOffers((current) => current.filter((item) => item.id !== editingOffer.id));
+                  setEditingOffer(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название"
+            value={editingOffer.title}
+            onChange={(title) => setEditingOffer({ ...editingOffer, title })}
+          />
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingOffer.description}
+            multiline
+            onChange={(description) => setEditingOffer({ ...editingOffer, description })}
+          />
+          <InlineCmsLocaleFields
+            label="Бейдж"
+            value={editingOffer.badge}
+            onChange={(badge) => setEditingOffer({ ...editingOffer, badge })}
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingOffer.validUntil}
+              onChange={(validUntil) => setEditingOffer({ ...editingOffer, validUntil })}
+              placeholder="Срок действия"
+            />
+            <InlineCmsInput
+              value={editingOffer.image}
+              onChange={(image) => setEditingOffer({ ...editingOffer, image })}
+              placeholder="URL изображения"
+            />
+          </div>
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };

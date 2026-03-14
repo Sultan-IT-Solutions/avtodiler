@@ -10,7 +10,17 @@ import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
 import type { AdminCar } from '../types/admin';
+import { buildAdminUrl } from '../utils/visualAdmin';
+import { carsApi } from '../utils/adminApi';
 
 type SortOption = 'newest' | 'priceHigh' | 'priceLow';
 
@@ -44,6 +54,7 @@ export const Catalog = () => {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000000]);
   const [sortBy, setSortBy] = useState<SortOption>('priceLow');
   const [showFilters, setShowFilters] = useState(false);
+  const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
 
   const heroRef = useRef<HTMLDivElement>(null);
   const heroTextRef = useRef<HTMLDivElement>(null);
@@ -201,6 +212,17 @@ export const Catalog = () => {
         </motion.div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Каталог автомобилей"
+          description="Быстрый переход к редактированию автомобилей и SEO каталога."
+          actions={[
+            { label: 'Автомобили', href: buildAdminUrl('cars'), kind: 'primary' },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
+      </section>
+
       {/* MAIN */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
@@ -355,6 +377,7 @@ export const Catalog = () => {
                       car={car}
                       index={index}
                       formatPrice={formatPrice}
+                      onEdit={() => setEditingCar(car)}
                     />
                   ))}
                 </AnimatePresence>
@@ -462,6 +485,85 @@ export const Catalog = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingCar ? (
+        <InlineCmsModal
+          title="Редактирование автомобиля"
+          onClose={() => setEditingCar(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await carsApi.upsert(editingCar);
+                  setCars((current) => current.map((item) => (item.id === editingCar.id ? editingCar : item)));
+                  setEditingCar(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить автомобиль?')) return;
+                  await carsApi.remove(editingCar.id);
+                  setCars((current) => current.filter((item) => item.id !== editingCar.id));
+                  setEditingCar(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название"
+            value={editingCar.title}
+            onChange={(title) => setEditingCar({ ...editingCar, title })}
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingCar.brand}
+              onChange={(brand) => setEditingCar({ ...editingCar, brand })}
+              placeholder="Бренд"
+            />
+            <InlineCmsInput
+              value={editingCar.modelDisplay ?? editingCar.model}
+              onChange={(modelDisplay) => setEditingCar({ ...editingCar, modelDisplay, model: modelDisplay })}
+              placeholder="Модель"
+            />
+            <InlineCmsInput
+              value={editingCar.year}
+              onChange={(year) => setEditingCar({ ...editingCar, year: Number(year) || 0 })}
+              placeholder="Год"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingCar.price}
+              onChange={(price) => setEditingCar({ ...editingCar, price: Number(price) || 0 })}
+              placeholder="Цена"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingCar.availability}
+              onChange={(availability) => setEditingCar({ ...editingCar, availability })}
+              placeholder="Наличие"
+            />
+            <InlineCmsInput
+              value={editingCar.images[0] ?? ''}
+              onChange={(image) => setEditingCar({ ...editingCar, images: [image, ...editingCar.images.slice(1)] })}
+              placeholder="URL главного изображения"
+            />
+          </div>
+          <InlineCmsTextarea
+            value={editingCar.description.ru}
+            onChange={(ru) => setEditingCar({ ...editingCar, description: { ...editingCar.description, ru } })}
+            placeholder="Описание RU"
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
@@ -471,10 +573,12 @@ const CatalogCard = ({
   car,
   index,
   formatPrice,
+  onEdit,
 }: {
   car: AdminCar;
   index: number;
   formatPrice: (p: number) => string;
+  onEdit: () => void;
 }) => {
   const { t } = useTranslation();
 
@@ -491,6 +595,7 @@ const CatalogCard = ({
         ease: [0.16, 1, 0.3, 1],
       }}
     >
+      <VisualInlineEditLink onClick={onEdit} label="Автомобиль" className="right-5 top-5" />
       <Link to={`/car/${car.id}`} className="group block">
         <div className="bg-luxury-elevated border border-white/5 overflow-hidden hover:border-luxury-red/30 transition-all duration-600">
           {/* Image Section */}

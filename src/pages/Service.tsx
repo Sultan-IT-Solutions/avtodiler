@@ -3,6 +3,13 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { Wrench, ShieldCheck, Paintbrush, Cog, Zap, CarFront, Send, MessageCircle, Phone } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+} from '../components/InlineCmsModal';
 import { submitLead } from '../utils/leads';
 import { useTranslation } from 'react-i18next';
 import { publicApi } from '../utils/publicApi';
@@ -10,6 +17,8 @@ import { localizedText } from '../utils/localizedText';
 import { isValidPhone } from '../utils/phone';
 import type { ServiceItem } from '../types/admin';
 import { EmptyState } from '../components/EmptyState';
+import { buildAdminUrl } from '../utils/visualAdmin';
+import { servicesApi } from '../utils/adminApi';
 
 const serviceIcons = [Wrench, ShieldCheck, Cog, Paintbrush, Zap, CarFront];
 
@@ -36,6 +45,7 @@ export const Service = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
   const phoneError = phoneTouched && !isValidPhone(formData.phone);
+  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,6 +173,18 @@ export const Service = () => {
         </motion.div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница сервиса"
+          description="Редактирование сервисных услуг и SEO страницы."
+          actions={[
+            { label: 'Сервисы', href: buildAdminUrl('services'), kind: 'primary' },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+            { label: 'Заявки', href: buildAdminUrl('leads') },
+          ]}
+        />
+      </section>
+
       {/* Contact Section */}
       <section className="py-16 lg:py-20 bg-luxury-surface border-b border-white/5">
         <div className="container mx-auto px-6 lg:px-16">
@@ -244,9 +266,17 @@ export const Service = () => {
                   initial={{ opacity: 0, y: 50 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-50px' }}
-                  transition={{ duration: 0.8, delay: i * 0.08, ease }}
+                transition={{ duration: 0.8, delay: i * 0.08, ease }}
                   className="bg-luxury-elevated border border-white/5 p-8 lg:p-10 group hover:border-white/10 hover:bg-luxury-hover transition-all duration-600 relative overflow-hidden"
                 >
+                  <VisualInlineEditLink
+                    onClick={() =>
+                      setEditingService(
+                        services.find((item) => item.id === service.id) ?? null
+                      )
+                    }
+                    label="Услуга"
+                  />
                   <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/40 to-luxury-burgundy/0 opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-luxury-burgundy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
 
@@ -447,6 +477,59 @@ export const Service = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingService ? (
+        <InlineCmsModal
+          title="Редактирование услуги"
+          onClose={() => setEditingService(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await servicesApi.upsert(editingService);
+                  setServices((current) =>
+                    current.map((item) => (item.id === editingService.id ? editingService : item))
+                  );
+                  setEditingService(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить услугу?')) return;
+                  await servicesApi.remove(editingService.id);
+                  setServices((current) => current.filter((item) => item.id !== editingService.id));
+                  setEditingService(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название"
+            value={editingService.title}
+            onChange={(title) => setEditingService({ ...editingService, title })}
+          />
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingService.description}
+            multiline
+            onChange={(description) => setEditingService({ ...editingService, description })}
+          />
+          <InlineCmsInput
+            value={editingService.price ?? ''}
+            onChange={(price) => setEditingService({ ...editingService, price })}
+            placeholder="Цена"
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };

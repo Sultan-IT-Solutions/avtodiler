@@ -4,8 +4,10 @@ import { Send, Calendar, MapPin, Car } from 'lucide-react';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
 import { submitLead } from '../utils/leads';
 import { isValidPhone } from '../utils/phone';
+import { buildAdminUrl } from '../utils/visualAdmin';
 
 const dealers = [
   { id: 1, name: 'Hongqi Auto — Алматы', address: 'Алатау просп., 1а/5, Шугыла м-н, Наурызбайский район, Алматы' },
@@ -152,6 +154,18 @@ export const TestDrive = () => {
         >
           <div className="scroll-line" />
         </motion.div>
+      </section>
+
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница тест-драйва"
+          description="Быстрый доступ к заявкам, автомобилям и SEO страницы."
+          actions={[
+            { label: 'Заявки', href: buildAdminUrl('leads'), kind: 'primary' },
+            { label: 'Автомобили', href: buildAdminUrl('cars') },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
       </section>
 
       {/* Steps Section */}

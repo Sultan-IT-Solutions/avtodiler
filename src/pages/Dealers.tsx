@@ -3,9 +3,20 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { MapPin, Phone, Clock, Navigation, ChevronRight } from 'lucide-react';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
 import { publicApi } from '../utils/publicApi';
 import { EmptyState } from '../components/EmptyState';
 import { useTranslation } from 'react-i18next';
+import { buildAdminUrl } from '../utils/visualAdmin';
+import { dealersApi } from '../utils/adminApi';
+import type { DealerItem } from '../types/admin';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -37,6 +48,7 @@ export const Dealers = () => {
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
   const [selectedDealer, setSelectedDealer] = useState<(typeof dealers)[number] | undefined>(dealers[0]);
+  const [editingDealer, setEditingDealer] = useState<DealerItem | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
@@ -201,6 +213,17 @@ export const Dealers = () => {
         </motion.div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Страница дилеров"
+          description="Редактирование дилерских центров и SEO страницы."
+          actions={[
+            { label: 'Дилеры', href: buildAdminUrl('dealers'), kind: 'primary' },
+            { label: 'SEO', href: buildAdminUrl('seo') },
+          ]}
+        />
+      </section>
+
       {/* Map + List Section */}
       <section className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
@@ -257,6 +280,7 @@ export const Dealers = () => {
                         : 'border-white/5 hover:border-white/10 hover:bg-luxury-hover'
                     }`}
                   >
+                    <VisualInlineEditLink onClick={() => setEditingDealer(dealer)} label="Дилер" />
                     {selectedDealer.id === dealer.id && (
                       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-luxury-burgundy/0 via-luxury-burgundy/60 to-luxury-burgundy/0" />
                     )}
@@ -366,6 +390,92 @@ export const Dealers = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingDealer ? (
+        <InlineCmsModal
+          title="Редактирование дилера"
+          onClose={() => setEditingDealer(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await dealersApi.upsert(editingDealer);
+                  setDealers((current) =>
+                    current.map((item) => (item.id === editingDealer.id ? editingDealer : item))
+                  );
+                  setSelectedDealer((current) => (current?.id === editingDealer.id ? editingDealer : current));
+                  setEditingDealer(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить дилера?')) return;
+                  await dealersApi.remove(editingDealer.id);
+                  setDealers((current) => current.filter((item) => item.id !== editingDealer.id));
+                  setSelectedDealer((current) => (current?.id === editingDealer.id ? undefined : current));
+                  setEditingDealer(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название"
+            value={editingDealer.name}
+            onChange={(name) => setEditingDealer({ ...editingDealer, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Адрес"
+            value={editingDealer.address}
+            multiline
+            onChange={(address) => setEditingDealer({ ...editingDealer, address })}
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingDealer.phone}
+              onChange={(phone) => setEditingDealer({ ...editingDealer, phone })}
+              placeholder="Телефон"
+            />
+            <InlineCmsInput
+              value={editingDealer.hours}
+              onChange={(hours) => setEditingDealer({ ...editingDealer, hours })}
+              placeholder="Часы работы"
+            />
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingDealer.lat ?? ''}
+              onChange={(lat) => setEditingDealer({ ...editingDealer, lat: Number(lat) || 0 })}
+              placeholder="Широта"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingDealer.lng ?? ''}
+              onChange={(lng) => setEditingDealer({ ...editingDealer, lng: Number(lng) || 0 })}
+              placeholder="Долгота"
+              type="number"
+            />
+          </div>
+          <InlineCmsTextarea
+            value={editingDealer.services.join(', ')}
+            onChange={(services) =>
+              setEditingDealer({
+                ...editingDealer,
+                services: services.split(',').map((item) => item.trim()).filter(Boolean),
+              })
+            }
+            placeholder="Услуги через запятую"
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };

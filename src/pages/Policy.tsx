@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Footer } from '../components/Footer';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { buildAdminUrl } from '../utils/visualAdmin';
 
 const PolicySection = ({
   index,
@@ -35,12 +37,12 @@ export const Policy = () => {
 
   return (
     <div className="bg-luxury-black">
-      <section className="border-b border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_100%)] pt-48 sm:pt-52 lg:pt-40">
+      <section className="border-b border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_100%)] pt-[calc(env(safe-area-inset-top)+12rem)] sm:pt-56 lg:pt-40">
         <div className="container mx-auto px-6 pb-16 lg:px-16 lg:pb-20">
-          <p className="text-[10px] uppercase tracking-[0.18em] sm:text-[11px] sm:tracking-[0.28em] text-luxury-burgundy">
+          <p className="text-[10px] uppercase tracking-[0.14em] sm:text-[11px] sm:tracking-[0.28em] text-luxury-burgundy">
             {t('policy.eyebrow')}
           </p>
-          <h1 className="mt-5 max-w-5xl text-[clamp(34px,5vw,68px)] font-display font-light leading-[1.02] text-white">
+          <h1 className="mt-5 max-w-5xl text-[clamp(32px,5vw,68px)] font-display font-light leading-[1.02] text-white">
             {t('policy.title')}
           </h1>
           <p className="mt-6 max-w-3xl text-base leading-7 text-white/60">
@@ -51,6 +53,14 @@ export const Policy = () => {
       </section>
 
       <section className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <VisualEditPanel
+          title="Политика обработки данных"
+          description="Редактирование SEO и содержимого юридической страницы через общую админку."
+          actions={[
+            { label: 'SEO', href: buildAdminUrl('seo'), kind: 'primary' },
+          ]}
+          className="mb-10"
+        />
         <div className="card-luxury p-8 lg:p-10">
           <PolicySection index={1} title={t('policy.general.title')}>
             <p>{t('policy.general.p1')}</p>

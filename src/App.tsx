@@ -12,6 +12,7 @@ import { Dealers } from './pages/Dealers';
 import { Policy } from './pages/Policy';
 import AdminApp from './admin/AdminApp';
 import { ShopProvider } from './context/ShopContext';
+import { VisualAdminProvider, useVisualAdmin } from './context/VisualAdminContext';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,6 +22,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Navigation } from './components/Navigation';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { Footer } from './components/Footer';
+import { VisualAdminToolbar } from './components/VisualAdminToolbar';
 import {
   ShopCartPage,
   ShopCatalogPage,
@@ -488,6 +490,7 @@ const AppShell = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
   const isShopRoute = location.pathname.startsWith('/hongqi-parts');
+  const { enabled: isVisualAdminEnabled, authed: isVisualAdminAuthed } = useVisualAdmin();
 
   useSeoMeta();
 
@@ -500,6 +503,7 @@ const AppShell = () => {
         <main>
           <AnimatedRoutes />
         </main>
+        {!isAdmin && isVisualAdminEnabled && isVisualAdminAuthed ? <VisualAdminToolbar /> : null}
         {!isAdmin && isShopRoute && <Footer />}
       </div>
     </RouteErrorBoundary>
@@ -550,10 +554,12 @@ function App() {
 
       {!isLoading && (
         <Router>
-          <ShopProvider>
-            <ScrollToTop />
-            <AppShell />
-          </ShopProvider>
+          <VisualAdminProvider>
+            <ShopProvider>
+              <ScrollToTop />
+              <AppShell />
+            </ShopProvider>
+          </VisualAdminProvider>
         </Router>
       )}
     </>

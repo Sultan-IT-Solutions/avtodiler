@@ -12,10 +12,19 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SITE_IMAGES } from '../data/siteImages';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
 import { useShop } from '../context/ShopContext';
 import type { CategoryItem, HongqiModel, OrderItem, ProductItem, SeoPage } from '../types/shop';
 import { localizedText } from '../utils/localizedText';
 import { isValidPhone } from '../utils/phone';
+import { buildAdminUrl } from '../utils/visualAdmin';
 import { shopAdminApi } from '../utils/shopApi';
 import { parseShopWorkbook, summarizeImportPayload } from '../utils/shopImport';
 
@@ -424,13 +433,24 @@ const SmartImage = ({
   );
 };
 
-const ProductCard = ({ product }: { product: ProductItem }) => {
+const ProductCard = ({
+  product,
+  onEdit,
+}: {
+  product: ProductItem;
+  onEdit?: () => void;
+}) => {
   const { t, i18n } = useTranslation();
   const { addToCart } = useShop();
   const name = localizedText(product.name, { lng: i18n.language });
 
   return (
-    <article className="card-luxury flex h-full flex-col overflow-hidden">
+    <article className="card-luxury relative flex h-full flex-col overflow-hidden">
+      <VisualInlineEditLink
+        to={onEdit ? undefined : buildAdminUrl('shop', 'products')}
+        onClick={onEdit}
+        label="Товар"
+      />
       <Link to={`/hongqi-parts/${product.slug}`} className="block overflow-hidden">
         <SmartImage
           src={product.images[0]}
@@ -576,8 +596,19 @@ const Breadcrumbs = ({
 
 export const ShopHomePage = () => {
   const { t, i18n } = useTranslation();
-  const { state } = useShop();
+  const {
+    state,
+    saveProduct,
+    deleteProduct,
+    saveCategory,
+    deleteCategory,
+    saveModel,
+    deleteModel,
+  } = useShop();
   const seoPage = useShopSeo('/hongqi-parts');
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [editingModel, setEditingModel] = useState<HongqiModel | null>(null);
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -617,6 +648,20 @@ export const ShopHomePage = () => {
         </div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Главная страница каталога"
+          description="Управление товарами, категориями, моделями, магазинами, заявками, заказами и SEO."
+          actions={[
+            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
+            { label: 'Категории', href: buildAdminUrl('shop', 'categories') },
+            { label: 'Модели', href: buildAdminUrl('shop', 'models') },
+            { label: 'Магазины', href: buildAdminUrl('shop', 'stores') },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+        />
+      </section>
+
       <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
         <div className="mb-10">
           <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
@@ -632,6 +677,7 @@ export const ShopHomePage = () => {
               to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
               className="card-luxury group relative overflow-hidden p-6"
             >
+              <VisualInlineEditLink onClick={() => setEditingModel(model)} label="Модель" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.16),transparent_35%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="relative z-10 flex h-full min-h-[180px] flex-col justify-between">
                 <div className="flex items-start justify-between gap-3">
@@ -669,6 +715,7 @@ export const ShopHomePage = () => {
               to={`/hongqi-parts/catalog/${category.slug}`}
               className="card-luxury group relative overflow-hidden p-6"
             >
+              <VisualInlineEditLink onClick={() => setEditingCategory(category)} label="Категория" />
               <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.03),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(168,18,52,0.16),transparent_38%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="relative z-10 flex h-full min-h-[240px] flex-col">
                 <div className="flex items-start justify-between gap-4">
@@ -710,7 +757,11 @@ export const ShopHomePage = () => {
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {state.products.filter((product) => product.popular).map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onEdit={() => setEditingProduct(product)}
+            />
           ))}
         </div>
       </section>
@@ -763,16 +814,345 @@ export const ShopHomePage = () => {
           <QuickRequestForm />
         </div>
       </section>
+
+      {editingModel ? (
+        <InlineCmsModal
+          title="Редактирование модели"
+          onClose={() => setEditingModel(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveModel(editingModel);
+                  setEditingModel(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить модель?')) return;
+                  deleteModel(editingModel.id);
+                  setEditingModel(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingModel.code}
+              onChange={(code) => setEditingModel({ ...editingModel, code })}
+              placeholder="Код модели"
+            />
+            <InlineCmsInput
+              value={editingModel.slug}
+              onChange={(slug) => setEditingModel({ ...editingModel, slug })}
+              placeholder="Slug"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Название модели"
+            value={editingModel.name}
+            onChange={(name) => setEditingModel({ ...editingModel, name })}
+          />
+        </InlineCmsModal>
+      ) : null}
+
+      {editingCategory ? (
+        <InlineCmsModal
+          title="Редактирование категории"
+          onClose={() => setEditingCategory(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveCategory(editingCategory);
+                  setEditingCategory(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить категорию?')) return;
+                  deleteCategory(editingCategory.id);
+                  setEditingCategory(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingCategory.slug}
+              onChange={(slug) => setEditingCategory({ ...editingCategory, slug })}
+              placeholder="Slug категории"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Название категории"
+            value={editingCategory.name}
+            onChange={(name) => setEditingCategory({ ...editingCategory, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Описание категории"
+            value={editingCategory.description}
+            multiline
+            onChange={(description) => setEditingCategory({ ...editingCategory, description })}
+          />
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Подкатегории</p>
+              <button
+                type="button"
+                className="btn-outline px-4 py-2 text-[11px]"
+                onClick={() =>
+                  setEditingCategory({
+                    ...editingCategory,
+                    subcategories: [
+                      ...editingCategory.subcategories,
+                      { id: `sub-${Date.now()}`, slug: '', name: emptyLocale() },
+                    ],
+                  })
+                }
+              >
+                Добавить подкатегорию
+              </button>
+            </div>
+            <div className="grid gap-4">
+              {editingCategory.subcategories.map((subcategory, index) => (
+                <div key={subcategory.id} className="border border-white/10 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-sm text-white/70">Подкатегория {index + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm text-luxury-burgundy"
+                      onClick={() =>
+                        setEditingCategory({
+                          ...editingCategory,
+                          subcategories: editingCategory.subcategories.filter(
+                            (item) => item.id !== subcategory.id
+                          ),
+                        })
+                      }
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                  <InlineCmsInput
+                    value={subcategory.slug}
+                    onChange={(slug) =>
+                      setEditingCategory({
+                        ...editingCategory,
+                        subcategories: editingCategory.subcategories.map((item) =>
+                          item.id === subcategory.id ? { ...item, slug } : item
+                        ),
+                      })
+                    }
+                    placeholder="Slug подкатегории"
+                  />
+                  <div className="mt-3">
+                    <InlineCmsLocaleFields
+                      label="Название подкатегории"
+                      value={subcategory.name}
+                      onChange={(name) =>
+                        setEditingCategory({
+                          ...editingCategory,
+                          subcategories: editingCategory.subcategories.map((item) =>
+                            item.id === subcategory.id ? { ...item, name } : item
+                          ),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </InlineCmsModal>
+      ) : null}
+
+      {editingProduct ? (
+        <InlineCmsModal
+          title="Редактирование товара"
+          onClose={() => setEditingProduct(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveProduct(editingProduct);
+                  setEditingProduct(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить товар?')) return;
+                  deleteProduct(editingProduct.id);
+                  setEditingProduct(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingProduct.slug}
+              onChange={(slug) => setEditingProduct({ ...editingProduct, slug })}
+              placeholder="Slug товара"
+            />
+            <InlineCmsInput
+              value={editingProduct.article}
+              onChange={(article) => setEditingProduct({ ...editingProduct, article })}
+              placeholder="Артикул"
+            />
+            <InlineCmsInput
+              value={editingProduct.oem}
+              onChange={(oem) => setEditingProduct({ ...editingProduct, oem })}
+              placeholder="OEM"
+            />
+            <InlineCmsInput
+              value={editingProduct.manufacturer}
+              onChange={(manufacturer) => setEditingProduct({ ...editingProduct, manufacturer })}
+              placeholder="Производитель"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.price}
+              onChange={(price) =>
+                setEditingProduct({ ...editingProduct, price: Number(price) || 0 })
+              }
+              placeholder="Цена"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.stock}
+              onChange={(stock) =>
+                setEditingProduct({ ...editingProduct, stock: Number(stock) || 0 })
+              }
+              placeholder="Остаток"
+            />
+            <div className="lg:col-span-2 grid gap-4 lg:grid-cols-2">
+              <select
+                value={editingProduct.categorySlug}
+                onChange={(event) => {
+                  const nextCategory = state.categories.find(
+                    (category) => category.slug === event.target.value
+                  );
+                  setEditingProduct({
+                    ...editingProduct,
+                    categorySlug: event.target.value,
+                    subcategorySlug: nextCategory?.subcategories[0]?.slug ?? '',
+                  });
+                }}
+                className="h-12 w-full border border-white/10 bg-luxury-surface px-4 text-white"
+              >
+                {state.categories.map((category) => (
+                  <option key={category.id} value={category.slug}>
+                    {localizedText(category.name, { lng: 'ru' })}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={editingProduct.subcategorySlug}
+                onChange={(event) =>
+                  setEditingProduct({ ...editingProduct, subcategorySlug: event.target.value })
+                }
+                className="h-12 w-full border border-white/10 bg-luxury-surface px-4 text-white"
+              >
+                {(state.categories.find((item) => item.slug === editingProduct.categorySlug)
+                  ?.subcategories ?? []
+                ).map((subcategory) => (
+                  <option key={subcategory.id} value={subcategory.slug}>
+                    {localizedText(subcategory.name, { lng: 'ru' })}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <InlineCmsLocaleFields
+            label="Название товара"
+            value={editingProduct.name}
+            onChange={(name) => setEditingProduct({ ...editingProduct, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Краткое описание"
+            value={editingProduct.description}
+            multiline
+            onChange={(description) => setEditingProduct({ ...editingProduct, description })}
+          />
+          <InlineCmsLocaleFields
+            label="SEO описание"
+            value={editingProduct.seoText}
+            multiline
+            onChange={(seoText) => setEditingProduct({ ...editingProduct, seoText })}
+          />
+          <InlineCmsInput
+            value={editingProduct.kaspiUrl ?? ''}
+            onChange={(kaspiUrl) => setEditingProduct({ ...editingProduct, kaspiUrl })}
+            placeholder="Kaspi URL"
+          />
+          <InlineCmsTextarea
+            value={editingProduct.models.join(', ')}
+            onChange={(models) =>
+              setEditingProduct({
+                ...editingProduct,
+                models: models
+                  .split(',')
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="Модели через запятую"
+            rows={3}
+          />
+          <InlineCmsTextarea
+            value={editingProduct.images.join('\n')}
+            onChange={(images) =>
+              setEditingProduct({
+                ...editingProduct,
+                images: images
+                  .split('\n')
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="URL изображений, каждое с новой строки"
+            rows={4}
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
 
 export const ShopCatalogPage = () => {
   const { t, i18n } = useTranslation();
-  const { state } = useShop();
+  const { state, saveProduct, deleteProduct } = useShop();
   const location = useLocation();
   const { categorySlug, subcategorySlug } = useParams();
   const seoPage = useShopSeo('/hongqi-parts/catalog');
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
@@ -889,6 +1269,18 @@ export const ShopCatalogPage = () => {
         </div>
       </section>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Каталог запчастей"
+          description="Редактирование каталога, категорий, товаров и SEO текущего раздела."
+          actions={[
+            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
+            { label: 'Категории', href: buildAdminUrl('shop', 'categories') },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+        />
+      </section>
+
       <section className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <div className="grid gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
           <aside className="xl:sticky xl:top-28 xl:self-start">
@@ -968,7 +1360,11 @@ export const ShopCatalogPage = () => {
             </div>
             <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
               {items.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onEdit={() => setEditingProduct(product)}
+                />
               ))}
             </div>
             {showSubcategoryFallback ? (
@@ -1015,16 +1411,89 @@ export const ShopCatalogPage = () => {
           </div>
         </div>
       </section>
+
+      {editingProduct ? (
+        <InlineCmsModal
+          title="Редактирование товара"
+          onClose={() => setEditingProduct(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveProduct(editingProduct);
+                  setEditingProduct(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить товар?')) return;
+                  deleteProduct(editingProduct.id);
+                  setEditingProduct(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название товара"
+            value={editingProduct.name}
+            onChange={(name) => setEditingProduct({ ...editingProduct, name })}
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingProduct.article}
+              onChange={(article) => setEditingProduct({ ...editingProduct, article })}
+              placeholder="Артикул"
+            />
+            <InlineCmsInput
+              value={editingProduct.oem}
+              onChange={(oem) => setEditingProduct({ ...editingProduct, oem })}
+              placeholder="OEM"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.price}
+              onChange={(price) =>
+                setEditingProduct({ ...editingProduct, price: Number(price) || 0 })
+              }
+              placeholder="Цена"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.stock}
+              onChange={(stock) =>
+                setEditingProduct({ ...editingProduct, stock: Number(stock) || 0 })
+              }
+              placeholder="Остаток"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingProduct.description}
+            multiline
+            onChange={(description) => setEditingProduct({ ...editingProduct, description })}
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
 
 export const ShopProductPage = () => {
   const { t, i18n } = useTranslation();
-  const { state, addToCart } = useShop();
+  const { state, addToCart, saveProduct, deleteProduct } = useShop();
   const { slug } = useParams();
   const [activeImage, setActiveImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const product = state.products.find((item) => item.slug === slug);
   const category = state.categories.find((item) => item.slug === product?.categorySlug);
   const sameCategoryProducts = state.products
@@ -1129,6 +1598,7 @@ export const ShopProductPage = () => {
           </div>
 
           <div className="card-luxury p-6 sm:p-8">
+            <VisualInlineEditLink onClick={() => setEditingProduct(product)} label="Товар" />
             <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
               {category ? localizedText(category.name, { lng: i18n.language }) : 'Hongqi Parts'}
             </p>
@@ -1248,7 +1718,11 @@ export const ShopProductPage = () => {
             <h2 className="text-h3 text-white">{t('shop.product.related')}</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               {sameCategoryProducts.map((item) => (
-                <ProductCard key={item.id} product={item} />
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  onEdit={() => setEditingProduct(item)}
+                />
               ))}
             </div>
           </section>
@@ -1261,7 +1735,11 @@ export const ShopProductPage = () => {
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               {similarProducts.map((item) => (
-                <ProductCard key={item.id} product={item} />
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  onEdit={() => setEditingProduct(item)}
+                />
               ))}
             </div>
           </section>
@@ -1293,6 +1771,73 @@ export const ShopProductPage = () => {
           </div>
         </div>
       ) : null}
+
+      {editingProduct ? (
+        <InlineCmsModal
+          title="Редактирование товара"
+          onClose={() => setEditingProduct(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveProduct(editingProduct);
+                  setEditingProduct(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить товар?')) return;
+                  deleteProduct(editingProduct.id);
+                  setEditingProduct(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название товара"
+            value={editingProduct.name}
+            onChange={(name) => setEditingProduct({ ...editingProduct, name })}
+          />
+          <InlineCmsInput
+            value={editingProduct.manufacturer}
+            onChange={(manufacturer) => setEditingProduct({ ...editingProduct, manufacturer })}
+            placeholder="Производитель"
+          />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.price}
+              onChange={(price) =>
+                setEditingProduct({ ...editingProduct, price: Number(price) || 0 })
+              }
+              placeholder="Цена"
+            />
+            <InlineCmsInput
+              type="number"
+              value={editingProduct.stock}
+              onChange={(stock) =>
+                setEditingProduct({ ...editingProduct, stock: Number(stock) || 0 })
+              }
+              placeholder="Остаток"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingProduct.description}
+            multiline
+            onChange={(description) => setEditingProduct({ ...editingProduct, description })}
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
@@ -1309,6 +1854,16 @@ export const ShopCartPage = () => {
           eyebrow={t('shop.cart.eyebrow', 'Shop cart')}
           title={t('shop.cart.title')}
           subtitle={t('shop.cart.subtitle', 'Проверьте состав заказа перед оформлением.')}
+        />
+        <VisualEditPanel
+          title="Корзина"
+          description="Быстрый переход к товарам, заказам и SEO страницы корзины."
+          actions={[
+            { label: 'Товары', href: buildAdminUrl('shop', 'products'), kind: 'primary' },
+            { label: 'Заказы', href: buildAdminUrl('shop', 'orders') },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+          className="mt-8"
         />
         {cart.length === 0 ? (
           <div className="card-luxury mt-8 p-10 text-center">
@@ -1507,6 +2062,16 @@ export const ShopCheckoutPage = () => {
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <VisualEditPanel
+          title="Оформление заказа"
+          description="Управление заказами, товарами и SEO checkout-сценария."
+          actions={[
+            { label: 'Заказы', href: buildAdminUrl('shop', 'orders'), kind: 'primary' },
+            { label: 'Товары', href: buildAdminUrl('shop', 'products') },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+          className="mb-8"
+        />
         <div className="grid gap-8 xl:grid-cols-[1fr_360px]">
           <form
             className="card-luxury p-8"
@@ -1590,8 +2155,9 @@ export const ShopCheckoutPage = () => {
 
 export const ShopStoresPage = () => {
   const { t, i18n } = useTranslation();
-  const { state } = useShop();
+  const { state, saveStore, deleteStore } = useShop();
   const seoPage = useShopSeo('/hongqi-parts/stores');
+  const [editingStore, setEditingStore] = useState<(typeof state.stores)[number] | null>(null);
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -1607,10 +2173,20 @@ export const ShopStoresPage = () => {
           )}
           subtitle={t('shop.stores.subtitle')}
         />
+        <VisualEditPanel
+          title="Страница магазинов"
+          description="Редактирование магазинов и SEO страницы."
+          actions={[
+            { label: 'Магазины', href: buildAdminUrl('shop', 'stores'), kind: 'primary' },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+          className="mt-8"
+        />
         <ShopAsyncState />
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {state.stores.map((store) => (
-            <article key={store.id} className="card-luxury p-6">
+            <article key={store.id} className="card-luxury relative p-6">
+              <VisualInlineEditLink onClick={() => setEditingStore(store)} label="Магазин" />
               <h2 className="text-2xl font-semibold text-white">
                 {localizedText(store.name, { lng: i18n.language })}
               </h2>
@@ -1624,6 +2200,67 @@ export const ShopStoresPage = () => {
           ))}
         </div>
       </div>
+
+      {editingStore ? (
+        <InlineCmsModal
+          title="Редактирование магазина"
+          onClose={() => setEditingStore(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  saveStore(editingStore);
+                  setEditingStore(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => {
+                  if (!window.confirm('Удалить магазин?')) return;
+                  deleteStore(editingStore.id);
+                  setEditingStore(null);
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingStore.city}
+              onChange={(city) => setEditingStore({ ...editingStore, city })}
+              placeholder="Город"
+            />
+            <InlineCmsInput
+              value={editingStore.phone}
+              onChange={(phone) => setEditingStore({ ...editingStore, phone })}
+              placeholder="Телефон"
+            />
+          </div>
+          <InlineCmsLocaleFields
+            label="Название магазина"
+            value={editingStore.name}
+            onChange={(name) => setEditingStore({ ...editingStore, name })}
+          />
+          <InlineCmsLocaleFields
+            label="Адрес"
+            value={editingStore.address}
+            multiline
+            onChange={(address) => setEditingStore({ ...editingStore, address })}
+          />
+          <InlineCmsLocaleFields
+            label="Часы работы"
+            value={editingStore.hours}
+            onChange={(hours) => setEditingStore({ ...editingStore, hours })}
+          />
+        </InlineCmsModal>
+      ) : null}
     </div>
   );
 };
@@ -1635,6 +2272,16 @@ export const ShopRequestPage = () => {
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
+        <VisualEditPanel
+          title="Заявка на подбор"
+          description="Управление входящими заявками, товарами и SEO страницы."
+          actions={[
+            { label: 'Заявки', href: buildAdminUrl('shop', 'requests'), kind: 'primary' },
+            { label: 'Товары', href: buildAdminUrl('shop', 'products') },
+            { label: 'SEO', href: buildAdminUrl('shop', 'seo') },
+          ]}
+          className="mb-8"
+        />
         <div className="card-luxury max-w-4xl p-8 lg:p-10">
           <ShopSectionIntro
             title={localizedText(
@@ -1875,9 +2522,11 @@ const SeoEditor = ({
 export const ShopAdminPage = ({
   embedded = false,
   notify,
+  initialTab = 'products',
 }: {
   embedded?: boolean;
   notify?: (message: string, actionLabel?: string, onAction?: () => void) => void;
+  initialTab?: 'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import';
 }) => {
   const { t, i18n } = useTranslation();
   const {
@@ -1902,7 +2551,7 @@ export const ShopAdminPage = ({
   } = useShop();
   const [tab, setTab] = useState<
     'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import'
-  >('products');
+  >(initialTab);
   const [selectedProductId, setSelectedProductId] = useState<string | null | undefined>(undefined);
   const [saveNotice, setSaveNotice] = useState('');
   const confirmDelete = (message: string, onConfirm: () => void) => {
@@ -1929,6 +2578,10 @@ export const ShopAdminPage = ({
     const timer = window.setTimeout(() => setSaveNotice(''), 2400);
     return () => window.clearTimeout(timer);
   }, [saveNotice]);
+
+  useEffect(() => {
+    setTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     void loadAdminData().catch(() => undefined);
