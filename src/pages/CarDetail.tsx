@@ -1,15 +1,25 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { SITE_IMAGES } from '../data/siteImages';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
+import { VisualEditPanel } from '../components/VisualEditPanel';
+import { VisualInlineEditLink } from '../components/VisualInlineEditLink';
+import {
+  InlineCmsInput,
+  InlineCmsLocaleFields,
+  InlineCmsModal,
+  InlineCmsTextarea,
+} from '../components/InlineCmsModal';
+import { InlineSeoEditorModal } from '../components/InlineSeoEditorModal';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { publicApi } from '../utils/publicApi';
 import { formatPriceKzt } from '../utils/formatPrice';
 import type { AdminCar } from '../types/admin';
+import { carsApi } from '../utils/adminApi';
 import {
   Phone,
   MessageCircle,
@@ -87,7 +97,11 @@ const SpecBar = ({ label, value, delay }: { label: string; value: string; delay:
 export const CarDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [cars, setCars] = useState<AdminCar[]>([]);
+  const [editingCar, setEditingCar] = useState<AdminCar | null>(null);
+  const [isSeoOpen, setIsSeoOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -488,6 +502,21 @@ export const CarDetail = () => {
         </div>
       </div>
 
+      <section className="container mx-auto px-6 pt-6 lg:px-16">
+        <VisualEditPanel
+          title="Карточка автомобиля"
+          description="Редактирование контента этой модели, характеристик, конфигурации и SEO прямо со страницы."
+          details={[
+            { label: 'Текущий URL', value: location.pathname },
+            { label: 'SEO привязка', value: location.pathname },
+          ]}
+          actions={[
+            { label: 'Автомобиль', onClick: () => setEditingCar(car), kind: 'primary' },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
+          ]}
+        />
+      </section>
+
       {/* ===================== OVERVIEW (Description + key specs) ===================== */}
       <section id="section-overview" className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
@@ -500,6 +529,7 @@ export const CarDetail = () => {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-7"
             >
+              <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Автомобиль" />
               <div className="flex items-center gap-3 mb-8">
                 <span className="w-12 h-px bg-luxury-burgundy" />
                 <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy">{t('carDetail.philosophy')}</span>
@@ -523,6 +553,9 @@ export const CarDetail = () => {
               transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-5"
             >
+              <div className="relative">
+                <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" />
+              </div>
               <div className="space-y-8">
                 {[
                   { label: t('carDetail.specs.engine'), value: car.specifications.engine },
@@ -547,6 +580,7 @@ export const CarDetail = () => {
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
         <div className="container mx-auto px-6 lg:px-16 relative z-10">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" />
           {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -607,6 +641,7 @@ export const CarDetail = () => {
       {/* ===================== CONFIGURATOR ===================== */}
       <section id="section-config" ref={configRef} className="py-24 lg:py-40">
         <div className="container mx-auto px-6 lg:px-16">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Конфигурация" />
           {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -861,6 +896,7 @@ export const CarDetail = () => {
       {/* ===================== GALLERY / SIMILAR ===================== */}
       <section id="section-gallery" ref={galleryRef} className="py-24 lg:py-40 bg-luxury-surface">
         <div className="container mx-auto px-6 lg:px-16">
+          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Галерея" />
           {similarCars.length > 0 && (
             <>
               <motion.div
@@ -1005,6 +1041,310 @@ export const CarDetail = () => {
 
       <ContactFormSection />
       <Footer />
+
+      {editingCar ? (
+        <InlineCmsModal
+          title="Редактирование автомобиля"
+          onClose={() => setEditingCar(null)}
+          actions={
+            <>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={async () => {
+                  await carsApi.upsert(editingCar);
+                  setCars((current) => current.map((item) => (item.id === editingCar.id ? editingCar : item)));
+                  setEditingCar(null);
+                }}
+              >
+                Сохранить
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={async () => {
+                  if (!window.confirm('Удалить автомобиль?')) return;
+                  await carsApi.remove(editingCar.id);
+                  setCars((current) => current.filter((item) => item.id !== editingCar.id));
+                  setEditingCar(null);
+                  navigate('/catalog');
+                }}
+              >
+                Удалить
+              </button>
+            </>
+          }
+        >
+          <InlineCmsLocaleFields
+            label="Название"
+            value={editingCar.title}
+            onChange={(title) => setEditingCar({ ...editingCar, title })}
+          />
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <InlineCmsInput
+              value={editingCar.brand}
+              onChange={(brand) => setEditingCar({ ...editingCar, brand })}
+              placeholder="Бренд"
+            />
+            <InlineCmsInput
+              value={editingCar.model}
+              onChange={(model) => setEditingCar({ ...editingCar, model })}
+              placeholder="Код модели"
+            />
+            <InlineCmsInput
+              value={editingCar.modelDisplay ?? ''}
+              onChange={(modelDisplay) => setEditingCar({ ...editingCar, modelDisplay })}
+              placeholder="Отображаемое имя модели"
+            />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-4">
+            <InlineCmsInput
+              value={editingCar.year}
+              onChange={(year) => setEditingCar({ ...editingCar, year: Number(year) || 0 })}
+              placeholder="Год"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingCar.price}
+              onChange={(price) => setEditingCar({ ...editingCar, price: Number(price) || 0 })}
+              placeholder="Цена"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingCar.mileage}
+              onChange={(mileage) => setEditingCar({ ...editingCar, mileage: Number(mileage) || 0 })}
+              placeholder="Пробег"
+              type="number"
+            />
+            <InlineCmsInput
+              value={editingCar.availability}
+              onChange={(availability) => setEditingCar({ ...editingCar, availability })}
+              placeholder="Наличие"
+            />
+          </div>
+
+          <InlineCmsTextarea
+            value={editingCar.images.join('\n')}
+            onChange={(images) =>
+              setEditingCar({
+                ...editingCar,
+                images: images
+                  .split('\n')
+                  .map((item) => item.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="URL изображений, по одному в строке"
+          />
+
+          <InlineCmsLocaleFields
+            label="Описание"
+            value={editingCar.description}
+            multiline
+            onChange={(description) => setEditingCar({ ...editingCar, description })}
+          />
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <InlineCmsInput
+              value={editingCar.specifications.engine}
+              onChange={(engine) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, engine },
+                })
+              }
+              placeholder="Двигатель"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.power}
+              onChange={(power) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, power },
+                })
+              }
+              placeholder="Мощность"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.acceleration}
+              onChange={(acceleration) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, acceleration },
+                })
+              }
+              placeholder="0-100"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.topSpeed}
+              onChange={(topSpeed) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, topSpeed },
+                })
+              }
+              placeholder="Макс. скорость"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.transmission}
+              onChange={(transmission) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, transmission },
+                })
+              }
+              placeholder="Трансмиссия"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.drivetrain}
+              onChange={(drivetrain) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, drivetrain },
+                })
+              }
+              placeholder="Привод"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.fuelType}
+              onChange={(fuelType) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, fuelType },
+                })
+              }
+              placeholder="Тип топлива"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.consumption}
+              onChange={(consumption) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, consumption },
+                })
+              }
+              placeholder="Расход"
+            />
+            <InlineCmsInput
+              value={editingCar.specifications.seats}
+              onChange={(seats) =>
+                setEditingCar({
+                  ...editingCar,
+                  specifications: { ...editingCar.specifications, seats: Number(seats) || 0 },
+                })
+              }
+              placeholder="Места"
+              type="number"
+            />
+          </div>
+
+          <div>
+            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Цвета</p>
+            <div className="grid gap-3">
+              {editingCar.colors.map((color, index) => (
+                <div key={`${color.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
+                  <InlineCmsInput
+                    value={color.name}
+                    onChange={(name) =>
+                      setEditingCar({
+                        ...editingCar,
+                        colors: editingCar.colors.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, name } : item
+                        ),
+                      })
+                    }
+                    placeholder="Название цвета"
+                  />
+                  <InlineCmsInput
+                    value={color.hex}
+                    onChange={(hex) =>
+                      setEditingCar({
+                        ...editingCar,
+                        colors: editingCar.colors.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, hex } : item
+                        ),
+                      })
+                    }
+                    placeholder="#HEX"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Интерьеры</p>
+            <div className="grid gap-3">
+              {editingCar.interiors.map((interior, index) => (
+                <div key={`${interior.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
+                  <InlineCmsInput
+                    value={interior.name}
+                    onChange={(name) =>
+                      setEditingCar({
+                        ...editingCar,
+                        interiors: editingCar.interiors.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, name } : item
+                        ),
+                      })
+                    }
+                    placeholder="Название интерьера"
+                  />
+                  <InlineCmsInput
+                    value={interior.description}
+                    onChange={(description) =>
+                      setEditingCar({
+                        ...editingCar,
+                        interiors: editingCar.interiors.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, description } : item
+                        ),
+                      })
+                    }
+                    placeholder="Описание интерьера"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Диски</p>
+            <div className="grid gap-3">
+              {editingCar.wheels.map((wheel, index) => (
+                <div key={`${wheel.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
+                  <InlineCmsInput
+                    value={wheel.name}
+                    onChange={(name) =>
+                      setEditingCar({
+                        ...editingCar,
+                        wheels: editingCar.wheels.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, name } : item
+                        ),
+                      })
+                    }
+                    placeholder="Название диска"
+                  />
+                  <InlineCmsInput
+                    value={wheel.size}
+                    onChange={(size) =>
+                      setEditingCar({
+                        ...editingCar,
+                        wheels: editingCar.wheels.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, size } : item
+                        ),
+                      })
+                    }
+                    placeholder="Размер"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </InlineCmsModal>
+      ) : null}
+
+      <InlineSeoEditorModal slug={location.pathname} open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
     </div>
   );
 };

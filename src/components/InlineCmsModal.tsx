@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { LocaleText } from '../types/admin';
+import { lockScroll, unlockScroll } from '../utils/scrollLock';
 
 export const InlineCmsModal = ({
   title,
@@ -14,10 +15,10 @@ export const InlineCmsModal = ({
   actions: ReactNode;
 }) => {
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
+
     return () => {
-      document.body.style.overflow = previousOverflow;
+      unlockScroll();
     };
   }, []);
 

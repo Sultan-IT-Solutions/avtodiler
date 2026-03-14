@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Edit3, Plus, Trash2, X } from 'lucide-react';
+import { lockScroll, unlockScroll } from '../utils/scrollLock';
 
 type CollectionItem = {
   id: string;
@@ -29,10 +30,10 @@ export const InlineCmsCollectionMenu = ({
   if (!open) return null;
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockScroll();
+
     return () => {
-      document.body.style.overflow = previousOverflow;
+      unlockScroll();
     };
   }, []);
 

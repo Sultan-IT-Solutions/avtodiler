@@ -2525,7 +2525,6 @@ export const ShopCartPage = () => {
 
 export const ShopCheckoutPage = () => {
   const { t } = useTranslation();
-  const location = useLocation();
   const { state, cart, cartTotal, createOrder, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -2576,14 +2575,8 @@ export const ShopCheckoutPage = () => {
         <VisualEditPanel
           title="Оформление заказа"
           description="Управление заказами, товарами и SEO checkout-сценария."
-          details={[
-            { label: 'Текущий URL', value: location.pathname },
-            { label: 'SEO привязка', value: '/checkout' },
-          ]}
           actions={[
-            { label: 'Заказы', onClick: () => setIsOrdersMenuOpen(true), kind: 'primary' },
-            { label: 'Товары', onClick: () => setIsProductsMenuOpen(true) },
-            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
           className="mb-8"
         />

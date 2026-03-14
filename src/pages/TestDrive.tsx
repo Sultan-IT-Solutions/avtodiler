@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
@@ -78,7 +77,6 @@ const fallbackAdminCars: AdminCar[] = cars.map((car) => ({
 
 export const TestDrive = () => {
   const { enabled, authed } = useVisualAdmin();
-  const location = useLocation();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -251,14 +249,8 @@ export const TestDrive = () => {
         <VisualEditPanel
           title="Страница тест-драйва"
           description="Быстрый доступ к заявкам, автомобилям и SEO страницы."
-          details={[
-            { label: 'Текущий URL', value: location.pathname },
-            { label: 'SEO привязка', value: '/test-drive' },
-          ]}
           actions={[
-            { label: 'Заявки', onClick: () => setIsLeadsMenuOpen(true), kind: 'primary' },
-            { label: 'Автомобили', onClick: () => setIsCarsMenuOpen(true) },
-            { label: 'SEO', onClick: () => setIsSeoOpen(true) },
+            { label: 'SEO', onClick: () => setIsSeoOpen(true), kind: 'primary' },
           ]}
         />
       </section>
