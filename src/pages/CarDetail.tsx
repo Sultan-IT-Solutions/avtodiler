@@ -553,7 +553,6 @@ export const CarDetail = () => {
               transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-5"
             >
-              <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" className="right-0 top-0" />
               <div className="space-y-8">
                 {[
                   { label: t('carDetail.specs.engine'), value: car.specifications.engine },
@@ -578,7 +577,6 @@ export const CarDetail = () => {
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} />
 
         <div className="container relative z-10 mx-auto px-6 lg:px-16">
-          <VisualInlineEditLink onClick={() => setEditingCar(car)} label="Характеристики" className="right-6 top-0 lg:right-16" />
           {/* Section header */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}

@@ -404,6 +404,52 @@
       "open": "Open on map"
     }
   },
+  "testDrivePage": {
+    "hero": {
+      "eyebrow": "Test drive",
+      "titleLine1": "Book a",
+      "titleLine2": "test drive"
+    },
+    "steps": {
+      "eyebrow": "How it works",
+      "titleLine1": "Three simple",
+      "titleLine2": "steps",
+      "items": [
+        {
+          "title": "Choose a vehicle",
+          "text": "Select the model you are interested in from our catalog."
+        },
+        {
+          "title": "Choose a dealer center",
+          "text": "Pick the most convenient location for your visit."
+        },
+        {
+          "title": "Submit your request",
+          "text": "We'll contact you to confirm the date and time of your test drive."
+        }
+      ]
+    },
+    "form": {
+      "successTitle": "Request sent",
+      "successText": "We will contact you during business hours to confirm the booking.",
+      "eyebrow": "Request form",
+      "titleLine1": "Book your",
+      "titleLine2": "test drive",
+      "nameLabel": "Name *",
+      "namePlaceholder": "Your name",
+      "phoneLabel": "Phone *",
+      "phonePlaceholder": "+7 (___) ___-__-__",
+      "phoneError": "Enter a valid phone number",
+      "carLabel": "Vehicle *",
+      "carPlaceholder": "Select a vehicle",
+      "dealerLabel": "Dealer center *",
+      "dealerPlaceholder": "Select a dealer center",
+      "commentLabel": "Comment",
+      "commentPlaceholder": "Preferred date and time...",
+      "submit": "Send request",
+      "privacyNote": "By clicking the button, you agree to the privacy policy"
+    }
+  },
   "catalogPage": {
     "hero": {
       "subline": "Hongqi crossovers and sedans"

@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Edit3, Plus, Trash2, X } from 'lucide-react';
-import { lockScroll, unlockScroll } from '../utils/scrollLock';
+import { isolateTouchScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
 
 type CollectionItem = {
   id: string;
@@ -27,6 +27,9 @@ export const InlineCmsCollectionMenu = ({
   onEdit: (id: string) => void;
   onDelete?: (id: string) => void;
 }) => {
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
   if (!open) return null;
 
   useEffect(() => {
@@ -37,15 +40,22 @@ export const InlineCmsCollectionMenu = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!backdropRef.current || !panelRef.current) return;
+    return isolateTouchScroll(backdropRef.current, panelRef.current);
+  }, []);
+
   return (
     <div
-      className="fixed inset-0 z-[78] overflow-y-auto overscroll-contain bg-black/70 px-4 py-8"
+      ref={backdropRef}
+      className="fixed inset-0 z-[78] overflow-hidden bg-black/70 px-4 py-4 sm:py-8"
       onClick={onClose}
-      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+      style={{ touchAction: 'none' }}
     >
       <div className="flex min-h-full items-start justify-center">
         <div
-          className="max-h-[86vh] w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
+          ref={panelRef}
+          className="max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
           onClick={(event) => event.stopPropagation()}
           style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
         >

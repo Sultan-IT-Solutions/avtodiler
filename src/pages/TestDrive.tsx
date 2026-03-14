@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, Calendar, MapPin, Car } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cars } from '../data/cars';
 import { Footer } from '../components/Footer';
 import { ContactFormSection } from '../components/ContactFormSection';
@@ -21,27 +22,6 @@ import type { AdminCar, LeadItem } from '../types/admin';
 
 const dealers = [
   { id: 1, name: 'Hongqi Auto — Алматы', address: 'Алатау просп., 1а/5, Шугыла м-н, Наурызбайский район, Алматы' },
-];
-
-const steps = [
-  {
-    icon: Car,
-    step: '01',
-    title: 'Выберите автомобиль',
-    text: 'Укажите модель, которая вас интересует, из нашего каталога',
-  },
-  {
-    icon: MapPin,
-    step: '02',
-    title: 'Выберите дилерский центр',
-    text: 'Удобное расположение для комфортного визита',
-  },
-  {
-    icon: Calendar,
-    step: '03',
-    title: 'Оставьте заявку',
-    text: 'Мы свяжемся для подтверждения даты и времени',
-  },
 ];
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -76,6 +56,7 @@ const fallbackAdminCars: AdminCar[] = cars.map((car) => ({
 }));
 
 export const TestDrive = () => {
+  const { t } = useTranslation();
   const { enabled, authed } = useVisualAdmin();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -103,6 +84,29 @@ export const TestDrive = () => {
   const [isLeadsMenuOpen, setIsLeadsMenuOpen] = useState(false);
   const [isSeoOpen, setIsSeoOpen] = useState(false);
   const phoneError = phoneTouched && !isValidPhone(formData.phone);
+  const steps = useMemo(
+    () => [
+      {
+        icon: Car,
+        step: '01',
+        title: t('testDrivePage.steps.items.0.title'),
+        text: t('testDrivePage.steps.items.0.text'),
+      },
+      {
+        icon: MapPin,
+        step: '02',
+        title: t('testDrivePage.steps.items.1.title'),
+        text: t('testDrivePage.steps.items.1.text'),
+      },
+      {
+        icon: Calendar,
+        step: '03',
+        title: t('testDrivePage.steps.items.2.title'),
+        text: t('testDrivePage.steps.items.2.text'),
+      },
+    ],
+    [t],
+  );
 
   const createCarDraft = (): AdminCar => ({
     id: `car-${Date.now()}`,
@@ -208,7 +212,7 @@ export const TestDrive = () => {
                 transition={{ duration: 0.8, delay: 0.6 }}
                 className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy"
               >
-                Тест-драйв
+                {t('testDrivePage.hero.eyebrow')}
               </motion.span>
             </div>
             <h1
@@ -221,7 +225,7 @@ export const TestDrive = () => {
                 transition={{ duration: 1, delay: 0.2, ease }}
                 className="block"
               >
-                Запись на
+                {t('testDrivePage.hero.titleLine1')}
               </motion.span>
               <motion.span
                 initial={{ opacity: 0, y: 30 }}
@@ -229,7 +233,7 @@ export const TestDrive = () => {
                 transition={{ duration: 1, delay: 0.35, ease }}
                 className="block text-white/90"
               >
-                тест-драйв
+                {t('testDrivePage.hero.titleLine2')}
               </motion.span>
             </h1>
           </motion.div>
@@ -266,15 +270,15 @@ export const TestDrive = () => {
             className="text-center mb-20"
           >
             <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-5">
-              Как это работает
+              {t('testDrivePage.steps.eyebrow')}
             </span>
             <h2
               className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
               style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
             >
-              Три простых
+              {t('testDrivePage.steps.titleLine1')}
               <br />
-              <span className="text-white/90">шага</span>
+              <span className="text-white/90">{t('testDrivePage.steps.titleLine2')}</span>
             </h2>
           </motion.div>
 
@@ -338,10 +342,10 @@ export const TestDrive = () => {
                 className="text-[clamp(24px,3vw,36px)] font-bold text-white uppercase tracking-[-0.03em] mb-4"
                 style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
               >
-                Заявка отправлена
+                {t('testDrivePage.form.successTitle')}
               </h3>
               <p className="text-white/40 font-light text-lg">
-                С вами свяжутся в течение рабочего времени для подтверждения записи
+                {t('testDrivePage.form.successText')}
               </p>
             </motion.div>
           ) : (
@@ -352,15 +356,15 @@ export const TestDrive = () => {
             >
               <div className="text-center mb-16">
                 <span className="text-[11px] uppercase tracking-[0.25em] text-luxury-burgundy block mb-5">
-                  Форма заявки
+                  {t('testDrivePage.form.eyebrow')}
                 </span>
                 <h2
                   className="text-[clamp(36px,5vw,72px)] font-bold leading-[1] tracking-[-0.03em] text-white uppercase"
                   style={{ fontFamily: "'Montserrat', system-ui, sans-serif" }}
                 >
-                  Забронируйте
+                  {t('testDrivePage.form.titleLine1')}
                   <br />
-                  <span className="text-white/90">тест-драйв</span>
+                  <span className="text-white/90">{t('testDrivePage.form.titleLine2')}</span>
                 </h2>
               </div>
 
@@ -368,7 +372,7 @@ export const TestDrive = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Имя *
+                      {t('testDrivePage.form.nameLabel')}
                     </label>
                     <input
                       type="text"
@@ -376,12 +380,12 @@ export const TestDrive = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="input-luxury"
-                      placeholder="Ваше имя"
+                      placeholder={t('testDrivePage.form.namePlaceholder')}
                     />
                   </div>
                   <div>
                     <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                      Телефон *
+                      {t('testDrivePage.form.phoneLabel')}
                     </label>
                     <input
                       type="tel"
@@ -393,11 +397,11 @@ export const TestDrive = () => {
                       }}
                       onBlur={() => setPhoneTouched(true)}
                       className={`input-luxury ${phoneError ? 'border-luxury-burgundy/70' : ''}`}
-                      placeholder="+7 (___) ___-__-__"
+                      placeholder={t('testDrivePage.form.phonePlaceholder')}
                     />
                     {phoneError ? (
                       <p className="mt-2 text-[11px] text-luxury-burgundy">
-                        Введите корректный номер телефона
+                        {t('testDrivePage.form.phoneError')}
                       </p>
                     ) : null}
                   </div>
@@ -405,7 +409,7 @@ export const TestDrive = () => {
 
                 <div>
                   <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                    Автомобиль *
+                    {t('testDrivePage.form.carLabel')}
                   </label>
                   <select
                     required
@@ -413,7 +417,7 @@ export const TestDrive = () => {
                     onChange={(e) => setFormData({ ...formData, car: e.target.value })}
                     className="input-luxury"
                   >
-                    <option value="">Выберите автомобиль</option>
+                    <option value="">{t('testDrivePage.form.carPlaceholder')}</option>
                     {adminCars.map((car) => (
                       <option key={car.id} value={`${car.brand} ${car.model}`}>
                         {car.brand} {car.model} ({car.year})
@@ -424,7 +428,7 @@ export const TestDrive = () => {
 
                 <div>
                   <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                    Дилерский центр *
+                    {t('testDrivePage.form.dealerLabel')}
                   </label>
                   <select
                     required
@@ -432,7 +436,7 @@ export const TestDrive = () => {
                     onChange={(e) => setFormData({ ...formData, dealer: e.target.value })}
                     className="input-luxury"
                   >
-                    <option value="">Выберите дилерский центр</option>
+                    <option value="">{t('testDrivePage.form.dealerPlaceholder')}</option>
                     {dealers.map((d) => (
                       <option key={d.id} value={d.name}>
                         {d.name} — {d.address}
@@ -443,13 +447,13 @@ export const TestDrive = () => {
 
                 <div>
                   <label className="text-[11px] uppercase tracking-[0.25em] text-white/40 block mb-3">
-                    Комментарий
+                    {t('testDrivePage.form.commentLabel')}
                   </label>
                   <textarea
                     value={formData.comment}
                     onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                     className="input-luxury h-32 py-4 resize-none"
-                    placeholder="Пожелания по дате и времени..."
+                    placeholder={t('testDrivePage.form.commentPlaceholder')}
                   />
                 </div>
 
@@ -457,12 +461,12 @@ export const TestDrive = () => {
                   type="submit"
                   className="btn-primary w-full flex items-center justify-center gap-3"
                 >
-                  Отправить заявку
+                  {t('testDrivePage.form.submit')}
                   <Send size={18} />
                 </button>
 
                 <p className="text-[11px] text-white/30 text-center tracking-[0.15em]">
-                  Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+                  {t('testDrivePage.form.privacyNote')}
                 </p>
               </form>
             </motion.div>

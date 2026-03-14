@@ -62,9 +62,9 @@ export const Navigation = () => {
   ];
 
   const languages = [
-    { code: 'ru', label: 'RU' },
-    { code: 'en', label: 'EN' },
     { code: 'kz', label: 'KZ' },
+    { code: 'en', label: 'EN' },
+    { code: 'ru', label: 'RU' },
   ];
 
   const changeLanguage = (lng: string) => {

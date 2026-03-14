@@ -1,7 +1,7 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { LocaleText } from '../types/admin';
-import { lockScroll, unlockScroll } from '../utils/scrollLock';
+import { isolateTouchScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
 
 export const InlineCmsModal = ({
   title,
@@ -14,6 +14,9 @@ export const InlineCmsModal = ({
   onClose: () => void;
   actions: ReactNode;
 }) => {
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     lockScroll();
 
@@ -22,15 +25,22 @@ export const InlineCmsModal = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!backdropRef.current || !panelRef.current) return;
+    return isolateTouchScroll(backdropRef.current, panelRef.current);
+  }, []);
+
   return (
     <div
-      className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-black/75 px-4 py-8"
+      ref={backdropRef}
+      className="fixed inset-0 z-[80] overflow-hidden bg-black/75 px-4 py-4 sm:py-8"
       onClick={onClose}
-      style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+      style={{ touchAction: 'none' }}
     >
       <div className="flex min-h-full items-start justify-center">
         <div
-          className="max-h-[88vh] w-full max-w-4xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
+          ref={panelRef}
+          className="max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
           onClick={(event) => event.stopPropagation()}
           style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
         >
