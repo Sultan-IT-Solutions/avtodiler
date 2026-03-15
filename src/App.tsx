@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { CarDetail } from './pages/CarDetail';
@@ -35,6 +35,8 @@ import {
 import { publicApi } from './utils/publicApi';
 import { localizedText } from './utils/localizedText';
 import type { SeoItem } from './types/admin';
+import type { SeoPage } from './types/shop';
+import { shopPublicApi } from './utils/shopApi';
 
 class RouteErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -274,6 +276,7 @@ const useSeoMeta = () => {
   const location = useLocation();
   const { i18n } = useTranslation();
   const [items, setItems] = useState<SeoItem[]>([]);
+  const [shopItems, setShopItems] = useState<SeoPage[]>([]);
   const defaultsRef = useRef({
     title: document.title,
     description: '',
@@ -303,34 +306,60 @@ const useSeoMeta = () => {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    shopPublicApi
+      .seoPages()
+      .then((data) => {
+        if (active) setShopItems(data);
+      })
+      .catch(() => {
+        if (active) setShopItems([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (location.pathname.startsWith('/admin')) return;
 
     const lang = (i18n.language as 'ru' | 'kz' | 'en') ?? 'ru';
     const path = location.pathname || '/';
+    const isShopPath =
+      path.startsWith('/hongqi-parts') || path === '/cart' || path === '/checkout';
 
     const exact = items.find((item) => item.slug === path);
     const wildcard = items.find((item) => item.slug === '/car/*' && path.startsWith('/car/'));
     const fallback = items.find((item) => item.slug === '*') ?? items.find((item) => item.slug === 'global');
-  const selected = exact ?? wildcard ?? fallback;
+    const selected = exact ?? wildcard ?? fallback;
+    const selectedShop = isShopPath ? shopItems.find((item) => item.slug === path) : undefined;
 
-  const fallbackTitle = defaultsRef.current.title;
-  const fallbackDescription = defaultsRef.current.description;
+    const fallbackTitle = defaultsRef.current.title;
+    const fallbackDescription = defaultsRef.current.description;
 
-    const title = selected
-      ? localizedText(selected.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
-      : '';
-    const description = selected
-      ? localizedText(selected.description, {
+    const title = selectedShop
+      ? localizedText(selectedShop.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
+      : selected
+        ? localizedText(selected.title, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
+        : '';
+    const description = selectedShop
+      ? localizedText(selectedShop.description, {
           lng: lang,
           fallbackLng: 'ru',
           emptyFallback: '',
         })
-      : '';
+      : selected
+        ? localizedText(selected.description, {
+            lng: lang,
+            fallbackLng: 'ru',
+            emptyFallback: '',
+          })
+        : '';
     const keywords = selected
       ? localizedText(selected.keywords, { lng: lang, fallbackLng: 'ru', emptyFallback: '' })
       : '';
-  const imageUrl = selected?.image?.trim() ?? '';
-  const faviconUrl = selected?.favicon?.trim() ?? '';
+    const imageUrl = selected?.image?.trim() ?? '';
+    const faviconUrl = selected?.favicon?.trim() ?? '';
 
     document.title = title || fallbackTitle;
 
@@ -430,7 +459,7 @@ const useSeoMeta = () => {
     }
 
     document.documentElement.lang = lang;
-  }, [items, location.pathname, i18n.language]);
+  }, [items, shopItems, location.pathname, i18n.language]);
 };
 
 /* ===== SCROLL TO TOP ===== */
@@ -440,6 +469,44 @@ function ScrollToTop() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  return null;
+}
+
+function normalizeShopPath(pathname: string) {
+  let normalized = pathname.replace(/\/{2,}/g, '/');
+
+  if (normalized.length > 1) {
+    normalized = normalized.replace(/\/+$/, '');
+  }
+
+  const parts = normalized.split('/').filter(Boolean);
+  if (parts[0] !== 'hongqi-parts') return normalized || '/';
+
+  if (parts[1] === 'catalog' && parts.length > 4) {
+    return `/${parts.slice(0, 4).join('/')}`;
+  }
+
+  if (parts[1] !== 'catalog' && parts.length > 2) {
+    return `/${parts.slice(0, 2).join('/')}`;
+  }
+
+  return normalized || '/';
+}
+
+function NormalizeRoutes() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const normalizedPath = normalizeShopPath(location.pathname);
+    if (normalizedPath === location.pathname) return;
+
+    navigate(
+      `${normalizedPath}${location.search}${location.hash}`,
+      { replace: true }
+    );
+  }, [location.hash, location.pathname, location.search, navigate]);
 
   return null;
 }
@@ -556,6 +623,7 @@ function App() {
         <Router>
           <VisualAdminProvider>
             <ShopProvider>
+              <NormalizeRoutes />
               <ScrollToTop />
               <AppShell />
             </ShopProvider>

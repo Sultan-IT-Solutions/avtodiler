@@ -1295,7 +1295,7 @@ export const CarDetail = () => {
                 </div>
               ) : null}
               {editingCar.colors.map((color, index) => (
-                <div key={`${color.name}-${index}`} className="border border-white/10 p-3">
+                <div key={index} className="border border-white/10 p-3">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Цвет {index + 1}</p>
                     <button
@@ -1365,7 +1365,7 @@ export const CarDetail = () => {
                 </div>
               ) : null}
               {editingCar.interiors.map((interior, index) => (
-                <div key={`${interior.name}-${index}`} className="border border-white/10 p-3">
+                <div key={index} className="border border-white/10 p-3">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Интерьер {index + 1}</p>
                     <button
@@ -1435,7 +1435,7 @@ export const CarDetail = () => {
                 </div>
               ) : null}
               {editingCar.wheels.map((wheel, index) => (
-                <div key={`${wheel.name}-${index}`} className="border border-white/10 p-3">
+                <div key={index} className="border border-white/10 p-3">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Диск {index + 1}</p>
                     <button

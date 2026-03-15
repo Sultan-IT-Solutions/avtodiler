@@ -38,6 +38,11 @@ export const shopPublicApi = {
     };
   },
 
+  async seoPages(): Promise<SeoPage[]> {
+    const data = await this.bootstrap();
+    return data.seoPages;
+  },
+
   async createRequest(item: PartRequestItem) {
     const res = await fetch('/api/public/shop/request', {
       method: 'POST',

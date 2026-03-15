@@ -69,24 +69,7 @@ const ChevronDownIcon = ({ open = false }: { open?: boolean }) => (
 
 const useShopSeo = (path: string) => {
   const { state } = useShop();
-  const { i18n } = useTranslation();
   const page = state.seoPages.find((item) => item.slug === path);
-
-  useEffect(() => {
-    if (!page) return;
-
-    document.title = localizedText(page.title, { lng: i18n.language, fallbackLng: 'en' });
-    const meta = document.querySelector('meta[name="description"]') ?? document.createElement('meta');
-    meta.setAttribute('name', 'description');
-    meta.setAttribute(
-      'content',
-      localizedText(page.description, { lng: i18n.language, fallbackLng: 'en' })
-    );
-
-    if (!meta.parentElement) {
-      document.head.appendChild(meta);
-    }
-  }, [i18n.language, page]);
 
   return page;
 };
@@ -438,9 +421,11 @@ const SmartImage = ({
 const ProductCard = ({
   product,
   onEdit,
+  onEditSeo,
 }: {
   product: ProductItem;
   onEdit?: () => void;
+  onEditSeo?: () => void;
 }) => {
   const { t, i18n } = useTranslation();
   const { addToCart } = useShop();
@@ -452,6 +437,11 @@ const ProductCard = ({
         to={onEdit ? undefined : buildAdminUrl('shop', 'products')}
         onClick={onEdit}
         label="Товар"
+      />
+      <VisualInlineEditLink
+        onClick={onEditSeo}
+        label="SEO"
+        className="right-0 top-12"
       />
       <Link to={`/hongqi-parts/${product.slug}`} className="block overflow-hidden">
         <SmartImage
@@ -615,6 +605,7 @@ export const ShopHomePage = () => {
   const [isCategoriesMenuOpen, setIsCategoriesMenuOpen] = useState(false);
   const [isModelsMenuOpen, setIsModelsMenuOpen] = useState(false);
   const [isSeoOpen, setIsSeoOpen] = useState(false);
+  const [seoSlug, setSeoSlug] = useState('/hongqi-parts');
   const createModelDraft = (): HongqiModel => ({
     id: `model-${Date.now()}`,
     code: '',
@@ -796,13 +787,17 @@ export const ShopHomePage = () => {
           <h2 className="mt-4 text-h2 text-white">{t('shop.home.popular.title')}</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {state.products.filter((product) => product.popular).map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onEdit={() => setEditingProduct(product)}
-            />
-          ))}
+            {state.products.filter((product) => product.popular).map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onEdit={() => setEditingProduct(product)}
+                onEditSeo={() => {
+                  setSeoSlug(`/hongqi-parts/${product.slug}`);
+                  setIsSeoOpen(true);
+                }}
+              />
+            ))}
         </div>
       </section>
 
@@ -953,6 +948,23 @@ export const ShopHomePage = () => {
             multiline
             onChange={(description) => setEditingCategory({ ...editingCategory, description })}
           />
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="btn-outline px-4 py-2 text-[11px]"
+              onClick={() => {
+                setEditingProduct(
+                  buildProductDraft(state.categories, {
+                    categorySlug: editingCategory.slug,
+                    subcategorySlug: '',
+                  })
+                );
+                setEditingCategory(null);
+              }}
+            >
+              Добавить товар в категорию
+            </button>
+          </div>
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Подкатегории</p>
@@ -977,20 +989,37 @@ export const ShopHomePage = () => {
                 <div key={subcategory.id} className="border border-white/10 p-4">
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-sm text-white/70">Подкатегория {index + 1}</p>
-                    <button
-                      type="button"
-                      className="text-sm text-luxury-burgundy"
-                      onClick={() =>
-                        setEditingCategory({
-                          ...editingCategory,
-                          subcategories: editingCategory.subcategories.filter(
-                            (item) => item.id !== subcategory.id
-                          ),
-                        })
-                      }
-                    >
-                      Удалить
-                    </button>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        className="btn-outline px-4 py-2 text-[11px]"
+                        onClick={() => {
+                          setEditingProduct(
+                            buildProductDraft(state.categories, {
+                              categorySlug: editingCategory.slug,
+                              subcategorySlug: subcategory.slug,
+                            })
+                          );
+                          setEditingCategory(null);
+                        }}
+                      >
+                        Добавить товар
+                      </button>
+                      <button
+                        type="button"
+                        className="text-sm text-luxury-burgundy"
+                        onClick={() =>
+                          setEditingCategory({
+                            ...editingCategory,
+                            subcategories: editingCategory.subcategories.filter(
+                              (item) => item.id !== subcategory.id
+                            ),
+                          })
+                        }
+                      >
+                        Удалить
+                      </button>
+                    </div>
                   </div>
                   <InlineCmsInput
                     value={subcategory.slug}
@@ -1264,7 +1293,12 @@ export const ShopHomePage = () => {
         }}
       />
 
-      <InlineSeoEditorModal slug="/hongqi-parts" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug={seoSlug}
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
@@ -1274,7 +1308,7 @@ export const ShopCatalogPage = () => {
   const { state, saveProduct, deleteProduct, saveCategory, deleteCategory } = useShop();
   const location = useLocation();
   const { categorySlug, subcategorySlug } = useParams();
-  const seoPage = useShopSeo('/hongqi-parts/catalog');
+  const seoPage = useShopSeo(location.pathname);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
@@ -1282,6 +1316,11 @@ export const ShopCatalogPage = () => {
   const [isSeoOpen, setIsSeoOpen] = useState(false);
   const currentPublicUrl = `${location.pathname}${location.search}`;
   const currentSeoBinding = location.pathname;
+  const [seoSlug, setSeoSlug] = useState(location.pathname);
+
+  useEffect(() => {
+    setSeoSlug(currentSeoBinding);
+  }, [currentSeoBinding]);
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
@@ -1497,6 +1536,10 @@ export const ShopCatalogPage = () => {
                   key={product.id}
                   product={product}
                   onEdit={() => setEditingProduct(product)}
+                  onEditSeo={() => {
+                    setSeoSlug(`/hongqi-parts/${product.slug}`);
+                    setIsSeoOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -1816,7 +1859,12 @@ export const ShopCatalogPage = () => {
         }}
       />
 
-      <InlineSeoEditorModal slug={currentSeoBinding} open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug={seoSlug}
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
@@ -1830,6 +1878,8 @@ export const ShopProductPage = () => {
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [isSeoOpen, setIsSeoOpen] = useState(false);
+  const [seoSlug, setSeoSlug] = useState(location.pathname);
+  const seoPage = useShopSeo(location.pathname);
   const product = state.products.find((item) => item.slug === slug);
   const category = state.categories.find((item) => item.slug === product?.categorySlug);
   const sameCategoryProducts = state.products
@@ -1847,6 +1897,10 @@ export const ShopProductPage = () => {
     setActiveImage(0);
     setIsZoomOpen(false);
   }, [product?.id]);
+
+  useEffect(() => {
+    setSeoSlug(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!product) return;
@@ -1894,6 +1948,10 @@ export const ShopProductPage = () => {
   }
 
   const productName = localizedText(product.name, { lng: i18n.language });
+  const productHeading = localizedText(
+    seoPage?.h1 ?? product.name,
+    { lng: i18n.language }
+  );
 
   return (
     <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
@@ -1952,7 +2010,7 @@ export const ShopProductPage = () => {
               {category ? localizedText(category.name, { lng: i18n.language }) : 'Hongqi Parts'}
             </p>
             <h1 className="mt-4 text-[clamp(30px,4vw,52px)] font-display font-light leading-[1.05] text-white">
-              {productName}
+              {productHeading}
             </h1>
             <div className="mt-6 grid gap-3 border-y border-white/10 py-6 text-sm text-white/65 sm:grid-cols-2">
               <p>
@@ -2071,6 +2129,10 @@ export const ShopProductPage = () => {
                   key={item.id}
                   product={item}
                   onEdit={() => setEditingProduct(item)}
+                  onEditSeo={() => {
+                    setSeoSlug(`/hongqi-parts/${item.slug}`);
+                    setIsSeoOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -2088,6 +2150,10 @@ export const ShopProductPage = () => {
                   key={item.id}
                   product={item}
                   onEdit={() => setEditingProduct(item)}
+                  onEditSeo={() => {
+                    setSeoSlug(`/hongqi-parts/${item.slug}`);
+                    setIsSeoOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -2187,7 +2253,12 @@ export const ShopProductPage = () => {
           />
         </InlineCmsModal>
       ) : null}
-      <InlineSeoEditorModal slug={location.pathname} open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug={seoSlug}
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
@@ -2195,6 +2266,7 @@ export const ShopProductPage = () => {
 export const ShopCartPage = () => {
   const { t, i18n } = useTranslation();
   const { state, cart, getProduct, removeFromCart, updateCartQuantity, cartTotal, cartCount, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
+  const seoPage = useShopSeo('/cart');
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [editingOrder, setEditingOrder] = useState<OrderItem | null>(null);
   const [isProductsMenuOpen, setIsProductsMenuOpen] = useState(false);
@@ -2207,7 +2279,14 @@ export const ShopCartPage = () => {
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <ShopSectionIntro
           eyebrow={t('shop.cart.eyebrow', 'Shop cart')}
-          title={t('shop.cart.title')}
+          title={localizedText(
+            seoPage?.h1 ?? {
+              ru: t('shop.cart.title'),
+              en: t('shop.cart.title'),
+              kz: t('shop.cart.title'),
+            },
+            { lng: i18n.language }
+          )}
           subtitle={t('shop.cart.subtitle', 'Проверьте состав заказа перед оформлением.')}
         />
         <VisualEditPanel
@@ -2518,14 +2597,20 @@ export const ShopCartPage = () => {
         </InlineCmsModal>
       ) : null}
 
-      <InlineSeoEditorModal slug="/cart" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug="/cart"
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
 
 export const ShopCheckoutPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { state, cart, cartTotal, createOrder, saveProduct, deleteProduct, saveOrder, deleteOrder } = useShop();
+  const seoPage = useShopSeo('/checkout');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
@@ -2591,7 +2676,16 @@ export const ShopCheckoutPage = () => {
               setOrderId(created);
             }}
           >
-            <h1 className="text-h2 text-white">{t('shop.checkout.title')}</h1>
+            <h1 className="text-h2 text-white">
+              {localizedText(
+                seoPage?.h1 ?? {
+                  ru: t('shop.checkout.title'),
+                  en: t('shop.checkout.title'),
+                  kz: t('shop.checkout.title'),
+                },
+                { lng: i18n.language }
+              )}
+            </h1>
             <div className="mt-8 grid gap-5 lg:grid-cols-2">
               <Input
                 value={name}
@@ -2808,7 +2902,12 @@ export const ShopCheckoutPage = () => {
         </InlineCmsModal>
       ) : null}
 
-      <InlineSeoEditorModal slug="/checkout" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug="/checkout"
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
@@ -2962,7 +3061,12 @@ export const ShopStoresPage = () => {
           />
         </InlineCmsModal>
       ) : null}
-      <InlineSeoEditorModal slug="/hongqi-parts/stores" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug="/hongqi-parts/stores"
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
@@ -3126,33 +3230,34 @@ export const ShopRequestPage = () => {
         />
       ) : null}
 
-      <InlineSeoEditorModal slug="/hongqi-parts/request" open={isSeoOpen} onClose={() => setIsSeoOpen(false)} />
+      <InlineSeoEditorModal
+        slug="/hongqi-parts/request"
+        scope="shop"
+        open={isSeoOpen}
+        onClose={() => setIsSeoOpen(false)}
+      />
     </div>
   );
 };
 
 const emptyLocale = () => ({ ru: '', en: '', kz: '' });
 
-const ProductEditor = ({
-  categories,
-  models,
-  product,
-  onSave,
-  onDelete,
-}: {
-  categories: CategoryItem[];
-  models: HongqiModel[];
-  product?: ProductItem;
-  onSave: (item: ProductItem) => void;
-  onDelete: (id: string) => void;
-}) => {
-  const { t } = useTranslation();
-  const createDraft = (): ProductItem => ({
+const buildProductDraft = (
+  categories: CategoryItem[],
+  overrides: Partial<ProductItem> = {}
+): ProductItem => {
+  const resolvedCategorySlug = overrides.categorySlug ?? categories[0]?.slug ?? '';
+  const resolvedCategory =
+    categories.find((category) => category.slug === resolvedCategorySlug) ?? categories[0];
+  const resolvedSubcategorySlug =
+    'subcategorySlug' in overrides
+      ? overrides.subcategorySlug ?? ''
+      : resolvedCategory?.subcategories[0]?.slug ?? '';
+
+  return {
     id: `p-${Date.now()}`,
     slug: '',
     name: emptyLocale(),
-    categorySlug: categories[0]?.slug ?? '',
-    subcategorySlug: categories[0]?.subcategories[0]?.slug ?? '',
     article: '',
     oem: '',
     manufacturer: 'Hongqi Genuine Parts',
@@ -3164,12 +3269,35 @@ const ProductEditor = ({
     seoText: emptyLocale(),
     specs: [],
     compatibility: [],
-  });
-  const [draft, setDraft] = useState<ProductItem>(product ?? createDraft());
+    ...overrides,
+    categorySlug: overrides.categorySlug ?? resolvedCategorySlug,
+    subcategorySlug: resolvedSubcategorySlug,
+  };
+};
+
+const ProductEditor = ({
+  categories,
+  models,
+  product,
+  seed,
+  onSave,
+  onDelete,
+}: {
+  categories: CategoryItem[];
+  models: HongqiModel[];
+  product?: ProductItem;
+  seed?: Partial<ProductItem> | null;
+  onSave: (item: ProductItem) => void;
+  onDelete: (id: string) => void;
+}) => {
+  const { t } = useTranslation();
+  const createDraft = (nextSeed?: Partial<ProductItem> | null): ProductItem =>
+    buildProductDraft(categories, nextSeed ?? undefined);
+  const [draft, setDraft] = useState<ProductItem>(product ?? createDraft(seed));
 
   useEffect(() => {
-    setDraft(product ?? createDraft());
-  }, [product]);
+    setDraft(product ?? createDraft(seed));
+  }, [categories, product, seed]);
 
   const currentCategory = categories.find((category) => category.slug === draft.categorySlug);
 
@@ -3230,6 +3358,7 @@ const ProductEditor = ({
           value={draft.subcategorySlug}
           onChange={(event) => setDraft({ ...draft, subcategorySlug: event.target.value })}
         >
+          <option value="">{t('shop.admin.noSubcategory', 'Без подкатегории')}</option>
           {(currentCategory?.subcategories ?? []).map((subcategory) => (
             <option key={subcategory.id} value={subcategory.slug}>
               {localizedText(subcategory.name, { lng: 'ru', fallbackLng: 'ru' })}
@@ -3383,6 +3512,7 @@ export const ShopAdminPage = ({
     'products' | 'categories' | 'models' | 'orders' | 'warehouse' | 'stores' | 'requests' | 'seo' | 'import'
   >(initialTab);
   const [selectedProductId, setSelectedProductId] = useState<string | null | undefined>(undefined);
+  const [productSeed, setProductSeed] = useState<Partial<ProductItem> | null>(null);
   const [saveNotice, setSaveNotice] = useState('');
   const confirmDelete = (message: string, onConfirm: () => void) => {
     if (!window.confirm(message)) return;
@@ -3422,6 +3552,15 @@ export const ShopAdminPage = ({
       setSelectedProductId(state.products[0].id);
     }
   }, [selectedProductId, state.products]);
+
+  const openSeededProductEditor = (categorySlug?: string, subcategorySlug = '') => {
+    setProductSeed({
+      categorySlug: categorySlug ?? state.categories[0]?.slug ?? '',
+      subcategorySlug,
+    });
+    setSelectedProductId(null);
+    setTab('products');
+  };
 
   const selectedProduct = state.products.find((item) => item.id === selectedProductId);
   const lowStock = state.products.filter((product) => product.stock <= 2);
@@ -3489,7 +3628,10 @@ export const ShopAdminPage = ({
                     {state.products.map((product) => (
                       <button
                         key={product.id}
-                        onClick={() => setSelectedProductId(product.id)}
+                        onClick={() => {
+                          setProductSeed(null);
+                          setSelectedProductId(product.id);
+                        }}
                         className={`mb-2 block w-full border px-3 py-3 text-left ${
                           selectedProductId === product.id
                             ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
@@ -3500,7 +3642,13 @@ export const ShopAdminPage = ({
                       </button>
                     ))}
                   </div>
-                  <button className="btn-outline mt-4 w-full" onClick={() => setSelectedProductId(null)}>
+                  <button
+                    className="btn-outline mt-4 w-full"
+                    onClick={() => {
+                      setProductSeed(null);
+                      setSelectedProductId(null);
+                    }}
+                  >
                     {t('shop.admin.newProduct')}
                   </button>
                 </div>
@@ -3508,16 +3656,19 @@ export const ShopAdminPage = ({
                   categories={state.categories}
                   models={state.models}
                   product={selectedProduct}
+                  seed={productSeed}
                   onSave={(item) => {
                     confirmSave(() => {
                       saveProduct(item);
                       notifySaved();
+                      setProductSeed(null);
                       setSelectedProductId(item.id);
                     });
                   }}
                   onDelete={(id) => {
                     confirmDelete('Удалить товар?', () => {
                       deleteProduct(id);
+                      setProductSeed(null);
                       setSelectedProductId(state.products.find((product) => product.id !== id)?.id);
                     });
                   }}
@@ -3543,6 +3694,14 @@ export const ShopAdminPage = ({
                 </button>
                 {state.categories.map((category) => (
                   <div key={category.id} className="card-luxury p-6">
+                    <div className="mb-4">
+                      <button
+                        className="btn-outline px-4 py-3 text-[11px]"
+                        onClick={() => openSeededProductEditor(category.slug, '')}
+                      >
+                        {t('shop.admin.addProductToCategory', 'Добавить товар в категорию')}
+                      </button>
+                    </div>
                     <div className="grid gap-4 lg:grid-cols-3">
                       {(['ru', 'en', 'kz'] as const).map((locale) => (
                         <Input
@@ -3611,21 +3770,29 @@ export const ShopAdminPage = ({
                               }
                               placeholder="ID подкатегории"
                             />
-                            <button
-                              className="btn-outline justify-center px-4 py-3 text-[11px]"
-                              onClick={() =>
-                                confirmDelete('Удалить подкатегорию?', () =>
-                                  saveCategory({
-                                    ...category,
-                                    subcategories: category.subcategories.filter(
-                                      (_, itemIndex) => itemIndex !== subIndex
-                                    ),
-                                  })
-                                )
-                              }
-                            >
-                              {t('shop.actions.delete')}
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                className="btn-outline justify-center px-4 py-3 text-[11px]"
+                                onClick={() => openSeededProductEditor(category.slug, subcategory.slug)}
+                              >
+                                {t('shop.admin.addProduct', 'Добавить товар')}
+                              </button>
+                              <button
+                                className="btn-outline justify-center px-4 py-3 text-[11px]"
+                                onClick={() =>
+                                  confirmDelete('Удалить подкатегорию?', () =>
+                                    saveCategory({
+                                      ...category,
+                                      subcategories: category.subcategories.filter(
+                                        (_, itemIndex) => itemIndex !== subIndex
+                                      ),
+                                    })
+                                  )
+                                }
+                              >
+                                {t('shop.actions.delete')}
+                              </button>
+                            </div>
                           </div>
                           <div className="mt-4 grid gap-4 lg:grid-cols-3">
                             {(['ru', 'en', 'kz'] as const).map((locale) => (
