@@ -30,20 +30,23 @@ export const InlineCmsCollectionMenu = ({
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  if (!open) return null;
-
   useEffect(() => {
+    if (!open) return;
+
     lockScroll();
 
     return () => {
       unlockScroll();
     };
-  }, []);
+  }, [open]);
 
   useEffect(() => {
-    if (!backdropRef.current || !panelRef.current) return;
+    if (!open || !backdropRef.current || !panelRef.current) return;
+
     return isolateTouchScroll(backdropRef.current, panelRef.current);
-  }, []);
+  }, [open]);
+
+  if (!open) return null;
 
   return (
     <div
