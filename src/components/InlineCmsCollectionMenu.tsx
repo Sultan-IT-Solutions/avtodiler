@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Edit3, Plus, Trash2, X } from 'lucide-react';
-import { isolateTouchScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
+import { isolateWheelScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
 
 type CollectionItem = {
   id: string;
@@ -43,7 +43,7 @@ export const InlineCmsCollectionMenu = ({
   useEffect(() => {
     if (!open || !backdropRef.current || !panelRef.current) return;
 
-    return isolateTouchScroll(backdropRef.current, panelRef.current);
+    return isolateWheelScroll(backdropRef.current, panelRef.current);
   }, [open]);
 
   if (!open) return null;
@@ -51,16 +51,15 @@ export const InlineCmsCollectionMenu = ({
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-[78] overflow-hidden bg-black/70 px-4 py-4 sm:py-8"
+      className="fixed inset-0 z-[78] overflow-y-auto overscroll-contain bg-black/70 px-4 py-4 sm:py-8"
       onClick={onClose}
-      style={{ touchAction: 'none' }}
     >
       <div className="flex min-h-full items-start justify-center">
         <div
           ref={panelRef}
           className="max-h-[calc(100dvh-2rem)] w-full max-w-3xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
           onClick={(event) => event.stopPropagation()}
-          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+          style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
         >
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>

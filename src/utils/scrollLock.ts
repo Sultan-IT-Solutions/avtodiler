@@ -86,3 +86,25 @@ export const isolateTouchScroll = (backdrop: HTMLElement, scrollable: HTMLElemen
     scrollable.removeEventListener('touchmove', handleScrollableTouchMove);
   };
 };
+
+export const isolateWheelScroll = (backdrop: HTMLElement, scrollable: HTMLElement) => {
+  const handleBackdropWheel = (event: WheelEvent) => {
+    if (!scrollable.contains(event.target as Node)) {
+      event.preventDefault();
+    }
+  };
+
+  const handleScrollableWheel = (event: WheelEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    scrollable.scrollTop += event.deltaY;
+  };
+
+  backdrop.addEventListener('wheel', handleBackdropWheel, { passive: false });
+  scrollable.addEventListener('wheel', handleScrollableWheel, { passive: false });
+
+  return () => {
+    backdrop.removeEventListener('wheel', handleBackdropWheel);
+    scrollable.removeEventListener('wheel', handleScrollableWheel);
+  };
+};

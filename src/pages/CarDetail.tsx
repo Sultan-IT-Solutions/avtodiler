@@ -1171,7 +1171,7 @@ export const CarDetail = () => {
                   specifications: { ...editingCar.specifications, acceleration },
                 })
               }
-              placeholder="0-100"
+              placeholder="Разгон"
             />
             <InlineCmsInput
               value={editingCar.specifications.topSpeed}
@@ -1181,7 +1181,7 @@ export const CarDetail = () => {
                   specifications: { ...editingCar.specifications, topSpeed },
                 })
               }
-              placeholder="Макс. скорость"
+              placeholder="Максимальная скорость"
             />
             <InlineCmsInput
               value={editingCar.specifications.transmission}

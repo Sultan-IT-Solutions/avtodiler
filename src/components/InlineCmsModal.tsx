@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import type { LocaleText } from '../types/admin';
-import { isolateTouchScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
+import { isolateWheelScroll, lockScroll, unlockScroll } from '../utils/scrollLock';
 
 export const InlineCmsModal = ({
   title,
@@ -27,22 +27,21 @@ export const InlineCmsModal = ({
 
   useEffect(() => {
     if (!backdropRef.current || !panelRef.current) return;
-    return isolateTouchScroll(backdropRef.current, panelRef.current);
+    return isolateWheelScroll(backdropRef.current, panelRef.current);
   }, []);
 
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-[80] overflow-hidden bg-black/75 px-4 py-4 sm:py-8"
+      className="fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-black/75 px-4 py-4 sm:py-8"
       onClick={onClose}
-      style={{ touchAction: 'none' }}
     >
       <div className="flex min-h-full items-start justify-center">
         <div
           ref={panelRef}
           className="max-h-[calc(100dvh-2rem)] w-full max-w-4xl overflow-y-auto overscroll-contain border border-white/10 bg-luxury-elevated p-6 shadow-2xl lg:p-8"
           onClick={(event) => event.stopPropagation()}
-          style={{ WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}
+          style={{ WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}
         >
           <div className="mb-6 flex items-start justify-between gap-4">
             <h3 className="text-2xl font-semibold text-white">{title}</h3>
