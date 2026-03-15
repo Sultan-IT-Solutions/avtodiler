@@ -177,6 +177,14 @@ export const CarDetail = () => {
     return () => clearInterval(interval);
   }, [car, isAutoplay]);
 
+  useEffect(() => {
+    if (!car) return;
+    setCurrentImageIndex((prev) => (car.images.length === 0 ? 0 : Math.min(prev, car.images.length - 1)));
+    setSelectedColor((prev) => (car.colors.length === 0 ? 0 : Math.min(prev, car.colors.length - 1)));
+    setSelectedInterior((prev) => (car.interiors.length === 0 ? 0 : Math.min(prev, car.interiors.length - 1)));
+    setSelectedWheels((prev) => (car.wheels.length === 0 ? 0 : Math.min(prev, car.wheels.length - 1)));
+  }, [car]);
+
   // GSAP entrance animations
   useLayoutEffect(() => {
     if (!car) return;
@@ -239,6 +247,7 @@ export const CarDetail = () => {
 
 
   const similarCars = cars.filter(c => c.id !== car.id && c.brand === car.brand).slice(0, 3);
+  const selectedColorItem = car.colors.length > 0 ? car.colors[Math.min(selectedColor, car.colors.length - 1)] : null;
 
   const formatPrice = (price: number) => formatPriceKzt(price);
 
@@ -682,7 +691,7 @@ export const CarDetail = () => {
                   <div
                     className="absolute inset-0 opacity-10 transition-colors duration-1000"
                     style={{
-                      background: `radial-gradient(circle at 30% 70%, ${car.colors[Math.min(selectedColor, car.colors.length - 1)].hex}, transparent 70%)`,
+                      background: `radial-gradient(circle at 30% 70%, ${selectedColorItem?.hex ?? '#000000'}, transparent 70%)`,
                     }}
                   />
                 ) : null}
@@ -704,11 +713,11 @@ export const CarDetail = () => {
                     <div
                       className="w-3 h-3 rounded-full border border-white/30"
                       style={{
-                        backgroundColor: car.colors[Math.min(selectedColor, car.colors.length - 1)].hex,
+                        backgroundColor: selectedColorItem?.hex ?? 'transparent',
                       }}
                     />
                     <span className="text-xs text-white/50">
-                      {car.colors[Math.min(selectedColor, car.colors.length - 1)].name}
+                      {selectedColorItem?.name}
                     </span>
                   </div>
                 ) : null}
@@ -740,8 +749,15 @@ export const CarDetail = () => {
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.exterior')}</span>
-                  <span className="text-xs text-white/20">{selectedColor + 1}/{car.colors.length}</span>
+                  {car.colors.length > 0 ? (
+                    <span className="text-xs text-white/20">{selectedColor + 1}/{car.colors.length}</span>
+                  ) : null}
                 </div>
+                {car.colors.length === 0 ? (
+                  <div className="border border-white/10 bg-white/[0.02] px-4 py-5 text-sm text-white/45">
+                    Цвета кузова пока не указаны.
+                  </div>
+                ) : (
                 <div className="space-y-1">
                   {car.colors.map((color: AdminCar['colors'][number], index: number) => (
                     <motion.button
@@ -778,14 +794,22 @@ export const CarDetail = () => {
                     </motion.button>
                   ))}
                 </div>
+                )}
               </div>
 
               {/* Interior */}
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.interior')}</span>
-                  <span className="text-xs text-white/20">{selectedInterior + 1}/{car.interiors.length}</span>
+                  {car.interiors.length > 0 ? (
+                    <span className="text-xs text-white/20">{selectedInterior + 1}/{car.interiors.length}</span>
+                  ) : null}
                 </div>
+                {car.interiors.length === 0 ? (
+                  <div className="border border-white/10 bg-white/[0.02] px-4 py-5 text-sm text-white/45">
+                    Интерьеры пока не указаны.
+                  </div>
+                ) : (
                 <div className="space-y-1">
                   {car.interiors.map((interior: AdminCar['interiors'][number], index: number) => (
                     <motion.button
@@ -804,7 +828,9 @@ export const CarDetail = () => {
                           <div className={`text-sm transition-colors duration-300 ${selectedInterior === index ? 'text-white' : 'text-white/40 group-hover:text-white/70'}`}>
                             {interior.name}
                           </div>
-                          <div className="text-[11px] text-white/20 mt-0.5">{interior.description}</div>
+                          {interior.description ? (
+                            <div className="text-[11px] text-white/20 mt-0.5">{interior.description}</div>
+                          ) : null}
                         </div>
                         {selectedInterior === index && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
@@ -815,13 +841,22 @@ export const CarDetail = () => {
                     </motion.button>
                   ))}
                 </div>
+                )}
               </div>
 
               {/* Wheels */}
               <div className="config-item">
                 <div className="flex items-center justify-between mb-5">
                   <span className="text-[11px] uppercase tracking-[0.2em] text-white/40">{t('carDetail.wheels')}</span>
+                  {car.wheels.length > 0 ? (
+                    <span className="text-xs text-white/20">{selectedWheels + 1}/{car.wheels.length}</span>
+                  ) : null}
                 </div>
+                {car.wheels.length === 0 ? (
+                  <div className="border border-white/10 bg-white/[0.02] px-4 py-5 text-sm text-white/45">
+                    Варианты дисков пока не указаны.
+                  </div>
+                ) : (
                 <div className="grid grid-cols-2 gap-2">
                   {car.wheels.map((wheel: AdminCar['wheels'][number], index: number) => (
                     <motion.button
@@ -851,6 +886,7 @@ export const CarDetail = () => {
                     </motion.button>
                   ))}
                 </div>
+                )}
               </div>
 
               {/* Summary */}
@@ -1237,102 +1273,210 @@ export const CarDetail = () => {
           </div>
 
           <div>
-            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Цвета</p>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Цвета</p>
+              <button
+                type="button"
+                className="border border-white/10 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/75 transition hover:border-white/25 hover:text-white"
+                onClick={() =>
+                  setEditingCar({
+                    ...editingCar,
+                    colors: [...editingCar.colors, { name: '', hex: '' }],
+                  })
+                }
+              >
+                Добавить цвет
+              </button>
+            </div>
             <div className="grid gap-3">
+              {editingCar.colors.length === 0 ? (
+                <div className="border border-white/10 bg-white/[0.02] px-4 py-4 text-sm text-white/45">
+                  Цвета пока не добавлены.
+                </div>
+              ) : null}
               {editingCar.colors.map((color, index) => (
-                <div key={`${color.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
-                  <InlineCmsInput
-                    value={color.name}
-                    onChange={(name) =>
-                      setEditingCar({
-                        ...editingCar,
-                        colors: editingCar.colors.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, name } : item
-                        ),
-                      })
-                    }
-                    placeholder="Название цвета"
-                  />
-                  <InlineCmsInput
-                    value={color.hex}
-                    onChange={(hex) =>
-                      setEditingCar({
-                        ...editingCar,
-                        colors: editingCar.colors.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, hex } : item
-                        ),
-                      })
-                    }
-                    placeholder="#HEX"
-                  />
+                <div key={`${color.name}-${index}`} className="border border-white/10 p-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Цвет {index + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm text-luxury-burgundy transition hover:text-luxury-burgundyHover"
+                      onClick={() =>
+                        setEditingCar({
+                          ...editingCar,
+                          colors: editingCar.colors.filter((_, itemIndex) => itemIndex !== index),
+                        })
+                      }
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <InlineCmsInput
+                      value={color.name}
+                      onChange={(name) =>
+                        setEditingCar({
+                          ...editingCar,
+                          colors: editingCar.colors.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, name } : item
+                          ),
+                        })
+                      }
+                      placeholder="Название цвета"
+                    />
+                    <InlineCmsInput
+                      value={color.hex}
+                      onChange={(hex) =>
+                        setEditingCar({
+                          ...editingCar,
+                          colors: editingCar.colors.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, hex } : item
+                          ),
+                        })
+                      }
+                      placeholder="#HEX"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Интерьеры</p>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Интерьеры</p>
+              <button
+                type="button"
+                className="border border-white/10 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/75 transition hover:border-white/25 hover:text-white"
+                onClick={() =>
+                  setEditingCar({
+                    ...editingCar,
+                    interiors: [...editingCar.interiors, { name: '', description: '' }],
+                  })
+                }
+              >
+                Добавить интерьер
+              </button>
+            </div>
             <div className="grid gap-3">
+              {editingCar.interiors.length === 0 ? (
+                <div className="border border-white/10 bg-white/[0.02] px-4 py-4 text-sm text-white/45">
+                  Интерьеры пока не добавлены.
+                </div>
+              ) : null}
               {editingCar.interiors.map((interior, index) => (
-                <div key={`${interior.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
-                  <InlineCmsInput
-                    value={interior.name}
-                    onChange={(name) =>
-                      setEditingCar({
-                        ...editingCar,
-                        interiors: editingCar.interiors.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, name } : item
-                        ),
-                      })
-                    }
-                    placeholder="Название интерьера"
-                  />
-                  <InlineCmsInput
-                    value={interior.description}
-                    onChange={(description) =>
-                      setEditingCar({
-                        ...editingCar,
-                        interiors: editingCar.interiors.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, description } : item
-                        ),
-                      })
-                    }
-                    placeholder="Описание интерьера"
-                  />
+                <div key={`${interior.name}-${index}`} className="border border-white/10 p-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Интерьер {index + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm text-luxury-burgundy transition hover:text-luxury-burgundyHover"
+                      onClick={() =>
+                        setEditingCar({
+                          ...editingCar,
+                          interiors: editingCar.interiors.filter((_, itemIndex) => itemIndex !== index),
+                        })
+                      }
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <InlineCmsInput
+                      value={interior.name}
+                      onChange={(name) =>
+                        setEditingCar({
+                          ...editingCar,
+                          interiors: editingCar.interiors.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, name } : item
+                          ),
+                        })
+                      }
+                      placeholder="Название интерьера"
+                    />
+                    <InlineCmsInput
+                      value={interior.description}
+                      onChange={(description) =>
+                        setEditingCar({
+                          ...editingCar,
+                          interiors: editingCar.interiors.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, description } : item
+                          ),
+                        })
+                      }
+                      placeholder="Описание интерьера"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="mb-3 text-[11px] uppercase tracking-[0.22em] text-white/45">Диски</p>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-white/45">Диски</p>
+              <button
+                type="button"
+                className="border border-white/10 px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-white/75 transition hover:border-white/25 hover:text-white"
+                onClick={() =>
+                  setEditingCar({
+                    ...editingCar,
+                    wheels: [...editingCar.wheels, { name: '', size: '' }],
+                  })
+                }
+              >
+                Добавить диск
+              </button>
+            </div>
             <div className="grid gap-3">
+              {editingCar.wheels.length === 0 ? (
+                <div className="border border-white/10 bg-white/[0.02] px-4 py-4 text-sm text-white/45">
+                  Диски пока не добавлены.
+                </div>
+              ) : null}
               {editingCar.wheels.map((wheel, index) => (
-                <div key={`${wheel.name}-${index}`} className="grid gap-3 lg:grid-cols-2">
-                  <InlineCmsInput
-                    value={wheel.name}
-                    onChange={(name) =>
-                      setEditingCar({
-                        ...editingCar,
-                        wheels: editingCar.wheels.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, name } : item
-                        ),
-                      })
-                    }
-                    placeholder="Название диска"
-                  />
-                  <InlineCmsInput
-                    value={wheel.size}
-                    onChange={(size) =>
-                      setEditingCar({
-                        ...editingCar,
-                        wheels: editingCar.wheels.map((item, itemIndex) =>
-                          itemIndex === index ? { ...item, size } : item
-                        ),
-                      })
-                    }
-                    placeholder="Размер"
-                  />
+                <div key={`${wheel.name}-${index}`} className="border border-white/10 p-3">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">Диск {index + 1}</p>
+                    <button
+                      type="button"
+                      className="text-sm text-luxury-burgundy transition hover:text-luxury-burgundyHover"
+                      onClick={() =>
+                        setEditingCar({
+                          ...editingCar,
+                          wheels: editingCar.wheels.filter((_, itemIndex) => itemIndex !== index),
+                        })
+                      }
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <InlineCmsInput
+                      value={wheel.name}
+                      onChange={(name) =>
+                        setEditingCar({
+                          ...editingCar,
+                          wheels: editingCar.wheels.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, name } : item
+                          ),
+                        })
+                      }
+                      placeholder="Название диска"
+                    />
+                    <InlineCmsInput
+                      value={wheel.size}
+                      onChange={(size) =>
+                        setEditingCar({
+                          ...editingCar,
+                          wheels: editingCar.wheels.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, size } : item
+                          ),
+                        })
+                      }
+                      placeholder="Размер"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

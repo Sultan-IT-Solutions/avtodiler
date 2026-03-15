@@ -746,10 +746,6 @@ const CatalogCard = ({
                 <span>{t('catalogPage.card.more')}</span>
                 <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
               </div>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-luxury text-luxury-red group-hover:text-luxury-redBright transition-colors font-semibold">
-                <span>{t('catalogPage.card.more')}</span>
-                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-              </div>
             </div>
           </div>
         </div>
