@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
 import { seedShopState } from '../data/shopSeed';

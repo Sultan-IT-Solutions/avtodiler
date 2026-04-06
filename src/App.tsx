@@ -18,9 +18,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Navigation } from './components/Navigation';
+import { OwnersNavigation, SiteNavigation } from './components/Navigation';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
-import { Footer } from './components/Footer';
+import { OwnersFooter } from './components/OwnersFooter';
 import {
   ShopCartPage,
   ShopCatalogPage,
@@ -433,11 +433,31 @@ const useSeoMeta = () => {
 
 /* ===== SCROLL TO TOP ===== */
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo(0, 0);
+      return undefined;
+    }
+
+    const scrollToHashTarget = () => {
+      const target = document.getElementById(hash.slice(1));
+      if (!target) return;
+
+      const headerOffset = window.innerWidth >= 1024 ? 124 : 108;
+      const top = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+
+    const frameId = window.requestAnimationFrame(scrollToHashTarget);
+    const timeoutId = window.setTimeout(scrollToHashTarget, 160);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [hash, pathname]);
 
   return null;
 }
@@ -487,7 +507,11 @@ function AnimatedRoutes() {
 const AppShell = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const isShopRoute = location.pathname.startsWith('/hongqi-parts');
+  const isOwnersRoute =
+    location.pathname.startsWith('/hongqi-parts') ||
+    location.pathname === '/cart' ||
+    location.pathname === '/checkout' ||
+    location.pathname === '/service';
 
   useSeoMeta();
 
@@ -495,12 +519,12 @@ const AppShell = () => {
     <RouteErrorBoundary>
       <div className="min-h-screen bg-luxury-black noise-overlay">
         {!isAdmin && <CustomCursor />}
-        {!isAdmin && <Navigation />}
+        {!isAdmin && (isOwnersRoute ? <OwnersNavigation /> : <SiteNavigation />)}
         {!isAdmin && <FloatingWhatsApp />}
         <main>
           <AnimatedRoutes />
         </main>
-        {!isAdmin && isShopRoute && <Footer />}
+        {!isAdmin && isOwnersRoute && <OwnersFooter />}
       </div>
     </RouteErrorBoundary>
   );

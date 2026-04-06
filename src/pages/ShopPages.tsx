@@ -5,10 +5,12 @@ import {
   useRef,
   useState,
   type InputHTMLAttributes,
+  type ReactNode,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowRight, MapPin, MessageCircle, Package, Wrench } from 'lucide-react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SITE_IMAGES } from '../data/siteImages';
@@ -18,6 +20,7 @@ import { localizedText } from '../utils/localizedText';
 import { isValidPhone } from '../utils/phone';
 import { shopAdminApi } from '../utils/shopApi';
 import { parseShopWorkbook, summarizeImportPayload } from '../utils/shopImport';
+import { OwnerServiceHub } from '../components/owners/OwnerServiceHub';
 
 const formatPrice = (value: number) =>
   new Intl.NumberFormat('ru-RU', {
@@ -47,7 +50,7 @@ const ChevronDownIcon = ({ open = false }: { open?: boolean }) => (
   <svg
     aria-hidden="true"
     viewBox="0 0 20 20"
-    className={`h-5 w-5 text-white/60 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+    className={`h-5 w-5 text-black/50 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
     fill="none"
     stroke="currentColor"
     strokeWidth="1.6"
@@ -94,12 +97,32 @@ const ShopSectionIntro = ({
 }) => (
   <div className="max-w-3xl">
     {eyebrow ? (
-      <p className="text-[11px] uppercase tracking-[0.3em] text-luxury-burgundy">{eyebrow}</p>
+      <p className="inline-flex items-center rounded-full border border-luxury-burgundy/12 bg-luxury-burgundy/6 px-4 py-2 text-[10px] uppercase tracking-[0.28em] text-luxury-burgundy">
+        {eyebrow}
+      </p>
     ) : null}
-    <h1 className="mt-4 text-[clamp(32px,5vw,56px)] font-display font-light leading-[1.05] text-white">
+    <h1 className="mt-6 text-[clamp(34px,5vw,60px)] font-display font-semibold leading-[1.02] text-[#1c1716]">
       {title}
     </h1>
-    {subtitle ? <p className="mt-4 text-base leading-7 text-white/60">{subtitle}</p> : null}
+    {subtitle ? <p className="mt-5 max-w-2xl text-base leading-7 text-black/58">{subtitle}</p> : null}
+  </div>
+);
+
+const OwnersSubpageShell = ({ children }: { children: ReactNode }) => (
+  <div className="owners-shell relative min-h-screen overflow-hidden bg-[#f7f2f0] pt-24 sm:pt-28 lg:pt-32">
+    <div className="pointer-events-none absolute inset-0">
+      <div className="absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top,rgba(157,34,53,0.12),transparent_62%)]" />
+      <div className="absolute right-0 top-0 h-full w-[42%] bg-[linear-gradient(180deg,rgba(255,255,255,0.6)_0%,rgba(255,255,255,0)_42%)] opacity-70" />
+      <svg className="absolute inset-0 h-full w-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="owners-subpage-grid" width="72" height="72" patternUnits="userSpaceOnUse">
+            <path d="M 72 0 L 0 0 0 72" fill="none" stroke="#9d2235" strokeOpacity="0.16" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#owners-subpage-grid)" />
+      </svg>
+    </div>
+    <div className="relative">{children}</div>
   </div>
 );
 
@@ -142,8 +165,8 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
 
   return (
     <div className="md:hidden">
-      <div ref={dropdownRef} className="card-luxury overflow-hidden p-4">
-        <label className="block text-[10px] uppercase tracking-[0.28em] text-white/35">
+      <div ref={dropdownRef} className="overflow-hidden rounded-[28px] border border-luxury-burgundy/12 bg-white p-4 shadow-[0_20px_48px_rgba(157,34,53,0.08)]">
+        <label className="block text-[10px] uppercase tracking-[0.28em] text-black/35">
           {t('shop.home.models.mobileSelectLabel')}
         </label>
         <div className="relative mt-3">
@@ -152,13 +175,13 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
             aria-expanded={isOpen}
             aria-haspopup="listbox"
             onClick={() => setIsOpen((value) => !value)}
-            className="group flex min-h-15 w-full items-center justify-between gap-4 border border-white/10 bg-white/[0.02] px-4 py-4 text-left transition-colors duration-300 hover:border-white/20"
+            className="group flex min-h-15 w-full items-center justify-between gap-4 rounded-2xl border border-black/8 bg-[#fff8f7] px-4 py-4 text-left transition-colors duration-300 hover:border-luxury-burgundy/20"
           >
             <div className="min-w-0">
-              <p className="truncate text-lg font-semibold text-white">
+              <p className="truncate text-lg font-semibold text-[#1c1716]">
                 {localizedText(selectedModel.name, { lng: i18n.language })}
               </p>
-              <p className="mt-1 text-[11px] uppercase tracking-[0.24em] text-white/40">
+              <p className="mt-1 text-[11px] uppercase tracking-[0.24em] text-black/40">
                 {selectedModel.code}
               </p>
             </div>
@@ -177,7 +200,7 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.98 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute left-0 right-0 top-[calc(100%+12px)] z-30 overflow-hidden border border-white/10 bg-luxury-black/95 shadow-[0_24px_60px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+                className="absolute left-0 right-0 top-[calc(100%+12px)] z-30 overflow-hidden rounded-[24px] border border-luxury-burgundy/12 bg-[rgba(255,252,251,0.98)] shadow-[0_24px_60px_rgba(157,34,53,0.12)] backdrop-blur-xl"
               >
                 <div
                   role="listbox"
@@ -198,15 +221,15 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
                         }}
                         className={`flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors duration-200 ${
                           isSelected
-                            ? 'bg-luxury-burgundy/12 text-white'
-                            : 'text-white/70 hover:bg-white/[0.04] hover:text-white'
+                            ? 'bg-luxury-burgundy/10 text-[#691324]'
+                            : 'text-black/68 hover:bg-black/[0.03] hover:text-black'
                         }`}
                       >
                         <div className="min-w-0">
                           <p className="text-base font-semibold leading-tight">
                             {localizedText(model.name, { lng: i18n.language })}
                           </p>
-                          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-white/35">
+                          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-black/35">
                             {model.code}
                           </p>
                         </div>
@@ -214,7 +237,7 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
                           className={`shrink-0 border px-3 py-1 text-[10px] uppercase tracking-[0.22em] ${
                             isSelected
                               ? 'border-luxury-burgundy/50 bg-luxury-burgundy/10 text-luxury-burgundy'
-                              : 'border-white/10 text-white/35'
+                              : 'border-black/10 text-black/35'
                           }`}
                         >
                           {model.code}
@@ -235,14 +258,14 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -14 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-4 overflow-hidden border border-white/10 bg-white/[0.02] p-5"
+            className="mt-4 overflow-hidden rounded-2xl border border-black/8 bg-[#fff8f7] p-5"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-2xl font-semibold leading-tight text-white">
+                <p className="text-2xl font-semibold leading-tight text-[#1c1716]">
                   {localizedText(selectedModel.name, { lng: i18n.language })}
                 </p>
-                <p className="mt-3 max-w-[20rem] text-sm leading-7 text-white/55">
+                <p className="mt-3 max-w-[20rem] text-sm leading-7 text-black/55">
                   {t('shop.home.models.link')}
                 </p>
               </div>
@@ -252,7 +275,7 @@ const MobileModelPicker = ({ models }: { models: HongqiModel[] }) => {
             </div>
             <Link
               to={`/hongqi-parts/catalog?model=${encodeURIComponent(selectedModel.code)}`}
-              className="mt-5 inline-flex min-h-11 items-center justify-center border border-luxury-burgundy/40 px-4 text-[11px] uppercase tracking-[0.24em] text-white transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/10"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-luxury-burgundy/30 bg-white px-4 text-[11px] uppercase tracking-[0.24em] text-[#7a2433] transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/8"
             >
               {t('shop.home.models.mobileCta')}
             </Link>
@@ -277,25 +300,25 @@ const MobileCategoryAccordion = ({ categories }: { categories: CategoryItem[] })
         {categories.map((category) => {
           const isOpen = openId === category.id;
           return (
-            <div key={category.id} className="card-luxury overflow-hidden">
+            <div key={category.id} className="overflow-hidden rounded-[28px] border border-luxury-burgundy/12 bg-white shadow-[0_20px_48px_rgba(157,34,53,0.08)]">
               <button
                 type="button"
                 onClick={() => setOpenId(isOpen ? '' : category.id)}
                 className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
               >
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-white/35">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-black/35">
                     {t('shop.home.categories.mobileLabel')}
                   </p>
-                  <p className="mt-2 text-xl font-semibold leading-tight text-white">
+                  <p className="mt-2 text-xl font-semibold leading-tight text-[#1c1716]">
                     {localizedText(category.name, { lng: i18n.language })}
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-white/50">
+                  <p className="mt-2 text-sm leading-6 text-black/55">
                     {localizedText(category.description, { lng: i18n.language })}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
-                  <span className="border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-white/45">
+                  <span className="border border-black/10 px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-black/45">
                     {String(category.subcategories.length).padStart(2, '0')}
                   </span>
                   <ChevronDownIcon open={isOpen} />
@@ -309,13 +332,13 @@ const MobileCategoryAccordion = ({ categories }: { categories: CategoryItem[] })
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden border-t border-white/10"
+                    className="overflow-hidden border-t border-black/8"
                   >
                     <div className="space-y-3 px-4 py-4">
                       {category.subcategories.slice(0, 4).map((subcategory) => (
                         <div
                           key={subcategory.id}
-                          className="flex items-center gap-3 text-sm leading-6 text-white/60"
+                          className="flex items-center gap-3 text-sm leading-6 text-black/60"
                         >
                           <span className="h-1.5 w-1.5 rounded-full bg-luxury-burgundy" />
                           <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
@@ -323,7 +346,7 @@ const MobileCategoryAccordion = ({ categories }: { categories: CategoryItem[] })
                       ))}
                       <Link
                         to={`/hongqi-parts/catalog/${category.slug}`}
-                        className="mt-2 inline-flex min-h-11 items-center justify-center border border-luxury-burgundy/40 px-4 text-[11px] uppercase tracking-[0.24em] text-white transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/10"
+                        className="mt-2 inline-flex min-h-11 items-center justify-center rounded-xl border border-luxury-burgundy/30 bg-[#fff8f7] px-4 text-[11px] uppercase tracking-[0.24em] text-[#7a2433] transition-colors duration-300 hover:border-luxury-burgundy hover:bg-luxury-burgundy/8"
                       >
                         {t('shop.home.categories.mobileCta')}
                       </Link>
@@ -349,7 +372,7 @@ const ShopAsyncState = ({ embedded = false }: { embedded?: boolean }) => {
 
   return (
     <div
-      className={`card-luxury ${embedded ? '' : 'mt-8'} p-6 text-white/65`}
+      className={`card-luxury ${embedded ? '' : 'mt-8'} p-6 text-black/60`}
       role={loadError ? 'alert' : 'status'}
     >
       {isLoading ? t('common.loading', 'Загрузка...') : loadError}
@@ -383,17 +406,17 @@ const SmartImage = ({
   if (!sources.length || showFallbackCard) {
     return (
       <div
-        className={`relative overflow-hidden bg-[linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] ${className ?? ''}`.trim()}
+        className={`relative overflow-hidden bg-[linear-gradient(145deg,#fffefd,#fff6f4)] ${className ?? ''}`.trim()}
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.16),transparent_30%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.12),transparent_30%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-luxury-burgundy/12 to-transparent" />
         <div className="relative flex h-full w-full flex-col justify-between p-6">
           <span className="text-[10px] uppercase tracking-[0.28em] text-luxury-burgundy">
             Hongqi Parts
           </span>
           <div>
             <div className="h-px w-20 bg-luxury-burgundy/60" />
-            <p className="mt-4 text-lg font-semibold text-white">
+            <p className="mt-4 text-lg font-semibold text-[#1c1716]">
               {fallbackLabel || alt}
             </p>
           </div>
@@ -430,38 +453,44 @@ const ProductCard = ({ product }: { product: ProductItem }) => {
   const name = localizedText(product.name, { lng: i18n.language });
 
   return (
-    <article className="card-luxury flex h-full flex-col overflow-hidden">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-luxury-burgundy/12 bg-white shadow-[0_24px_60px_rgba(157,34,53,0.08)] transition-all duration-500 hover:-translate-y-1 hover:border-luxury-burgundy/20">
       <Link to={`/hongqi-parts/${product.slug}`} className="block overflow-hidden">
         <SmartImage
           src={product.images[0]}
           alt={name}
           fallbackLabel={product.article}
-          className="h-64 w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+          className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
         />
       </Link>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] uppercase tracking-[0.24em] text-white/45">
-          <span>{product.article}</span>
-          <span className={product.stock > 0 ? 'text-white/75' : 'text-luxury-burgundy'}>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.24em] text-black/40">
+          <span className="rounded-full border border-black/8 px-3 py-1">{product.article}</span>
+          <span
+            className={`rounded-full px-3 py-1 ${
+              product.stock > 0
+                ? 'border border-black/8 bg-[#fff8f7] text-black/70'
+                : 'border border-luxury-burgundy/30 bg-luxury-burgundy/10 text-luxury-burgundy'
+            }`}
+          >
             {stockLabel(product.stock, t)}
           </span>
         </div>
         <Link
           to={`/hongqi-parts/${product.slug}`}
-          className="mt-4 line-clamp-3 text-2xl font-semibold leading-tight text-white"
+          className="mt-5 line-clamp-3 text-[22px] font-semibold leading-tight text-[#1c1716] transition-colors duration-300 group-hover:text-[#6c1827]"
         >
           {name}
         </Link>
-        <p className="mt-3 text-sm text-white/50">{product.oem}</p>
-        <div className="mt-6 grid gap-2 text-sm text-white/60">
+        <p className="mt-3 text-sm text-black/40">{product.oem}</p>
+        <div className="mt-6 grid gap-2 text-sm text-black/55">
           <p>{product.manufacturer}</p>
           <p>{product.models.join(', ') || 'Hongqi'}</p>
         </div>
         <div className="mt-auto flex flex-wrap items-end justify-between gap-4 pt-8">
-          <span className="text-2xl font-semibold text-white">{formatPrice(product.price)}</span>
+          <span className="text-2xl font-semibold text-[#1c1716]">{formatPrice(product.price)}</span>
           <button
             onClick={() => addToCart(product.id)}
-            className="btn-primary px-5 py-3 text-[11px]"
+            className="inline-flex items-center gap-2 rounded-xl bg-luxury-burgundy px-5 py-3 text-[11px] uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-luxury-burgundyHover hover:shadow-[0_20px_40px_rgba(157,34,53,0.2)] disabled:cursor-not-allowed disabled:bg-black/8 disabled:text-black/35"
             disabled={product.stock <= 0}
           >
             {t('shop.actions.addToCart')}
@@ -503,6 +532,7 @@ const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
         value={name}
         onChange={(event) => setName(event.target.value)}
         placeholder={t('shop.forms.name')}
+        className="rounded-2xl"
         required
       />
       <Input
@@ -513,7 +543,7 @@ const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
         }}
         onBlur={() => setPhoneTouched(true)}
         placeholder={t('shop.forms.phone')}
-        className={phoneError ? 'border-luxury-burgundy/70 focus:border-luxury-burgundy/80' : ''}
+        className={`rounded-2xl ${phoneError ? 'border-luxury-burgundy/70 focus:border-luxury-burgundy/80' : ''}`}
         required
       />
       {phoneError ? (
@@ -525,20 +555,256 @@ const QuickRequestForm = ({ compact = false }: { compact?: boolean }) => {
         value={vin}
         onChange={(event) => setVin(event.target.value)}
         placeholder={t('shop.forms.vin')}
+        className="rounded-2xl"
         required
       />
       <Input
         value={comment}
         onChange={(event) => setComment(event.target.value)}
         placeholder={t('shop.forms.comment')}
+        className="rounded-2xl"
       />
       <div className={`${compact ? '' : 'lg:col-span-2'} flex flex-wrap items-center gap-4`}>
-        <button className="btn-primary" type="submit">
+        <button
+          className="inline-flex items-center rounded-xl bg-luxury-burgundy px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-luxury-burgundyHover hover:shadow-[0_20px_40px_rgba(157,34,53,0.28)]"
+          type="submit"
+        >
           {t('shop.actions.sendRequest')}
         </button>
-        {sent ? <span className="text-sm text-white/60">{t('shop.forms.success')}</span> : null}
+        {sent ? <span className="text-sm text-black/60">{t('shop.forms.success')}</span> : null}
       </div>
     </form>
+  );
+};
+
+const OwnerHeroSection = () => {
+  const { t } = useTranslation();
+  const chips = [
+    {
+      label: t('shop.home.hero.chips.service'),
+      value: t('shop.home.hero.stats.hoursValue'),
+    },
+    {
+      label: t('shop.home.hero.chips.parts'),
+      value: t('shop.home.hero.stats.partsValue'),
+    },
+    {
+      label: t('shop.home.hero.chips.support'),
+      value: t('shop.home.hero.stats.supportValue'),
+    },
+  ];
+
+  return (
+    <section className="relative flex min-h-[calc(100vh-110px)] items-center overflow-hidden border-y border-black/6 bg-[linear-gradient(180deg,#fff8f5_0%,#f3e8e4_100%)]">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-luxury-burgundy/10 to-transparent" />
+        <div className="absolute left-16 top-12 h-72 w-72 rounded-full bg-luxury-burgundy/14 blur-3xl" />
+        <div className="absolute bottom-0 right-10 h-96 w-96 rounded-full bg-white/90 blur-3xl" />
+        <div className="absolute right-[8%] top-[15%] h-40 w-40 rounded-full border border-luxury-burgundy/10 bg-white/50 blur-2xl" />
+        <div className="absolute left-[48%] top-0 h-full w-px bg-gradient-to-b from-transparent via-luxury-burgundy/18 to-transparent opacity-60" />
+        <svg
+          className="absolute inset-0 h-full w-full opacity-[0.03]"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <pattern id="owner-hero-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#9d2235" strokeOpacity="0.16" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#owner-hero-grid)" />
+        </svg>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-16 lg:px-16 lg:py-20 xl:py-24">
+        <div className="relative lg:min-h-[640px] xl:min-h-[720px]">
+          <div className="relative z-20 max-w-2xl lg:max-w-[860px] xl:max-w-[980px]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-luxury-burgundy/12 bg-white/85 px-4 py-2 shadow-[0_14px_32px_rgba(157,34,53,0.05)]">
+              <span className="h-2 w-2 rounded-full bg-luxury-burgundy" />
+              <span className="text-[10px] uppercase tracking-[0.28em] text-black/50">
+                {t('shop.home.hero.dealerBadge')}
+              </span>
+            </div>
+            <h1 className="mt-8 font-display text-[clamp(48px,7vw,96px)] font-semibold leading-[0.98] tracking-tight text-[#1d1716]">
+              {t('shop.home.hero.titleLine1')}
+              <br />
+              <span className="text-luxury-burgundy">{t('shop.home.hero.titleHighlight')}</span>
+              <br />
+              <span className="text-black/30">{t('shop.home.hero.titleLine2')}</span>
+            </h1>
+            <p className="mt-8 max-w-xl text-[17px] leading-8 text-black/64">
+              {t('shop.home.hero.subtitle')}
+            </p>
+
+            <div className="mt-10 flex flex-wrap gap-3">
+              <Link
+                to="/hongqi-parts#service-booking"
+                className="inline-flex items-center gap-2.5 rounded-2xl bg-luxury-burgundy px-8 py-4 text-[11px] font-medium uppercase tracking-[0.18em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-luxury-burgundyHover hover:shadow-[0_22px_48px_rgba(157,34,53,0.26)]"
+              >
+                {t('shop.home.quickActions.service.title')}
+                <ArrowRight size={15} />
+              </Link>
+              <Link
+                to="/hongqi-parts/catalog"
+                className="inline-flex items-center rounded-2xl border border-luxury-burgundy/24 bg-[linear-gradient(180deg,#fff6f3_0%,#fff0eb_100%)] px-8 py-4 text-[11px] font-medium uppercase tracking-[0.18em] text-[#68202c] shadow-[0_16px_36px_rgba(157,34,53,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-luxury-burgundy/36 hover:bg-[linear-gradient(180deg,#fffaf8_0%,#fff4f0_100%)] hover:text-[#52131f]"
+              >
+                {t('shop.actions.goCatalog')}
+              </Link>
+              <Link
+                to="/hongqi-parts/request"
+                className="inline-flex min-h-[52px] items-center justify-center rounded-2xl border border-luxury-burgundy/24 bg-[linear-gradient(180deg,#fff6f3_0%,#fff0eb_100%)] px-7 py-3 text-[11px] uppercase tracking-[0.24em] text-[#68202c] shadow-[0_16px_36px_rgba(157,34,53,0.08)] transition-all duration-300 hover:-translate-y-0.5 hover:border-luxury-burgundy/36 hover:bg-[linear-gradient(180deg,#fffaf8_0%,#fff4f0_100%)] hover:text-[#52131f]"
+              >
+                {t('shop.actions.sendRequest')}
+              </Link>
+            </div>
+
+            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+              {chips.map((chip, index) => (
+                <div
+                  key={chip.label}
+                  className="rounded-[24px] border border-luxury-burgundy/14 bg-[linear-gradient(180deg,#ffffff_0%,#fff5f1_100%)] p-4 shadow-[0_16px_32px_rgba(157,34,53,0.06)]"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.26em] text-luxury-burgundy">
+                    0{index + 1}
+                  </p>
+                  <p className="mt-3 text-sm font-medium text-[#1d1716]">{chip.label}</p>
+                  <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-black/52">
+                    {chip.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden lg:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-[58%] xl:w-[60%]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+              className="relative mt-14 h-[420px] overflow-hidden rounded-[36px] border border-luxury-burgundy/14 bg-white shadow-[0_30px_72px_rgba(157,34,53,0.14)] xl:mt-10 xl:h-[520px]"
+            >
+              <SmartImage
+                src={SITE_IMAGES.hero}
+                alt="Hongqi Owners"
+                className="h-full w-full object-cover opacity-95"
+              />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,248,245,0.98)_0%,rgba(255,248,245,0.92)_14%,rgba(255,248,245,0.74)_28%,rgba(255,248,245,0.4)_42%,rgba(255,248,245,0.16)_56%,rgba(255,248,245,0.04)_72%,rgba(255,248,245,0.08)_100%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,248,247,0.04)_48%,rgba(255,248,247,0.78)_100%)]" />
+              <div className="absolute left-6 top-6 rounded-full border border-white/60 bg-white/74 px-4 py-2 text-[10px] uppercase tracking-[0.24em] text-black/48 backdrop-blur-sm">
+                {t('shop.home.hero.dealerBadge')}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <ShopAsyncState />
+      </div>
+    </section>
+  );
+};
+
+const OwnerQuickActions = () => {
+  const { t } = useTranslation();
+  const items = [
+    {
+      key: 'service',
+      to: '/hongqi-parts#service-booking',
+      icon: Wrench,
+      title: t('shop.home.quickActions.service.title'),
+      description: t('shop.home.quickActions.service.description'),
+      tone: 'light',
+    },
+    {
+      key: 'catalog',
+      to: '/hongqi-parts#parts',
+      icon: Package,
+      title: t('shop.home.quickActions.catalog.title'),
+      description: t('shop.home.quickActions.catalog.description'),
+      tone: 'ivory',
+    },
+    {
+      key: 'request',
+      to: '/hongqi-parts/request',
+      icon: MessageCircle,
+      title: t('shop.home.quickActions.request.title'),
+      description: t('shop.home.quickActions.request.description'),
+      tone: 'accent',
+    },
+    {
+      key: 'stores',
+      to: '/hongqi-parts/stores',
+      icon: MapPin,
+      title: t('shop.home.quickActions.stores.title'),
+      description: t('shop.home.quickActions.stores.description'),
+      tone: 'light',
+    },
+  ];
+
+  return (
+    <section className="container relative z-10 mx-auto -mt-8 px-6 pb-10 lg:px-16 lg:pb-14">
+      <div className="rounded-[38px] border border-luxury-burgundy/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(255,244,241,0.96)_100%)] p-4 shadow-[0_24px_64px_rgba(157,34,53,0.08)] backdrop-blur-sm lg:p-5">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {items.map((item, index) => (
+          <motion.div
+            key={item.key}
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.55, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <Link
+              to={item.to}
+              className={`group relative flex h-full flex-col overflow-hidden rounded-[30px] border p-6 transition-all duration-500 hover:-translate-y-1 ${
+                item.tone === 'accent'
+                  ? 'border-transparent bg-[linear-gradient(160deg,#9d2235_0%,#ba354d_100%)] text-white shadow-[0_24px_60px_rgba(157,34,53,0.24)]'
+                  : item.tone === 'ivory'
+                    ? 'border-luxury-burgundy/16 bg-[linear-gradient(180deg,#fff3ee_0%,#ffeae4_100%)] shadow-[0_24px_60px_rgba(157,34,53,0.1)] hover:border-luxury-burgundy/28'
+                    : 'border-luxury-burgundy/16 bg-[linear-gradient(180deg,#ffffff_0%,#fff5f1_100%)] shadow-[0_24px_60px_rgba(157,34,53,0.1)] hover:border-luxury-burgundy/28'
+              }`}
+            >
+              {item.tone !== 'accent' ? (
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-luxury-burgundy via-luxury-burgundy/55 to-transparent" />
+              ) : null}
+              <div className="flex items-start justify-between gap-4">
+                <div
+                  className={`flex h-12 w-12 items-center justify-center rounded-2xl border transition-colors duration-300 ${
+                    item.tone === 'accent'
+                      ? 'border-white/18 bg-white/10'
+                      : 'border-luxury-burgundy/18 bg-white/75 group-hover:border-luxury-burgundy/40 group-hover:bg-luxury-burgundy/10'
+                  }`}
+                >
+                  <item.icon
+                    size={20}
+                    className={`transition-colors duration-300 ${
+                      item.tone === 'accent'
+                        ? 'text-white'
+                        : 'text-[#6a1f2d] group-hover:text-luxury-burgundy'
+                    }`}
+                  />
+                </div>
+                <div
+                  className={`text-[10px] uppercase tracking-[0.26em] ${
+                    item.tone === 'accent' ? 'text-white/70' : 'text-luxury-burgundy'
+                  }`}
+                >
+                  0{index + 1}
+                </div>
+              </div>
+              <h2 className={`mt-8 text-2xl font-semibold leading-tight ${item.tone === 'accent' ? 'text-white' : 'text-[#1c1716]'}`}>
+                {item.title}
+              </h2>
+              <p className={`mt-4 flex-1 text-sm leading-7 ${item.tone === 'accent' ? 'text-white/78' : 'text-black/68'}`}>
+                {item.description}
+              </p>
+              <span className={`mt-8 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] ${item.tone === 'accent' ? 'text-white' : 'text-[#6a1f2d]'}`}>
+                {t('shop.home.quickActions.linkLabel')}
+                <ArrowRight size={14} />
+              </span>
+            </Link>
+          </motion.div>
+        ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -552,7 +818,7 @@ const Breadcrumbs = ({
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-white/40">
+    <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-black/40">
       <Link to="/">{t('nav.home')}</Link>
       <span>/</span>
       <Link to="/hongqi-parts">{t('shop.routes.shop')}</Link>
@@ -577,139 +843,153 @@ const Breadcrumbs = ({
 export const ShopHomePage = () => {
   const { t, i18n } = useTranslation();
   const { state } = useShop();
-  const seoPage = useShopSeo('/hongqi-parts');
+  useShopSeo('/hongqi-parts');
+
+  const popularProducts = state.products.filter((product) => product.popular);
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
-      <section className="relative overflow-hidden border-y border-white/5">
-        <div className="absolute inset-0">
-          <SmartImage
-            src={SITE_IMAGES.hero}
-            alt="Hongqi"
-            className="h-full w-full object-cover opacity-30"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,5,5,0.55)_0%,rgba(5,5,5,0.88)_55%,rgba(5,5,5,0.98)_100%)]" />
-        </div>
-        <div className="relative z-10 container mx-auto px-6 py-20 sm:py-24 lg:px-16 lg:py-28">
-          <div className="max-w-5xl">
-            <p className="mb-5 text-[11px] uppercase tracking-[0.3em] text-luxury-burgundy">
-              {t('shop.home.hero.eyebrow')}
-            </p>
-            <h1 className="text-[clamp(42px,7vw,88px)] font-display font-light leading-[0.98] text-white">
-              {localizedText(seoPage?.h1 ?? { ru: t('shop.home.hero.title'), en: t('shop.home.hero.title'), kz: t('shop.home.hero.title') }, { lng: i18n.language })}
-            </h1>
-            <p className="mt-6 max-w-3xl text-base leading-7 text-white/60">
-              {t('shop.home.hero.subtitle')}
-            </p>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link to="/hongqi-parts/catalog" className="btn-primary">
-                {t('shop.actions.goCatalog')}
-              </Link>
-              <Link to="/hongqi-parts/request" className="btn-outline">
-                {t('shop.actions.pickByModel')}
-              </Link>
-              <Link to="/hongqi-parts/stores" className="btn-outline">
-                {t('shop.stores.title')}
-              </Link>
+    <div className="owners-shell min-h-screen bg-[#f7f2f0] pt-24 sm:pt-28 lg:pt-32 text-[#1c1716]">
+      <OwnerHeroSection />
+      <OwnerQuickActions />
+      <OwnerServiceHub />
+
+      <section id="parts" className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="relative overflow-hidden rounded-[40px] border border-luxury-burgundy/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(255,248,246,0.94)_100%)] px-6 py-8 shadow-[0_28px_72px_rgba(157,34,53,0.08)] lg:px-8 lg:py-10">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-12 top-0 h-40 w-40 rounded-full bg-luxury-burgundy/10 blur-3xl" />
+            <div className="absolute right-0 top-0 h-56 w-56 rounded-full bg-[#fff2ee] blur-3xl" />
+          </div>
+          <div className="relative z-10 mb-10 flex flex-wrap items-start justify-between gap-5">
+            <div className="max-w-3xl">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+                {t('shop.home.models.eyebrow')}
+              </p>
+              <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.models.title')}</h2>
+            </div>
+            <div className="grid min-w-[220px] gap-3 sm:grid-cols-2">
+              <div className="rounded-[24px] border border-luxury-burgundy/12 bg-white/90 px-5 py-4 shadow-[0_16px_36px_rgba(157,34,53,0.06)]">
+                <p className="text-[10px] uppercase tracking-[0.26em] text-black/38">
+                  {t('shop.home.models.eyebrow')}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[#1c1716]">
+                  {String(state.models.length).padStart(2, '0')}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-luxury-burgundy/12 bg-[#fff6f3] px-5 py-4 shadow-[0_16px_36px_rgba(157,34,53,0.06)]">
+                <p className="text-[10px] uppercase tracking-[0.26em] text-black/38">
+                  {t('shop.home.categories.eyebrow')}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-[#1c1716]">
+                  {String(state.categories.length).padStart(2, '0')}
+                </p>
+              </div>
             </div>
           </div>
-          <ShopAsyncState />
-        </div>
-      </section>
-
-      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            {t('shop.home.models.eyebrow')}
-          </p>
-          <h2 className="mt-4 text-h2 text-white">{t('shop.home.models.title')}</h2>
-        </div>
-        <MobileModelPicker models={state.models} />
-        <div className="hidden gap-4 md:grid md:grid-cols-2 xl:grid-cols-5">
-          {state.models.map((model) => (
-            <Link
-              key={model.id}
-              to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
-              className="card-luxury group relative overflow-hidden p-6"
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,18,52,0.16),transparent_35%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="relative z-10 flex h-full min-h-[180px] flex-col justify-between">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-xl font-semibold text-white transition-colors duration-300 group-hover:text-luxury-cream">
-                    {localizedText(model.name, { lng: i18n.language })}
-                  </p>
-                  <span className="border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-luxury-burgundy">
-                    {model.code}
-                  </span>
-                </div>
-                <div className="mt-8">
-                  <div className="h-px w-full bg-gradient-to-r from-luxury-burgundy/50 via-white/10 to-transparent" />
-                  <p className="mt-4 text-sm leading-7 text-white/55">
-                    {t('shop.home.models.link')}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            {t('shop.home.categories.eyebrow')}
-          </p>
-          <h2 className="mt-4 text-h2 text-white">{t('shop.home.categories.title')}</h2>
-        </div>
-        <MobileCategoryAccordion categories={state.categories} />
-        <div className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
-          {state.categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/hongqi-parts/catalog/${category.slug}`}
-              className="card-luxury group relative overflow-hidden p-6"
-            >
-              <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.03),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(168,18,52,0.16),transparent_38%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <div className="relative z-10 flex h-full min-h-[240px] flex-col">
-                <div className="flex items-start justify-between gap-4">
-                  <h3 className="text-[26px] font-semibold leading-tight text-white">
-                    {localizedText(category.name, { lng: i18n.language })}
-                  </h3>
-                  <span className="shrink-0 border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white/45">
-                    {String(category.subcategories.length).padStart(2, '0')}
-                  </span>
-                </div>
-                <p className="mt-4 text-sm leading-7 text-white/60">
-                  {localizedText(category.description, { lng: i18n.language })}
-                </p>
-                <div className="mt-auto pt-8">
-                  <div className="grid gap-2">
-                    {category.subcategories.slice(0, 3).map((subcategory) => (
-                      <div
-                        key={subcategory.id}
-                        className="flex items-center gap-3 text-sm text-white/50"
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full bg-luxury-burgundy" />
-                        <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
-                      </div>
-                    ))}
+          <MobileModelPicker models={state.models} />
+          <div className="hidden gap-4 md:grid md:grid-cols-2 xl:grid-cols-5">
+            {state.models.map((model, index) => (
+              <Link
+                key={model.id}
+                to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
+                className="group relative overflow-hidden rounded-[30px] border border-luxury-burgundy/12 bg-white/95 p-6 shadow-[0_20px_48px_rgba(157,34,53,0.08)] transition-all duration-500 hover:-translate-y-1.5 hover:border-luxury-burgundy/22"
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(157,34,53,0.04),transparent_55%),radial-gradient(circle_at_top_right,rgba(168,18,52,0.12),transparent_36%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10 flex h-full min-h-[210px] flex-col justify-between">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.24em] text-luxury-burgundy">
+                        {String(index + 1).padStart(2, '0')}
+                      </p>
+                      <p className="mt-4 text-xl font-semibold text-[#1c1716] transition-colors duration-300 group-hover:text-[#6c1827]">
+                        {localizedText(model.name, { lng: i18n.language })}
+                      </p>
+                    </div>
+                    <span className="border border-luxury-burgundy/35 bg-luxury-burgundy/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-luxury-burgundy">
+                      {model.code}
+                    </span>
+                  </div>
+                  <div className="mt-8">
+                    <div className="h-px w-full bg-gradient-to-r from-luxury-burgundy/40 via-black/8 to-transparent" />
+                    <p className="mt-4 text-sm leading-7 text-black/55">
+                      {t('shop.home.models.link')}
+                    </p>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
-        <div className="mb-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            {t('shop.home.popular.eyebrow')}
-          </p>
-          <h2 className="mt-4 text-h2 text-white">{t('shop.home.popular.title')}</h2>
+        <div className="relative overflow-hidden rounded-[40px] border border-luxury-burgundy/12 bg-white px-6 py-8 shadow-[0_28px_72px_rgba(157,34,53,0.08)] lg:px-8 lg:py-10">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(157,34,53,0.03)_0%,transparent_44%,rgba(157,34,53,0.05)_100%)]" />
+          <div className="relative z-10 mb-10 max-w-3xl">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.home.categories.eyebrow')}
+            </p>
+            <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.categories.title')}</h2>
+          </div>
+          <MobileCategoryAccordion categories={state.categories} />
+          <div className="hidden gap-5 md:grid md:grid-cols-2 xl:grid-cols-4">
+            {state.categories.map((category, index) => (
+              <Link
+                key={category.id}
+                to={`/hongqi-parts/catalog/${category.slug}`}
+                className="group relative overflow-hidden rounded-[30px] border border-luxury-burgundy/12 bg-[linear-gradient(180deg,#ffffff_0%,#fff8f6_100%)] p-6 shadow-[0_20px_48px_rgba(157,34,53,0.08)] transition-all duration-500 hover:-translate-y-1.5 hover:border-luxury-burgundy/22"
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(157,34,53,0.04),transparent_55%),radial-gradient(circle_at_bottom_left,rgba(168,18,52,0.12),transparent_38%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div className="relative z-10 flex h-full min-h-[260px] flex-col">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.24em] text-luxury-burgundy">
+                        {String(index + 1).padStart(2, '0')}
+                      </p>
+                      <h3 className="mt-4 text-[26px] font-semibold leading-tight text-[#1c1716]">
+                        {localizedText(category.name, { lng: i18n.language })}
+                      </h3>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-black/10 bg-white/80 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-black/45">
+                      {String(category.subcategories.length).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-black/60">
+                    {localizedText(category.description, { lng: i18n.language })}
+                  </p>
+                  <div className="mt-auto pt-8">
+                    <div className="grid gap-2">
+                      {category.subcategories.slice(0, 3).map((subcategory) => (
+                        <div
+                          key={subcategory.id}
+                          className="flex items-center gap-3 text-sm text-black/55"
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full bg-luxury-burgundy" />
+                          <span>{localizedText(subcategory.name, { lng: i18n.language })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
+        <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
+          <div className="max-w-3xl">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+              {t('shop.home.popular.eyebrow')}
+            </p>
+            <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.popular.title')}</h2>
+          </div>
+          <div className="rounded-full border border-luxury-burgundy/12 bg-white px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-black/45 shadow-[0_14px_32px_rgba(157,34,53,0.06)]">
+            {String(popularProducts.length).padStart(2, '0')}
+          </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {state.products.filter((product) => product.popular).map((product) => (
+          {popularProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -717,50 +997,86 @@ export const ShopHomePage = () => {
 
       <section className="container mx-auto px-6 py-16 lg:px-16 lg:py-20">
         <div className="grid gap-8 xl:grid-cols-[1.05fr_0.95fr]">
-          <div className="card-luxury p-8">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-              {t('shop.home.advantages.eyebrow')}
-            </p>
-            <h2 className="mt-4 text-h2 text-white">{t('shop.home.advantages.title')}</h2>
-            <div className="mt-8 grid gap-4">
-              {['original', 'china', 'delivery', 'guarantee', 'payments'].map((key) => (
-                <div
-                  key={key}
-                  className="grid gap-3 border border-white/10 bg-white/[0.02] p-4 text-white/75 sm:grid-cols-[24px_1fr] sm:items-start"
-                >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-luxury-burgundy/50 bg-luxury-burgundy/10 text-sm text-luxury-burgundy">
-                    ✓
-                  </span>
-                  <span>{t(`shop.home.advantages.items.${key}`)}</span>
-                </div>
-              ))}
+          <div className="relative overflow-hidden rounded-[32px] border border-luxury-burgundy/12 bg-white p-8 shadow-[0_20px_48px_rgba(157,34,53,0.08)]">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(157,34,53,0.08),transparent_32%)]" />
+            <div className="relative z-10">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+                {t('shop.home.advantages.eyebrow')}
+              </p>
+              <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.advantages.title')}</h2>
+              <div className="mt-8 grid gap-4">
+                {['original', 'china', 'delivery', 'guarantee', 'payments'].map((key, index) => (
+                  <div
+                    key={key}
+                    className="grid gap-3 rounded-[22px] border border-black/8 bg-[#fff9f8] p-4 text-black/72 sm:grid-cols-[32px_1fr] sm:items-start"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full border border-luxury-burgundy/50 bg-luxury-burgundy/10 text-[11px] uppercase tracking-[0.14em] text-luxury-burgundy">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span>{t(`shop.home.advantages.items.${key}`)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="card-luxury p-8">
-            <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-              {t('shop.home.steps.eyebrow')}
-            </p>
-            <h2 className="mt-4 text-h2 text-white">{t('shop.home.steps.title')}</h2>
-            <div className="mt-8 grid gap-4">
-              {[1, 2, 3, 4].map((index) => (
-                <div key={index} className="grid gap-3 border border-white/10 p-4 sm:grid-cols-[56px_1fr]">
-                  <span className="text-lg text-luxury-burgundy">{String(index).padStart(2, '0')}</span>
-                  <span className="text-white/75">{t(`shop.home.steps.items.${index}`)}</span>
-                </div>
-              ))}
+          <div className="relative overflow-hidden rounded-[32px] border border-luxury-burgundy/12 bg-[linear-gradient(180deg,#fff7f5_0%,#ffffff_100%)] p-8 shadow-[0_20px_48px_rgba(157,34,53,0.08)]">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(157,34,53,0.06),transparent_40%)]" />
+            <div className="relative z-10">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+                {t('shop.home.steps.eyebrow')}
+              </p>
+              <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.steps.title')}</h2>
+              <div className="mt-8 grid gap-4">
+                {[1, 2, 3, 4].map((index) => (
+                  <div
+                    key={index}
+                    className="grid gap-3 rounded-[22px] border border-black/8 bg-white/92 p-4 sm:grid-cols-[64px_1fr] sm:items-start"
+                  >
+                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-luxury-burgundy text-[12px] uppercase tracking-[0.22em] text-white">
+                      {String(index).padStart(2, '0')}
+                    </span>
+                    <span className="text-black/72">{t(`shop.home.steps.items.${index}`)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <section className="container mx-auto px-6 pb-20 lg:px-16 lg:pb-24">
-        <div className="card-luxury overflow-hidden p-8 lg:p-10">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
-            {t('shop.home.request.eyebrow')}
-          </p>
-          <h2 className="mt-4 text-h2 text-white">{t('shop.home.request.title')}</h2>
-          <p className="mt-4 max-w-3xl text-white/60">{t('shop.home.request.subtitle')}</p>
-          <QuickRequestForm />
+        <div className="relative overflow-hidden rounded-[36px] border border-luxury-burgundy/12 bg-[linear-gradient(135deg,#fffafa_0%,#fff5f2_45%,#ffffff_100%)] p-8 shadow-[0_24px_60px_rgba(157,34,53,0.08)] lg:p-10">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -right-10 top-0 h-48 w-48 rounded-full bg-luxury-burgundy/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-[#fff1ec] blur-3xl" />
+          </div>
+          <div className="relative z-10 grid gap-8 xl:grid-cols-[0.78fr_1.22fr] xl:items-start">
+            <div>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
+                {t('shop.home.request.eyebrow')}
+              </p>
+              <h2 className="mt-4 text-h2 text-[#1c1716]">{t('shop.home.request.title')}</h2>
+              <p className="mt-4 max-w-xl text-black/60">{t('shop.home.request.subtitle')}</p>
+              <div className="mt-8 grid gap-3">
+                {[
+                  t('shop.home.quickActions.request.title'),
+                  t('shop.home.quickActions.catalog.title'),
+                  t('shop.home.quickActions.stores.title'),
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-center gap-3 rounded-2xl border border-black/8 bg-white/85 px-4 py-4 text-sm text-black/68"
+                  >
+                    <span className="h-2 w-2 rounded-full bg-luxury-burgundy" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-[30px] border border-luxury-burgundy/12 bg-white/94 p-6 shadow-[0_20px_48px_rgba(157,34,53,0.08)] lg:p-7">
+              <QuickRequestForm />
+            </div>
+          </div>
         </div>
       </section>
     </div>
@@ -863,8 +1179,8 @@ export const ShopCatalogPage = () => {
     (category?.subcategories.length ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
-      <section className="border-y border-white/5 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%)]">
+    <OwnersSubpageShell>
+      <section className="border-y border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.6)_0%,rgba(255,255,255,0)_100%)]">
         <div className="container mx-auto px-6 py-14 lg:px-16 lg:py-16">
           <ShopSectionIntro
             eyebrow={t('shop.catalog.eyebrow')}
@@ -949,7 +1265,7 @@ export const ShopCatalogPage = () => {
 
           <div className="min-w-0">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <p className="text-sm text-white/55">{t('shop.catalog.found', { count: filtered.length })}</p>
+              <p className="text-sm text-black/55">{t('shop.catalog.found', { count: filtered.length })}</p>
               {(query || model || minPrice || maxPrice || availability !== 'all' || sort !== 'popular') ? (
                 <button
                   className="btn-outline px-4 py-2 text-[11px]"
@@ -982,10 +1298,10 @@ export const ShopCatalogPage = () => {
                     <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
                       {localizedText(category.name, { lng: i18n.language })}
                     </p>
-                    <h3 className="mt-4 text-2xl font-semibold text-white">
+                    <h3 className="mt-4 text-2xl font-semibold text-[#1c1716]">
                       {localizedText(item.name, { lng: i18n.language })}
                     </h3>
-                    <p className="mt-4 text-sm leading-7 text-white/55">
+                    <p className="mt-4 text-sm leading-7 text-black/55">
                       {t('shop.catalog.categoryFallback')}
                     </p>
                   </Link>
@@ -993,7 +1309,7 @@ export const ShopCatalogPage = () => {
               </div>
             ) : null}
             {items.length === 0 && !showSubcategoryFallback ? (
-              <div className="card-luxury mt-6 p-8 text-white/55">{t('shop.catalog.empty')}</div>
+              <div className="card-luxury mt-6 p-8 text-black/55">{t('shop.catalog.empty')}</div>
             ) : null}
             {pageCount > 1 ? (
               <div className="mt-10 flex flex-wrap gap-3">
@@ -1003,8 +1319,8 @@ export const ShopCatalogPage = () => {
                     onClick={() => setPage(value)}
                     className={`h-11 w-11 border text-sm ${
                       safePage === value
-                        ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-white'
-                        : 'border-white/15 text-white/60'
+                        ? 'border-luxury-burgundy bg-luxury-burgundy/10 text-[#6d1727]'
+                        : 'border-black/10 bg-white text-black/60'
                     }`}
                   >
                     {value}
@@ -1015,7 +1331,7 @@ export const ShopCatalogPage = () => {
           </div>
         </div>
       </section>
-    </div>
+    </OwnersSubpageShell>
   );
 };
 
@@ -1080,18 +1396,18 @@ export const ShopProductPage = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-luxury-black pt-32">
-        <div className="container mx-auto px-6 py-20 text-white/70 lg:px-16">
+      <OwnersSubpageShell>
+        <div className="container mx-auto px-6 py-20 text-black/70 lg:px-16">
           {t('shop.product.notFound')}
         </div>
-      </div>
+      </OwnersSubpageShell>
     );
   }
 
   const productName = localizedText(product.name, { lng: i18n.language });
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+    <OwnersSubpageShell>
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <Breadcrumbs category={category} />
 
@@ -1099,7 +1415,7 @@ export const ShopProductPage = () => {
           <div>
             <button
               type="button"
-              className="block w-full overflow-hidden border border-white/10 bg-luxury-elevated text-left"
+              className="block w-full overflow-hidden rounded-[28px] border border-luxury-burgundy/12 bg-white text-left shadow-[0_24px_60px_rgba(157,34,53,0.08)]"
               onClick={() => setIsZoomOpen(true)}
             >
               <SmartImage
@@ -1115,7 +1431,7 @@ export const ShopProductPage = () => {
                   key={`${image}-${index}`}
                   onClick={() => setActiveImage(index)}
                   className={`overflow-hidden border ${
-                    activeImage === index ? 'border-luxury-burgundy' : 'border-white/10'
+                    activeImage === index ? 'border-luxury-burgundy' : 'border-black/10'
                   }`}
                 >
                   <SmartImage
@@ -1132,30 +1448,30 @@ export const ShopProductPage = () => {
             <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
               {category ? localizedText(category.name, { lng: i18n.language }) : 'Hongqi Parts'}
             </p>
-            <h1 className="mt-4 text-[clamp(30px,4vw,52px)] font-display font-light leading-[1.05] text-white">
+            <h1 className="mt-4 text-[clamp(30px,4vw,52px)] font-display font-light leading-[1.05] text-[#1c1716]">
               {productName}
             </h1>
-            <div className="mt-6 grid gap-3 border-y border-white/10 py-6 text-sm text-white/65 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 border-y border-black/8 py-6 text-sm text-black/62 sm:grid-cols-2">
               <p>
-                {t('shop.product.article')}: <span className="text-white">{product.article}</span>
+                {t('shop.product.article')}: <span className="text-[#1c1716]">{product.article}</span>
               </p>
               <p>
-                {t('shop.product.oem')}: <span className="text-white">{product.oem}</span>
+                {t('shop.product.oem')}: <span className="text-[#1c1716]">{product.oem}</span>
               </p>
               <p>
                 {t('shop.product.manufacturer')}:{' '}
-                <span className="text-white">{product.manufacturer}</span>
+                <span className="text-[#1c1716]">{product.manufacturer}</span>
               </p>
               <p>
                 {t('shop.product.availability')}:{' '}
-                <span className="text-white">{stockLabel(product.stock, t)}</span>
+                <span className="text-[#1c1716]">{stockLabel(product.stock, t)}</span>
               </p>
               <p className="sm:col-span-2">
-                {t('shop.product.stock')}: <span className="text-white">{product.stock}</span>
+                {t('shop.product.stock')}: <span className="text-[#1c1716]">{product.stock}</span>
               </p>
             </div>
-            <p className="mt-8 text-3xl font-semibold text-white">{formatPrice(product.price)}</p>
-            <p className="mt-4 text-base leading-7 text-white/70">
+            <p className="mt-8 text-3xl font-semibold text-[#1c1716]">{formatPrice(product.price)}</p>
+            <p className="mt-4 text-base leading-7 text-black/70">
               {localizedText(product.description, { lng: i18n.language })}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -1172,7 +1488,7 @@ export const ShopProductPage = () => {
                 </a>
               ) : null}
             </div>
-            <p className="mt-5 text-sm text-white/45">{t('shop.product.zoomHint')}</p>
+            <p className="mt-5 text-sm text-black/45">{t('shop.product.zoomHint')}</p>
           </div>
         </div>
 
@@ -1181,17 +1497,17 @@ export const ShopProductPage = () => {
             <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
               {t('shop.product.characteristicsEyebrow')}
             </p>
-            <h2 className="mt-4 text-h3 text-white">{t('shop.product.characteristics')}</h2>
-            <div className="mt-8 overflow-hidden rounded-sm border border-white/10">
+            <h2 className="mt-4 text-h3 text-[#1c1716]">{t('shop.product.characteristics')}</h2>
+            <div className="mt-8 overflow-hidden rounded-2xl border border-black/8">
               {product.specs.map((spec) => (
                 <div
                   key={spec.id}
-                  className="grid grid-cols-1 border-b border-white/10 last:border-b-0 sm:grid-cols-2"
+                  className="grid grid-cols-1 border-b border-black/8 last:border-b-0 sm:grid-cols-2"
                 >
-                  <div className="bg-white/5 px-4 py-3 text-white/60">
+                  <div className="bg-[#fff5f3] px-4 py-3 text-black/60">
                     {localizedText(spec.label, { lng: i18n.language })}
                   </div>
-                  <div className="px-4 py-3 text-white">
+                  <div className="px-4 py-3 text-[#1c1716]">
                     {localizedText(spec.value, { lng: i18n.language })}
                   </div>
                 </div>
@@ -1202,10 +1518,10 @@ export const ShopProductPage = () => {
             <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
               {t('shop.product.compatibilityEyebrow')}
             </p>
-            <h2 className="mt-4 text-h3 text-white">{t('shop.product.compatibility')}</h2>
+            <h2 className="mt-4 text-h3 text-[#1c1716]">{t('shop.product.compatibility')}</h2>
             <div className="mt-8 overflow-x-auto">
               <table className="w-full min-w-[540px] text-left text-sm">
-                <thead className="text-white/45">
+                <thead className="text-black/45">
                   <tr>
                     <th className="pb-3">{t('shop.product.table.model')}</th>
                     <th className="pb-3">{t('shop.product.table.year')}</th>
@@ -1217,7 +1533,7 @@ export const ShopProductPage = () => {
                   {product.compatibility.map((item, index) => (
                     <tr
                       key={`${item.modelCode}-${index}`}
-                      className="border-t border-white/10 text-white/75"
+                      className="border-t border-black/8 text-black/75"
                     >
                       <td className="py-3">{item.modelCode}</td>
                       <td className="py-3">{item.year}</td>
@@ -1236,8 +1552,8 @@ export const ShopProductPage = () => {
             <p className="text-[11px] uppercase tracking-[0.28em] text-luxury-burgundy">
               {t('shop.product.seoEyebrow')}
             </p>
-            <h2 className="mt-4 text-h3 text-white">{t('shop.product.descriptionTitle')}</h2>
-            <p className="mt-6 max-w-5xl text-base leading-7 text-white/70">
+            <h2 className="mt-4 text-h3 text-[#1c1716]">{t('shop.product.descriptionTitle')}</h2>
+            <p className="mt-6 max-w-5xl text-base leading-7 text-black/70">
               {localizedText(product.seoText, { lng: i18n.language })}
             </p>
           </div>
@@ -1245,7 +1561,7 @@ export const ShopProductPage = () => {
 
         {sameCategoryProducts.length ? (
           <section className="mt-16">
-            <h2 className="text-h3 text-white">{t('shop.product.related')}</h2>
+            <h2 className="text-h3 text-[#1c1716]">{t('shop.product.related')}</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
               {sameCategoryProducts.map((item) => (
                 <ProductCard key={item.id} product={item} />
@@ -1256,7 +1572,7 @@ export const ShopProductPage = () => {
 
         {similarProducts.length ? (
           <section className="mt-16">
-            <h2 className="text-h3 text-white">
+            <h2 className="text-h3 text-[#1c1716]">
               {t('shop.product.similar')}
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -1293,7 +1609,7 @@ export const ShopProductPage = () => {
           </div>
         </div>
       ) : null}
-    </div>
+    </OwnersSubpageShell>
   );
 };
 
@@ -1303,7 +1619,7 @@ export const ShopCartPage = () => {
   const subtotal = cartTotal;
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+    <OwnersSubpageShell>
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <ShopSectionIntro
           eyebrow={t('shop.cart.eyebrow', 'Shop cart')}
@@ -1315,8 +1631,8 @@ export const ShopCartPage = () => {
             <p className="text-sm uppercase tracking-[0.24em] text-luxury-burgundy">
               {t('shop.cart.emptyEyebrow', 'Cart')}
             </p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">{t('shop.cart.empty')}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-white/60">
+            <h2 className="mt-4 text-3xl font-semibold text-[#1c1716]">{t('shop.cart.empty')}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-black/60">
               {t('shop.cart.emptySubtitle', 'Добавьте нужные позиции из каталога, чтобы оформить заказ онлайн.')}
             </p>
             <Link to="/hongqi-parts/catalog" className="btn-primary mt-8 inline-flex">
@@ -1331,7 +1647,7 @@ export const ShopCartPage = () => {
                   <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-burgundy">
                     {t('shop.cart.title')}
                   </p>
-                  <p className="mt-2 text-sm text-white/60">
+                  <p className="mt-2 text-sm text-black/60">
                     {t('shop.cart.headerCount', { count: cartCount })}
                   </p>
                 </div>
@@ -1360,28 +1676,28 @@ export const ShopCartPage = () => {
                     </Link>
                     <div>
                       <div className="flex flex-wrap items-center justify-between gap-3">
-                        <Link to={`/hongqi-parts/${product.slug}`} className="text-xl font-semibold text-white">
+                        <Link to={`/hongqi-parts/${product.slug}`} className="text-xl font-semibold text-[#1c1716]">
                           {productName}
                         </Link>
-                        <span className={product.stock > 0 ? 'text-sm text-white/60' : 'text-sm text-luxury-burgundy'}>
+                        <span className={product.stock > 0 ? 'text-sm text-black/60' : 'text-sm text-luxury-burgundy'}>
                           {stockLabel(product.stock, t)}
                         </span>
                       </div>
-                      <div className="mt-3 grid gap-2 text-sm text-white/45">
+                      <div className="mt-3 grid gap-2 text-sm text-black/45">
                         <p>{t('shop.product.article')}: {product.article}</p>
                         <p>{t('shop.product.oem')}: {product.oem}</p>
                         <p>{t('shop.product.manufacturer')}: {product.manufacturer}</p>
                       </div>
                       <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <span className="text-sm text-white/45">{t('shop.cart.unitPrice', 'Цена за единицу')}</span>
-                        <span className="text-base text-white">{formatPrice(product.price)}</span>
+                        <span className="text-sm text-black/45">{t('shop.cart.unitPrice', 'Цена за единицу')}</span>
+                        <span className="text-base text-[#1c1716]">{formatPrice(product.price)}</span>
                       </div>
                     </div>
                     <div className="flex flex-col items-start gap-4 lg:items-end">
-                      <div className="flex items-center overflow-hidden border border-white/15">
+                      <div className="flex items-center overflow-hidden rounded-xl border border-black/10 bg-[#fff8f7]">
                         <button
                           type="button"
-                          className="h-11 w-11 border-r border-white/15 text-white/70 transition hover:text-white"
+                          className="h-11 w-11 border-r border-black/10 text-black/60 transition hover:text-black"
                           onClick={() => updateCartQuantity(item.productId, item.quantity - 1)}
                           aria-label={t('shop.cart.decrease', 'Уменьшить')}
                         >
@@ -1394,11 +1710,11 @@ export const ShopCartPage = () => {
                           onChange={(event) =>
                             updateCartQuantity(item.productId, Number(event.target.value))
                           }
-                          className="h-11 w-20 border-0 bg-transparent px-3 text-center text-white"
+                          className="h-11 w-20 border-0 bg-transparent px-3 text-center text-[#1c1716]"
                         />
                         <button
                           type="button"
-                          className="h-11 w-11 border-l border-white/15 text-white/70 transition hover:text-white"
+                          className="h-11 w-11 border-l border-black/10 text-black/60 transition hover:text-black"
                           onClick={() => updateCartQuantity(item.productId, item.quantity + 1)}
                           aria-label={t('shop.cart.increase', 'Увеличить')}
                         >
@@ -1406,10 +1722,10 @@ export const ShopCartPage = () => {
                         </button>
                       </div>
                       <div className="text-left lg:text-right">
-                        <p className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-black/35">
                           {t('shop.cart.lineTotal', 'Сумма')}
                         </p>
-                        <p className="mt-2 text-2xl font-semibold text-white">{formatPrice(lineTotal)}</p>
+                        <p className="mt-2 text-2xl font-semibold text-[#1c1716]">{formatPrice(lineTotal)}</p>
                       </div>
                       <button
                         onClick={() => removeFromCart(item.productId)}
@@ -1423,24 +1739,24 @@ export const ShopCartPage = () => {
               })}
             </div>
             <div className="card-luxury h-fit p-6 xl:sticky xl:top-28">
-              <p className="text-sm uppercase tracking-[0.2em] text-white/45">{t('shop.cart.summary')}</p>
-              <div className="mt-6 space-y-4 border-b border-white/10 pb-6">
-                <div className="flex items-center justify-between gap-4 text-sm text-white/60">
+              <p className="text-sm uppercase tracking-[0.2em] text-black/45">{t('shop.cart.summary')}</p>
+              <div className="mt-6 space-y-4 border-b border-black/8 pb-6">
+                <div className="flex items-center justify-between gap-4 text-sm text-black/60">
                   <span>{t('shop.cart.headerCount', { count: cartCount })}</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                <div className="flex items-center justify-between gap-4 text-sm text-white/60">
+                <div className="flex items-center justify-between gap-4 text-sm text-black/60">
                   <span>{t('shop.cart.delivery', 'Доставка')}</span>
                   <span>{t('shop.cart.deliveryHint', 'Уточняется менеджером')}</span>
                 </div>
               </div>
               <div className="mt-6 flex items-center justify-between gap-4">
-                <span className="text-sm uppercase tracking-[0.2em] text-white/45">
+                <span className="text-sm uppercase tracking-[0.2em] text-black/45">
                   {t('shop.cart.total', 'Итого')}
                 </span>
-                <p className="text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
+                <p className="text-3xl font-semibold text-[#1c1716]">{formatPrice(cartTotal)}</p>
               </div>
-              <p className="mt-4 text-sm leading-6 text-white/55">
+              <p className="mt-4 text-sm leading-6 text-black/55">
                 {t('shop.cart.secureHint', 'После оформления менеджер подтвердит наличие, доставку и детали оплаты.')}
               </p>
               <Link
@@ -1459,7 +1775,7 @@ export const ShopCartPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </OwnersSubpageShell>
   );
 };
 
@@ -1478,21 +1794,21 @@ export const ShopCheckoutPage = () => {
 
   if (cart.length === 0 && !orderId) {
     return (
-      <div className="min-h-screen bg-luxury-black pt-32">
-        <div className="container mx-auto px-6 py-20 text-white/70 lg:px-16">
+      <OwnersSubpageShell>
+        <div className="container mx-auto px-6 py-20 text-black/70 lg:px-16">
           {t('shop.checkout.empty')}
         </div>
-      </div>
+      </OwnersSubpageShell>
     );
   }
 
   if (orderId) {
     return (
-      <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+      <OwnersSubpageShell>
         <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
           <div className="card-luxury max-w-3xl p-8">
-            <h1 className="text-3xl font-semibold text-white">{t('shop.checkout.successTitle')}</h1>
-            <p className="mt-4 text-white/65">{t('shop.checkout.successSubtitle', { orderId })}</p>
+            <h1 className="text-3xl font-semibold text-[#1c1716]">{t('shop.checkout.successTitle')}</h1>
+            <p className="mt-4 text-black/65">{t('shop.checkout.successSubtitle', { orderId })}</p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link to="/hongqi-parts/catalog" className="btn-primary">
                 {t('shop.actions.goCatalog')}
@@ -1500,12 +1816,12 @@ export const ShopCheckoutPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </OwnersSubpageShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+    <OwnersSubpageShell>
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <div className="grid gap-8 xl:grid-cols-[1fr_360px]">
           <form
@@ -1518,7 +1834,7 @@ export const ShopCheckoutPage = () => {
               setOrderId(created);
             }}
           >
-            <h1 className="text-h2 text-white">{t('shop.checkout.title')}</h1>
+            <h1 className="text-h2 text-[#1c1716]">{t('shop.checkout.title')}</h1>
             <div className="mt-8 grid gap-5 lg:grid-cols-2">
               <Input
                 value={name}
@@ -1576,15 +1892,15 @@ export const ShopCheckoutPage = () => {
             </button>
           </form>
           <div className="card-luxury h-fit p-6 xl:sticky xl:top-28">
-            <p className="text-sm uppercase tracking-[0.2em] text-white/45">
+            <p className="text-sm uppercase tracking-[0.2em] text-black/45">
               {t('shop.cart.summary')}
             </p>
-            <p className="mt-6 text-3xl font-semibold text-white">{formatPrice(cartTotal)}</p>
-            <p className="mt-4 text-sm leading-6 text-white/60">{t('shop.checkout.statusHint')}</p>
+            <p className="mt-6 text-3xl font-semibold text-[#1c1716]">{formatPrice(cartTotal)}</p>
+            <p className="mt-4 text-sm leading-6 text-black/60">{t('shop.checkout.statusHint')}</p>
           </div>
         </div>
       </div>
-    </div>
+    </OwnersSubpageShell>
   );
 };
 
@@ -1594,7 +1910,7 @@ export const ShopStoresPage = () => {
   const seoPage = useShopSeo('/hongqi-parts/stores');
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+    <OwnersSubpageShell>
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <ShopSectionIntro
           title={localizedText(
@@ -1611,12 +1927,12 @@ export const ShopStoresPage = () => {
         <div className="mt-10 grid gap-6 lg:grid-cols-2">
           {state.stores.map((store) => (
             <article key={store.id} className="card-luxury p-6">
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className="text-2xl font-semibold text-[#1c1716]">
                 {localizedText(store.name, { lng: i18n.language })}
               </h2>
-              <p className="mt-4 text-white/70">{localizedText(store.address, { lng: i18n.language })}</p>
-              <p className="mt-3 text-white/60">{store.phone}</p>
-              <p className="mt-3 text-white/60">{localizedText(store.hours, { lng: i18n.language })}</p>
+              <p className="mt-4 text-black/70">{localizedText(store.address, { lng: i18n.language })}</p>
+              <p className="mt-3 text-black/60">{store.phone}</p>
+              <p className="mt-3 text-black/60">{localizedText(store.hours, { lng: i18n.language })}</p>
               <p className="mt-6 text-sm uppercase tracking-[0.2em] text-luxury-burgundy">
                 {store.city}
               </p>
@@ -1624,7 +1940,7 @@ export const ShopStoresPage = () => {
           ))}
         </div>
       </div>
-    </div>
+    </OwnersSubpageShell>
   );
 };
 
@@ -1633,7 +1949,7 @@ export const ShopRequestPage = () => {
   const seoPage = useShopSeo('/hongqi-parts/request');
 
   return (
-    <div className="min-h-screen bg-luxury-black pt-24 sm:pt-28 lg:pt-32">
+    <OwnersSubpageShell>
       <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
         <div className="card-luxury max-w-4xl p-8 lg:p-10">
           <ShopSectionIntro
@@ -1650,7 +1966,7 @@ export const ShopRequestPage = () => {
           <QuickRequestForm />
         </div>
       </div>
-    </div>
+    </OwnersSubpageShell>
   );
 };
 

@@ -2,7 +2,7 @@
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
-    "parts": "Parts",
+    "parts": "Owners",
     "brands": "Brand",
     "service": "Service",
     "offers": "Offers",
@@ -224,9 +224,10 @@
       "titleLine2": "a service visit",
       "subtitle": "Fill in the form and our specialist will contact you to confirm your appointment.",
       "hoursTitle": "Service hours",
-      "hoursWeekdays": "Mon — Fri",
+      "hoursWeekdays": "Mon - Fri",
       "hoursSaturday": "Sat",
       "hoursSunday": "Sun",
+      "hoursDaily": "Daily",
       "successTitle": "Request sent",
       "successSubtitle": "We'll contact you during business hours",
       "serviceLabel": "Service",
@@ -577,7 +578,7 @@
   },
   "shop": {
     "routes": {
-      "shop": "Parts store"
+      "shop": "Owners"
     },
     "actions": {
       "goCatalog": "Open catalog",
@@ -606,9 +607,45 @@
     },
     "home": {
       "hero": {
-        "eyebrow": "Hongqi parts online store",
-        "title": "Genuine Hongqi parts in Kazakhstan",
-        "subtitle": "Catalog with article and OEM search, live stock, card payments, and Kaspi product links."
+        "eyebrow": "Hongqi owners hub",
+        "title": "Service, genuine parts, and owner support",
+        "subtitle": "Book service, source genuine parts, send your VIN, and find the nearest dealer contact point from one hub.",
+        "dealerBadge": "Official dealer · Almaty",
+        "titleLine1": "Everything for",
+        "titleHighlight": "Hongqi owners",
+        "titleLine2": "in Kazakhstan",
+        "chips": {
+          "service": "Service center",
+          "parts": "Genuine parts",
+          "support": "Owner support"
+        },
+        "stats": {
+          "hoursLabel": "Service hours",
+          "hoursValue": "Daily",
+          "partsLabel": "Parts sourcing",
+          "partsValue": "OEM and genuine",
+          "supportLabel": "Owner care",
+          "supportValue": "Service and fitment"
+        }
+      },
+      "quickActions": {
+        "linkLabel": "Open",
+        "service": {
+          "title": "Book service",
+          "description": "Online booking, consultation, and direct contact with the service team."
+        },
+        "catalog": {
+          "title": "Find parts",
+          "description": "Catalog of genuine parts with model, article, and OEM-based lookup."
+        },
+        "request": {
+          "title": "Send VIN",
+          "description": "If the part is missing from the catalog, a manager will source it manually."
+        },
+        "stores": {
+          "title": "Stores and dealers",
+          "description": "Store addresses, pickup points, and owner support contacts for Hongqi."
+        }
       },
       "models": {
         "eyebrow": "Pick by model",
