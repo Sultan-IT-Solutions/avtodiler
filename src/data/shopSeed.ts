@@ -18,88 +18,48 @@ export const seedShopState: ShopState = {
       slug: 'engine',
       name: { ru: 'Двигатель', en: 'Engine', kz: 'Қозғалтқыш' },
       description: { ru: 'Фильтры, прокладки, охлаждение.', en: 'Filters, gaskets, cooling.', kz: 'Сүзгілер, төсемдер, салқындату.' },
-      subcategories: [
-        { id: 'sc-engine-filters', slug: 'filters', name: { ru: 'Фильтры', en: 'Filters', kz: 'Сүзгілер' } },
-        { id: 'sc-engine-gaskets', slug: 'gaskets', name: { ru: 'Прокладки', en: 'Gaskets', kz: 'Төсемдер' } },
-        { id: 'sc-engine-cooling', slug: 'cooling', name: { ru: 'Охлаждение', en: 'Cooling', kz: 'Салқындату' } }
-      ]
     },
     {
       id: 'c-transmission',
       slug: 'transmission',
       name: { ru: 'Трансмиссия', en: 'Transmission', kz: 'Трансмиссия' },
       description: { ru: 'Сцепление, валы, опоры.', en: 'Clutch, shafts, mounts.', kz: 'Ілінісу, біліктер, тіректер.' },
-      subcategories: [
-        { id: 'sc-tr-clutch', slug: 'clutch', name: { ru: 'Сцепление', en: 'Clutch', kz: 'Ілінісу' } },
-        { id: 'sc-tr-shafts', slug: 'shafts', name: { ru: 'Приводные валы', en: 'Drive shafts', kz: 'Жетек біліктері' } },
-        { id: 'sc-tr-mounts', slug: 'mounts', name: { ru: 'Опоры КПП', en: 'Transmission mounts', kz: 'ҚПП тіректері' } }
-      ]
     },
     {
       id: 'c-suspension',
       slug: 'suspension',
       name: { ru: 'Подвеска и рулевое управление', en: 'Suspension & steering', kz: 'Аспа және рульдік басқару' },
       description: { ru: 'Амортизаторы, рычаги, рулевое.', en: 'Shocks, arms, steering.', kz: 'Амортизаторлар, иінтіректер, рульдік жүйе.' },
-      subcategories: [
-        { id: 'sc-sus-shocks', slug: 'shock-absorbers', name: { ru: 'Амортизаторы', en: 'Shock absorbers', kz: 'Амортизаторлар' } },
-        { id: 'sc-sus-arms', slug: 'control-arms', name: { ru: 'Рычаги', en: 'Control arms', kz: 'Иінтіректер' } },
-        { id: 'sc-sus-steering', slug: 'steering', name: { ru: 'Рулевое', en: 'Steering', kz: 'Рульдік жүйе' } }
-      ]
     },
     {
       id: 'c-brakes',
       slug: 'brakes',
       name: { ru: 'Тормозная система', en: 'Brake system', kz: 'Тежегіш жүйесі' },
       description: { ru: 'Колодки, диски, суппорты.', en: 'Pads, rotors, calipers.', kz: 'Қалыптар, дискілер, суппорттар.' },
-      subcategories: [
-        { id: 'sc-br-pads', slug: 'pads', name: { ru: 'Колодки', en: 'Brake pads', kz: 'Қалыптар' } },
-        { id: 'sc-br-rotors', slug: 'rotors', name: { ru: 'Диски', en: 'Rotors', kz: 'Дискілер' } },
-        { id: 'sc-br-calipers', slug: 'calipers', name: { ru: 'Суппорты', en: 'Calipers', kz: 'Суппорттар' } }
-      ]
     },
     {
       id: 'c-body',
       slug: 'body',
       name: { ru: 'Кузовные детали', en: 'Body parts', kz: 'Кузов бөлшектері' },
       description: { ru: 'Бамперы, фары, зеркала.', en: 'Bumpers, headlights, mirrors.', kz: 'Бамперлер, фаралар, айналар.' },
-      subcategories: [
-        { id: 'sc-body-bumpers', slug: 'bumpers', name: { ru: 'Бамперы', en: 'Bumpers', kz: 'Бамперлер' } },
-        { id: 'sc-body-headlights', slug: 'headlights', name: { ru: 'Фары', en: 'Headlights', kz: 'Фаралар' } },
-        { id: 'sc-body-mirrors', slug: 'mirrors', name: { ru: 'Зеркала', en: 'Mirrors', kz: 'Айналар' } }
-      ]
     },
     {
       id: 'c-electronics',
       slug: 'electronics',
       name: { ru: 'Электроника', en: 'Electronics', kz: 'Электроника' },
       description: { ru: 'Датчики, камеры, блоки.', en: 'Sensors, cameras, modules.', kz: 'Датчиктер, камералар, блоктар.' },
-      subcategories: [
-        { id: 'sc-el-sensors', slug: 'sensors', name: { ru: 'Датчики', en: 'Sensors', kz: 'Датчиктер' } },
-        { id: 'sc-el-cameras', slug: 'cameras', name: { ru: 'Камеры', en: 'Cameras', kz: 'Камералар' } },
-        { id: 'sc-el-modules', slug: 'control-modules', name: { ru: 'Блоки управления', en: 'Control modules', kz: 'Басқару блоктары' } }
-      ]
     },
     {
       id: 'c-interior',
       slug: 'interior',
       name: { ru: 'Салон и интерьер', en: 'Interior', kz: 'Салон және интерьер' },
       description: { ru: 'Панели, кнопки, коврики.', en: 'Panels, switches, mats.', kz: 'Панельдер, батырмалар, кілемшелер.' },
-      subcategories: [
-        { id: 'sc-in-panels', slug: 'panels', name: { ru: 'Панели', en: 'Panels', kz: 'Панельдер' } },
-        { id: 'sc-in-switches', slug: 'switches', name: { ru: 'Кнопки', en: 'Switches', kz: 'Батырмалар' } },
-        { id: 'sc-in-mats', slug: 'mats', name: { ru: 'Коврики', en: 'Mats', kz: 'Кілемшелер' } }
-      ]
     },
     {
       id: 'c-consumables',
       slug: 'consumables',
       name: { ru: 'Расходники и ТО', en: 'Consumables & service', kz: 'Шығын материалдары және ТО' },
       description: { ru: 'Масла, свечи, жидкости.', en: 'Oils, plugs, fluids.', kz: 'Майлар, шамдар, сұйықтықтар.' },
-      subcategories: [
-        { id: 'sc-co-oils', slug: 'oils', name: { ru: 'Масла', en: 'Oils', kz: 'Майлар' } },
-        { id: 'sc-co-plugs', slug: 'spark-plugs', name: { ru: 'Свечи', en: 'Spark plugs', kz: 'Шамдар' } },
-        { id: 'sc-co-fluids', slug: 'fluids', name: { ru: 'Жидкости', en: 'Fluids', kz: 'Сұйықтықтар' } }
-      ]
     }
   ],
   products: [
@@ -107,8 +67,7 @@ export const seedShopState: ShopState = {
       id: 'p-hs5-pad-front',
       slug: 'front-brake-pad-set-hs5',
       name: { ru: 'Комплект передних тормозных колодок HS5', en: 'Front brake pad set HS5', kz: 'HS5 aldyngy tezhigish kalyptar zhiintygy' },
-      categorySlug: 'brakes',
-      subcategorySlug: 'pads',
+      categoryId: 'c-brakes',
       article: 'HQ-BR-HS5-001',
       oem: '3501131XKZ16A',
       manufacturer: 'Hongqi Genuine Parts',
@@ -136,8 +95,7 @@ export const seedShopState: ShopState = {
       id: 'p-h9-filter-kit',
       slug: 'service-filter-kit-h9',
       name: { ru: 'Комплект фильтров для ТО Hongqi H9', en: 'Service filter kit for Hongqi H9', kz: 'Hongqi H9 TO suzgiler zhiintygy' },
-      categorySlug: 'engine',
-      subcategorySlug: 'filters',
+      categoryId: 'c-engine',
       article: 'HQ-EN-H9-210',
       oem: '1017100A1-HQ',
       manufacturer: 'FAW OEM',
@@ -165,8 +123,7 @@ export const seedShopState: ShopState = {
       id: 'p-ehs9-headlight',
       slug: 'left-led-headlight-e-hs9',
       name: { ru: 'Левая LED фара E-HS9', en: 'Left LED headlight E-HS9', kz: 'E-HS9 sol zhak LED farasy' },
-      categorySlug: 'body',
-      subcategorySlug: 'headlights',
+      categoryId: 'c-body',
       article: 'HQ-BD-EHS9-044',
       oem: '4121100XJZ08A',
       manufacturer: 'Hongqi Genuine Parts',
@@ -192,8 +149,7 @@ export const seedShopState: ShopState = {
       id: 'p-h5-arm-front',
       slug: 'front-control-arm-h5',
       name: { ru: 'Передний рычаг подвески H5', en: 'Front control arm H5', kz: 'H5 aldyngy aspa iintirigi' },
-      categorySlug: 'suspension',
-      subcategorySlug: 'control-arms',
+      categoryId: 'c-suspension',
       article: 'HQ-SU-H5-019',
       oem: '2904100A5Q',
       manufacturer: 'Hongqi Genuine Parts',

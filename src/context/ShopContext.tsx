@@ -1,8 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
 import { seedShopState } from '../data/shopSeed';
 import type { CartItem, CategoryItem, HongqiModel, InventoryMovement, OrderItem, ProductItem, ReviewItem, SeoPage, ShopState, StoreItem } from '../types/shop';
 import { shopAdminApi, shopPublicApi } from '../utils/shopApi';
+import { normalizeCategoryForSave, normalizeProductForSave, normalizeProducts, normalizeShopState } from '../utils/shopNormalization';
 
 const createId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 const CART_STORAGE_KEY = 'hongqi-parts-cart';
@@ -24,6 +26,8 @@ type PartRequestPayload = {
   comment: string;
 };
 
+type MutationResult = { ok: true } | { ok: false; error: string };
+
 type ShopContextValue = {
   state: ShopState;
   cart: CartItem[];
@@ -39,10 +43,10 @@ type ShopContextValue = {
   createOrder: (payload: CheckoutPayload) => string;
   submitPartRequest: (payload: PartRequestPayload) => void;
   getProduct: (id: string) => ProductItem | undefined;
-  saveProduct: (item: ProductItem) => void;
-  deleteProduct: (id: string) => void;
-  saveCategory: (item: CategoryItem) => void;
-  deleteCategory: (id: string) => void;
+  saveProduct: (item: ProductItem) => Promise<MutationResult>;
+  deleteProduct: (id: string) => Promise<MutationResult>;
+  saveCategory: (item: CategoryItem) => Promise<MutationResult>;
+  deleteCategory: (id: string) => Promise<MutationResult>;
   saveModel: (item: HongqiModel) => void;
   deleteModel: (id: string) => void;
   saveStore: (item: StoreItem) => void;
@@ -62,7 +66,7 @@ const ShopContext = createContext<ShopContextValue | null>(null);
 
 export const ShopProvider = ({ children }: PropsWithChildren) => {
   const location = useLocation();
-  const [state, setState] = useState<ShopState>(seedShopState);
+  const [state, setState] = useState<ShopState>(() => normalizeShopState(seedShopState));
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartNotice, setCartNotice] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -75,15 +79,17 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
       const next = await shopPublicApi.bootstrap();
       if (cancelled?.()) return;
       startTransition(() => {
-        setState((current) => ({
-          ...current,
+        setState((current) =>
+          normalizeShopState({
+            ...current,
           models: next.models,
           categories: next.categories,
           products: next.products,
           stores: next.stores,
           reviews: next.reviews,
           seoPages: next.seoPages,
-        }));
+          })
+        );
       });
     } catch (error) {
       if (cancelled?.()) return;
@@ -97,7 +103,7 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     setIsLoading(true);
     setLoadError('');
     try {
-      const next = await shopAdminApi.bootstrap();
+      const next = normalizeShopState(await shopAdminApi.bootstrap());
       startTransition(() => {
         setState({
           models: next.models,
@@ -172,7 +178,6 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     let cancelled = false;
     const isShopRoute =
-      location.pathname === '/' ||
       location.pathname.startsWith('/hongqi-parts') ||
       location.pathname === '/cart' ||
       location.pathname === '/checkout';
@@ -275,37 +280,91 @@ export const ShopProvider = ({ children }: PropsWithChildren) => {
     }));
   };
 
-  const saveProduct = (item: ProductItem) => {
-    void shopAdminApi.upsert('products', item.id, item);
-    setState((current) => ({
-      ...current,
-      products: current.products.some((product) => product.id === item.id)
-        ? current.products.map((product) => product.id === item.id ? item : product)
-        : [item, ...current.products]
-    }));
+  const saveProduct = async (item: ProductItem): Promise<MutationResult> => {
+    const nextItem = normalizeProductForSave(item, state.categories);
+    if (!nextItem.categoryId) {
+      return { ok: false as const, error: 'Выберите категорию для товара.' };
+    }
+    if (!nextItem.slug.trim()) {
+      return { ok: false as const, error: 'Укажите slug товара.' };
+    }
+    const duplicateSlug = state.products.find((product) => product.slug === nextItem.slug && product.id !== nextItem.id);
+    if (duplicateSlug) {
+      return { ok: false as const, error: 'Slug товара должен быть уникальным.' };
+    }
+
+    try {
+      await shopAdminApi.upsert('products', nextItem.id, nextItem);
+      setState((current) => ({
+        ...current,
+        products: current.products.some((product) => product.id === nextItem.id)
+          ? current.products.map((product) => product.id === nextItem.id ? nextItem : product)
+          : [nextItem, ...current.products]
+      }));
+      return { ok: true as const };
+    } catch (error) {
+      return { ok: false as const, error: (error as Error).message };
+    }
   };
 
-  const deleteProduct = (id: string) => {
-    void shopAdminApi.remove('products', id);
-    setState((current) => ({ ...current, products: current.products.filter((product) => product.id !== id) }));
+  const deleteProduct = async (id: string): Promise<MutationResult> => {
+    try {
+      await shopAdminApi.remove('products', id);
+      setState((current) => ({ ...current, products: current.products.filter((product) => product.id !== id) }));
+      return { ok: true as const };
+    } catch (error) {
+      return { ok: false as const, error: (error as Error).message };
+    }
   };
 
-  const saveCategory = (item: CategoryItem) => {
-    void shopAdminApi.upsert('categories', item.id, item);
-    setState((current) => ({
-      ...current,
-      categories: current.categories.some((category) => category.id === item.id)
-        ? current.categories.map((category) => category.id === item.id ? item : category)
-        : [item, ...current.categories]
-    }));
+  const saveCategory = async (item: CategoryItem): Promise<MutationResult> => {
+    const nextItem = normalizeCategoryForSave(item);
+    if (!nextItem.slug.trim()) {
+      return { ok: false as const, error: 'Укажите slug категории.' };
+    }
+    const duplicateSlug = state.categories.find((category) => category.slug === nextItem.slug && category.id !== nextItem.id);
+    if (duplicateSlug) {
+      return { ok: false as const, error: 'Slug категории должен быть уникальным.' };
+    }
+
+    try {
+      await shopAdminApi.upsert('categories', nextItem.id, nextItem);
+      setState((current) => {
+        const nextCategories = current.categories.some((category) => category.id === nextItem.id)
+          ? current.categories.map((category) => category.id === nextItem.id ? nextItem : category)
+          : [nextItem, ...current.categories];
+
+        return {
+          ...current,
+          categories: nextCategories,
+          products: normalizeProducts(current.products, nextCategories)
+        };
+      });
+      return { ok: true as const };
+    } catch (error) {
+      return { ok: false as const, error: (error as Error).message };
+    }
   };
 
-  const deleteCategory = (id: string) => {
-    void shopAdminApi.remove('categories', id);
-    setState((current) => ({
-      ...current,
-      categories: current.categories.filter((category) => category.id !== id)
-    }));
+  const deleteCategory = async (id: string): Promise<MutationResult> => {
+    const linkedProducts = state.products.filter((product) => product.categoryId === id);
+    if (linkedProducts.length > 0) {
+      return {
+        ok: false as const,
+        error: 'Нельзя удалить категорию, пока к ней привязаны товары.',
+      };
+    }
+
+    try {
+      await shopAdminApi.remove('categories', id);
+      setState((current) => ({
+        ...current,
+        categories: current.categories.filter((category) => category.id !== id)
+      }));
+      return { ok: true as const };
+    } catch (error) {
+      return { ok: false as const, error: (error as Error).message };
+    }
   };
 
   const saveModel = (item: HongqiModel) => {

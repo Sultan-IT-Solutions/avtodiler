@@ -19,7 +19,7 @@ export interface CategoryItem {
   slug: string;
   name: LocaleText;
   description: LocaleText;
-  subcategories: {
+  subcategories?: {
     id: string;
     slug: string;
     name: LocaleText;
@@ -43,8 +43,9 @@ export interface ProductItem {
   id: string;
   slug: string;
   name: LocaleText;
-  categorySlug: string;
-  subcategorySlug: string;
+  categoryId: string;
+  categorySlug?: string;
+  subcategorySlug?: string;
   article: string;
   oem: string;
   manufacturer: string;

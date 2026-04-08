@@ -3,6 +3,13 @@ import { requireAdminSession } from './_session.js';
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
 import { readRawBody, safeJsonParse, type VercelRequest, type VercelResponse } from '../shop/_shared.js';
+import type { CategoryItem, ProductItem } from '../../../src/types/shop.js';
+import {
+  normalizeCategories,
+  normalizeCategoryForSave,
+  normalizeProductForSave,
+  normalizeProducts,
+} from '../../../src/utils/shopNormalization.js';
 
 const collectionMap = {
   models: { table: 'shop_models', createdOnly: false },
@@ -21,6 +28,9 @@ type CollectionKey = keyof typeof collectionMap;
 const getCollection = (value: unknown): CollectionKey | null => {
   return typeof value === 'string' && value in collectionMap ? (value as CollectionKey) : null;
 };
+
+const getDocumentData = <T,>(rows: Array<Record<string, unknown>>) =>
+  rows.flatMap((row) => ('data' in row ? [row.data as T] : []));
 
 const listRows = async (sql: ReturnType<typeof getSql>, collection: CollectionKey) => {
   switch (collection) {
@@ -91,6 +101,12 @@ const deleteRow = async (sql: ReturnType<typeof getSql>, collection: CollectionK
   }
 };
 
+const loadCategories = async (sql: ReturnType<typeof getSql>) =>
+  normalizeCategories(getDocumentData<CategoryItem>(await listRows(sql, 'categories')));
+
+const loadProducts = async (sql: ReturnType<typeof getSql>) =>
+  getDocumentData<ProductItem>(await listRows(sql, 'products'));
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const guard = requireBasicAuth(req, res);
   if (!guard.ok) return;
@@ -128,6 +144,92 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    if (collection === 'categories') {
+      const currentCategories = await loadCategories(sql);
+      const currentProducts = await loadProducts(sql);
+      const nextItem = normalizeCategoryForSave({ ...(body.data as CategoryItem), id });
+
+      if (!nextItem.slug.trim()) {
+        json(res, 400, {
+          ok: false,
+          error: 'Slug категории обязателен.',
+          code: 'CATEGORY_SLUG_REQUIRED',
+        });
+        return;
+      }
+
+      const duplicateSlug = currentCategories.find(
+        (category) => category.id !== id && category.slug === nextItem.slug
+      );
+      if (duplicateSlug) {
+        json(res, 409, {
+          ok: false,
+          error: 'Slug категории должен быть уникальным.',
+          code: 'CATEGORY_SLUG_NOT_UNIQUE',
+        });
+        return;
+      }
+
+      const nextCategories = currentCategories.some((category) => category.id === id)
+        ? currentCategories.map((category) => (category.id === id ? nextItem : category))
+        : [nextItem, ...currentCategories];
+      const normalizedProducts = currentProducts.map((product) =>
+        normalizeProductForSave(product, nextCategories)
+      );
+
+      for (const category of nextCategories) {
+        await upsertRow(sql, 'categories', category.id, category);
+      }
+      for (const product of normalizedProducts) {
+        await upsertRow(sql, 'products', product.id, product);
+      }
+
+      json(res, 200, { ok: true });
+      return;
+    }
+
+    if (collection === 'products') {
+      const currentCategories = await loadCategories(sql);
+      const currentProducts = await loadProducts(sql);
+      const nextItem = normalizeProductForSave({ ...(body.data as ProductItem), id }, currentCategories);
+
+      if (!nextItem.categoryId) {
+        json(res, 400, {
+          ok: false,
+          error: 'Для товара нужно выбрать существующую категорию.',
+          code: 'PRODUCT_CATEGORY_REQUIRED',
+        });
+        return;
+      }
+
+      if (!nextItem.slug.trim()) {
+        json(res, 400, {
+          ok: false,
+          error: 'Slug товара обязателен.',
+          code: 'PRODUCT_SLUG_REQUIRED',
+        });
+        return;
+      }
+
+      const duplicateSlug = currentProducts.find(
+        (product) =>
+          product.id !== id &&
+          normalizeProductForSave(product, currentCategories).slug === nextItem.slug
+      );
+      if (duplicateSlug) {
+        json(res, 409, {
+          ok: false,
+          error: 'Slug товара должен быть уникальным.',
+          code: 'PRODUCT_SLUG_NOT_UNIQUE',
+        });
+        return;
+      }
+
+      await upsertRow(sql, 'products', id, nextItem);
+      json(res, 200, { ok: true });
+      return;
+    }
+
     await upsertRow(sql, collection, id, body.data);
     json(res, 200, { ok: true });
     return;
@@ -141,6 +243,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       json(res, 400, { ok: false, error: 'Missing query params: collection, id' });
       return;
     }
+
+    if (collection === 'categories') {
+      const currentCategories = await loadCategories(sql);
+      const currentProducts = normalizeProducts(await loadProducts(sql), currentCategories);
+      const linkedProducts = currentProducts.filter((product) => product.categoryId === id);
+
+      if (linkedProducts.length > 0) {
+        json(res, 409, {
+          ok: false,
+          error: 'Нельзя удалить категорию, пока к ней привязаны товары.',
+          code: 'CATEGORY_IN_USE',
+        });
+        return;
+      }
+    }
+
     await deleteRow(sql, collection, id);
     json(res, 200, { ok: true });
     return;

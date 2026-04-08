@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import type { CategoryItem, HongqiModel, ProductItem, SeoPage, StoreItem } from '../types/shop';
+import { normalizeCategories, normalizeProducts } from './shopNormalization';
 
 type SupportedCollection = 'models' | 'categories' | 'products' | 'stores' | 'seoPages';
 
@@ -72,7 +73,7 @@ const parseCategories = (rows: Record<string, unknown>[]): CategoryItem[] =>
         slug: toText(row.slug),
         name: localeFromRow(row, 'name'),
         description: localeFromRow(row, 'description'),
-        subcategories: parseJson<CategoryItem['subcategories']>(row.subcategories_json, []),
+        subcategories: parseJson<NonNullable<CategoryItem['subcategories']>>(row.subcategories_json, []),
       };
     })
     .filter((item): item is CategoryItem => Boolean(item?.id));
@@ -87,8 +88,9 @@ const parseProducts = (rows: Record<string, unknown>[]): ProductItem[] =>
         id: toText(row.id),
         slug: toText(row.slug),
         name: localeFromRow(row, 'name'),
-        categorySlug: toText(row.categorySlug),
-        subcategorySlug: toText(row.subcategorySlug),
+        categoryId: toText(row.categoryId),
+        categorySlug: toText(row.categorySlug) || undefined,
+        subcategorySlug: toText(row.subcategorySlug) || undefined,
         article: toText(row.article),
         oem: toText(row.oem),
         manufacturer: toText(row.manufacturer),
@@ -143,10 +145,13 @@ export const parseShopWorkbook = async (file: File): Promise<ImportPayload> => {
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: 'array' });
 
+  const categories = normalizeCategories(parseCategories(getSheetRows(workbook, 'categories')));
+  const products = normalizeProducts(parseProducts(getSheetRows(workbook, 'products')), categories);
+
   return {
     models: parseModels(getSheetRows(workbook, 'models')),
-    categories: parseCategories(getSheetRows(workbook, 'categories')),
-    products: parseProducts(getSheetRows(workbook, 'products')),
+    categories,
+    products,
     stores: parseStores(getSheetRows(workbook, 'stores')),
     seoPages: parseSeoPages(getSheetRows(workbook, 'seoPages')),
   };

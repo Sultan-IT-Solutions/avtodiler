@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 
+import { isApiError } from './_internal/errors.js';
 import adminAuth from './_handlers/admin/auth.js';
 import adminCars from './_handlers/admin/cars.js';
 import adminDealers from './_handlers/admin/dealers.js';
@@ -114,20 +115,15 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     if (!loader) return notFound(req, res);
     return await loader(req, res);
   } catch (error) {
-    const isProd = process.env.NODE_ENV === 'production';
-    const message = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
-
     console.error('[api] unhandled error', error);
 
-    res.status(500);
+    const status = isApiError(error) ? error.status : 500;
+    const body = isApiError(error)
+      ? { error: error.message, code: error.code }
+      : { error: 'Internal Server Error', code: 'INTERNAL_SERVER_ERROR' };
+
+    res.status(status);
     res.setHeader('content-type', 'application/json; charset=utf-8');
-    res.end(
-      JSON.stringify({
-        error: 'Internal Server Error',
-        message,
-        ...(isProd ? null : { stack }),
-      })
-    );
+    res.end(JSON.stringify(body));
   }
 }

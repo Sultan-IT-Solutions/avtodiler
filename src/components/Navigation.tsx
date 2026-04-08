@@ -1,11 +1,27 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag } from 'lucide-react';
+import { ChevronDown, ShoppingBag } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 
 const CART_RETURN_PATH_KEY = 'hongqi-cart-return-path';
+
+type NavLink = {
+  path: string;
+  label: string;
+};
+
+type NavItem =
+  | {
+      type: 'link';
+      path: string;
+      label: string;
+    }
+  | {
+      type: 'owners';
+      label: string;
+    };
 
 export const Navigation = () => {
   const { t, i18n } = useTranslation();
@@ -15,13 +31,22 @@ export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const [isOwnersMenuOpen, setIsOwnersMenuOpen] = useState(false);
+  const [isMobileOwnersOpen, setIsMobileOwnersOpen] = useState(false);
   const lastScrollY = useRef(0);
+  const ownersMenuRef = useRef<HTMLDivElement>(null);
+
+  const isOwnersActive =
+    location.pathname.startsWith('/hongqi-parts') || location.pathname.startsWith('/service');
+  const showCartInHeader =
+    location.pathname.startsWith('/hongqi-parts') ||
+    location.pathname === '/cart' ||
+    location.pathname === '/checkout';
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Show/hide on scroll direction
       if (currentScrollY > lastScrollY.current && currentScrollY > 200) {
         setIsHidden(true);
       } else {
@@ -36,10 +61,11 @@ export const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+    setIsOwnersMenuOpen(false);
+    setIsMobileOwnersOpen(isOwnersActive);
+  }, [location.pathname, isOwnersActive]);
 
   useEffect(() => {
     if (location.pathname === '/cart') return;
@@ -50,16 +76,34 @@ export const Navigation = () => {
     );
   }, [location.hash, location.pathname, location.search]);
 
-  const navLinks = [
-    { path: '/', label: t('nav.home') },
-    { path: '/catalog', label: t('nav.catalog') },
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!ownersMenuRef.current?.contains(event.target as Node)) {
+        setIsOwnersMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const ownersLinks: NavLink[] = [
     { path: '/hongqi-parts', label: t('nav.parts') },
-    { path: '/brands', label: t('nav.brands') },
-    { path: '/service', label: t('nav.service') },
-    { path: '/offers', label: t('nav.offers') },
-    { path: '/dealers', label: t('nav.dealers') },
-    { path: '/contact', label: t('nav.contact') },
+    { path: '/service', label: t('nav.services') },
   ];
+
+  const navItems: NavItem[] = [
+    { type: 'link', path: '/', label: t('nav.home') },
+    { type: 'link', path: '/catalog', label: t('nav.catalog') },
+    { type: 'owners', label: t('nav.owners') },
+    { type: 'link', path: '/brands', label: t('nav.brands') },
+    { type: 'link', path: '/offers', label: t('nav.offers') },
+    { type: 'link', path: '/dealers', label: t('nav.dealers') },
+    { type: 'link', path: '/contact', label: t('nav.contact') },
+  ];
+
+  const leftItems = navItems.slice(0, Math.ceil(navItems.length / 2));
+  const rightItems = navItems.slice(Math.ceil(navItems.length / 2));
 
   const languages = [
     { code: 'ru', label: 'RU' },
@@ -105,9 +149,99 @@ export const Navigation = () => {
     </button>
   );
 
+  const renderDesktopItem = (item: NavItem, layoutId: string) => {
+    if (item.type === 'owners') {
+      return (
+        <div key="owners" ref={ownersMenuRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setIsOwnersMenuOpen((value) => !value)}
+            className="relative group inline-flex items-center gap-2"
+            aria-expanded={isOwnersMenuOpen}
+            aria-haspopup="menu"
+          >
+            <span
+              className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
+                isOwnersActive ? 'text-white' : 'text-luxury-subtle hover:text-white'
+              }`}
+            >
+              {item.label}
+            </span>
+            <ChevronDown
+              size={14}
+              className={`text-luxury-subtle transition-all duration-300 ${
+                isOwnersMenuOpen || isOwnersActive ? 'rotate-180 text-white' : 'group-hover:text-white'
+              }`}
+            />
+            {(isOwnersActive || isOwnersMenuOpen) && (
+              <motion.div
+                layoutId={layoutId}
+                className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              />
+            )}
+          </button>
+
+          <AnimatePresence>
+            {isOwnersMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute left-1/2 top-full z-[70] mt-5 w-64 -translate-x-1/2 border border-white/10 bg-luxury-elevated/95 p-3 shadow-luxury-lg backdrop-blur-xl"
+              >
+                <div className="grid gap-2">
+                  {ownersLinks.map((link) => {
+                    const isActive = location.pathname.startsWith(link.path);
+                    return (
+                      <Link
+                        key={link.path}
+                        to={link.path}
+                        onClick={() => setIsOwnersMenuOpen(false)}
+                        className={`flex items-center justify-between border px-4 py-4 transition-colors duration-300 ${
+                          isActive
+                            ? 'border-luxury-burgundy/50 bg-luxury-burgundy/10 text-white'
+                            : 'border-white/10 text-luxury-subtle hover:border-white/20 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-micro uppercase tracking-[0.24em]">{link.label}</span>
+                        <span className="text-lg leading-none text-white/35">+</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      );
+    }
+
+    const isActive = location.pathname === item.path;
+
+    return (
+      <Link key={item.path} to={item.path} className="relative group">
+        <span
+          className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
+            isActive ? 'text-white' : 'text-luxury-subtle hover:text-white'
+          }`}
+        >
+          {item.label}
+        </span>
+        {isActive && (
+          <motion.div
+            layoutId={layoutId}
+            className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          />
+        )}
+      </Link>
+    );
+  };
+
   return (
     <>
-      {/* Main Navigation */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: isHidden ? -100 : 0 }}
@@ -118,34 +252,10 @@ export const Navigation = () => {
       >
         <nav className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between py-2">
-            {/* Left: Navigation Links (half) */}
             <div className="hidden lg:flex items-center gap-8 flex-1">
-              {navLinks.slice(0, Math.ceil(navLinks.length / 2)).map((link) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className="relative group"
-                >
-                  <span className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
-                    location.pathname === link.path
-                      ? 'text-white'
-                      : 'text-luxury-subtle hover:text-white'
-                  }`}>
-                    {link.label}
-                  </span>
-                  {/* Active indicator */}
-                  {location.pathname === link.path && (
-                    <motion.div
-                      layoutId="nav-indicator"
-                      className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
-                      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                  )}
-                </Link>
-              ))}
+              {leftItems.map((item) => renderDesktopItem(item, 'nav-indicator-left'))}
             </div>
 
-            {/* Center: Logo */}
             <Link to="/" className="relative group flex-shrink-0 mx-8">
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -166,36 +276,11 @@ export const Navigation = () => {
               </motion.div>
             </Link>
 
-            {/* Right: Navigation Links (half) + Language + CTA */}
             <div className="hidden lg:flex items-center gap-6 flex-1 justify-end">
-              {/* Right navigation links */}
               <div className="flex items-center gap-8">
-                {navLinks.slice(Math.ceil(navLinks.length / 2)).map((link) => (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className="relative group"
-                  >
-                    <span className={`text-micro uppercase tracking-luxury transition-colors duration-300 ${
-                      location.pathname === link.path
-                        ? 'text-white'
-                        : 'text-luxury-subtle hover:text-white'
-                    }`}>
-                      {link.label}
-                    </span>
-                    {/* Active indicator */}
-                    {location.pathname === link.path && (
-                      <motion.div
-                        layoutId="nav-indicator-right"
-                        className="absolute -bottom-1 left-0 right-0 h-px bg-luxury-red"
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                      />
-                    )}
-                  </Link>
-                ))}
+                {rightItems.map((item) => renderDesktopItem(item, 'nav-indicator-right'))}
               </div>
 
-              {/* Language Switcher */}
               <div className="flex items-center gap-1 border-l border-white/10 pl-6">
                 {languages.map((lang) => (
                   <button
@@ -212,11 +297,11 @@ export const Navigation = () => {
                 ))}
               </div>
 
-              {renderCartLink()}
+              {showCartInHeader ? renderCartLink() : null}
             </div>
 
             <div className="flex items-center gap-3 lg:hidden">
-              {renderCartLink()}
+              {showCartInHeader ? renderCartLink() : null}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="relative flex h-10 w-10 items-center justify-center"
@@ -268,7 +353,6 @@ export const Navigation = () => {
         ) : null}
       </AnimatePresence>
 
-      {/* Full-screen Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -279,60 +363,120 @@ export const Navigation = () => {
             className="fixed inset-0 z-40 bg-luxury-black lg:hidden"
           >
             <div className="h-full overflow-y-auto px-8 pb-10 pt-32 sm:px-12 sm:pt-36">
-              {/* Nav Links */}
               <div className="space-y-2">
-                {navLinks.map((link, index) => (
+                {navItems.map((item, index) => (
                   <motion.div
-                    key={link.path}
+                    key={item.type === 'link' ? item.path : 'owners-mobile'}
                     initial={{ opacity: 0, x: -40 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -40 }}
                     transition={{
                       duration: 0.6,
                       delay: index * 0.1 + 0.3,
-                      ease: [0.16, 1, 0.3, 1]
+                      ease: [0.16, 1, 0.3, 1],
                     }}
                   >
-                    <Link
-                      to={link.path}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block"
-                    >
-                      <span className="text-luxury-muted text-micro tracking-ultra mr-4">
-                        0{index + 1}
-                      </span>
-                      <span className={`text-4xl md:text-5xl font-display font-light transition-colors ${
-                        location.pathname === link.path
-                          ? 'text-white'
-                          : 'text-luxury-subtle hover:text-white'
-                      }`}>
-                        {link.label}
-                      </span>
-                    </Link>
+                    {item.type === 'owners' ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setIsMobileOwnersOpen((value) => !value)}
+                          className="flex w-full items-center justify-between text-left"
+                        >
+                          <div className="flex items-center">
+                            <span className="text-luxury-muted text-micro tracking-ultra mr-4">
+                              0{index + 1}
+                            </span>
+                            <span
+                              className={`text-4xl md:text-5xl font-display font-light transition-colors ${
+                                isOwnersActive ? 'text-white' : 'text-luxury-subtle hover:text-white'
+                              }`}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+                          <ChevronDown
+                            size={26}
+                            className={`text-luxury-subtle transition-all duration-300 ${
+                              isMobileOwnersOpen ? 'rotate-180 text-white' : ''
+                            }`}
+                          />
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {isMobileOwnersOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden"
+                            >
+                              <div className="ml-10 mt-5 grid gap-3 border-l border-white/10 pl-6">
+                                {ownersLinks.map((link) => {
+                                  const isActive = location.pathname.startsWith(link.path);
+                                  return (
+                                    <Link
+                                      key={link.path}
+                                      to={link.path}
+                                      onClick={() => setIsMobileMenuOpen(false)}
+                                      className={`text-lg uppercase tracking-[0.22em] transition-colors ${
+                                        isActive ? 'text-white' : 'text-luxury-subtle hover:text-white'
+                                      }`}
+                                    >
+                                      {link.label}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    ) : (
+                      <Link
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block"
+                      >
+                        <span className="text-luxury-muted text-micro tracking-ultra mr-4">
+                          0{index + 1}
+                        </span>
+                        <span
+                          className={`text-4xl md:text-5xl font-display font-light transition-colors ${
+                            location.pathname === item.path
+                              ? 'text-white'
+                              : 'text-luxury-subtle hover:text-white'
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      </Link>
+                    )}
                     <div className="line-divider mt-4" />
                   </motion.div>
                 ))}
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.5, delay: 0.45 }}
-                className="mt-10 flex items-center justify-between gap-4 border border-white/10 bg-white/[0.03] px-5 py-4"
-              >
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-subtle">
-                    {t('shop.cart.title')}
-                  </p>
-                  <p className="mt-2 text-sm text-white/65">
-                    {t('shop.cart.headerCount', { count: cartCount })}
-                  </p>
-                </div>
-                {renderCartLink()}
-              </motion.div>
+              {showCartInHeader ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.5, delay: 0.45 }}
+                  className="mt-10 flex items-center justify-between gap-4 border border-white/10 bg-white/[0.03] px-5 py-4"
+                >
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-luxury-subtle">
+                      {t('shop.cart.title')}
+                    </p>
+                    <p className="mt-2 text-sm text-white/65">
+                      {t('shop.cart.headerCount', { count: cartCount })}
+                    </p>
+                  </div>
+                  {renderCartLink()}
+                </motion.div>
+              ) : null}
 
-              {/* Language Switcher */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -354,7 +498,6 @@ export const Navigation = () => {
                 ))}
               </motion.div>
 
-              {/* Bottom info */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

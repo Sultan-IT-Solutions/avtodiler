@@ -2,9 +2,11 @@
   "nav": {
     "home": "Басты бет",
     "catalog": "Каталог",
+    "owners": "Иелерге",
     "parts": "Бөлшектер",
     "brands": "Бренд",
     "service": "Сервис",
+    "services": "Сервистер",
     "offers": "Акциялар",
     "dealers": "Дилерлер",
     "testDrive": "Тест-драйв",
@@ -579,6 +581,11 @@
     "routes": {
       "shop": "Бөлшектер дүкені"
     },
+    "shell": {
+      "eyebrow": "Hongqi Auto Kazakhstan",
+      "modelsTab": "Модель бойынша",
+      "ordersTab": "Тапсырыстар"
+    },
     "actions": {
       "goCatalog": "Каталогқа өту",
       "pickByModel": "Модель бойынша таңдау",
@@ -608,7 +615,20 @@
       "hero": {
         "eyebrow": "Hongqi бөлшектер интернет-дүкені",
         "title": "Қазақстандағы түпнұсқа Hongqi бөлшектері",
-        "subtitle": "Артикул және OEM бойынша іздеу, нақты қойма қалдығы, картамен төлеу және Kaspi сілтемелері бар каталог."
+        "subtitle": "H5, H9, HS5, HS7, E-HS9 және барлық Hongqi модельдеріне арналған түпнұсқа бөлшектер. Зауыттан тікелей жеткізілім.",
+        "badge": "Ресми дилер · Алматы",
+        "line1": "Бөлшектер",
+        "line2": "Hongqi",
+        "line3": "Қазақстанда",
+        "call": "Қоңырау шалу",
+        "previewEyebrow": "Каталог 2026",
+        "previewTitle": "Түпнұсқа бөлшектер",
+        "warrantyLabel": "Кепілдік",
+        "warrantyText": "барлық бөлшектерге",
+        "stockText": "позиция қоймада бар",
+        "deliveryLabel": "Жеткізу",
+        "deliveryDays": "күн",
+        "catalogLead": "Санат, модель және OEM бойынша сүзгілеу, тауар картасына жылдам өту және себетке қажетсіз қадамсыз қосу."
       },
       "models": {
         "eyebrow": "Модель бойынша таңдау",
@@ -661,7 +681,11 @@
     "catalog": {
       "eyebrow": "Каталог",
       "title": "Hongqi бөлшектер каталогы",
-      "subtitle": "Модель, санат, ішкі санат, қойма және іздеу сұранысы бойынша қайта жүктеусіз сүзгілеу.",
+      "subtitle": "Модель, санат, қойма және іздеу сұранысы бойынша қайта жүктеусіз сүзгілеу.",
+      "categoryTitle": "Санат",
+      "allCategories": "Барлық санаттар",
+      "modelTitle": "Көлік моделі",
+      "filtersTitle": "Сүзгілер",
       "searchPlaceholder": "Атауы, артикул немесе OEM",
       "priceFrom": "Баға бастап",
       "priceTo": "Баға дейін",
@@ -675,6 +699,12 @@
       "empty": "Таңдалған сүзгілер бойынша тауар табылмады."
     },
     "product": {
+      "backToCatalog": "Каталогқа қайту",
+      "originalBadge": "Түпнұсқа бөлшек",
+      "quantity": "Саны",
+      "quickOrder": "Жедел тапсырыс",
+      "deliveryDetail": "Қазақстан бойынша 2-5 күн",
+      "warrantyDetail": "Түпнұсқа бөлшектерге 12 ай",
       "article": "Артикул",
       "oem": "OEM нөмірі",
       "manufacturer": "Өндіруші",
@@ -762,12 +792,17 @@
       "newProduct": "Жаңа тауар",
       "productSlug": "Тауар slug-ы",
       "productName": "Тауар атауы",
+      "categoryName": "Санат атауы",
+      "categorySlug": "Санат slug-ы",
+      "categoryDescription": "Санат сипаттамасы",
+      "categorySlugHint": "Ағылшынша атауды толтырсаңыз, сілтеме slug-ы автоматты түрде жасалады. Қажет болса slug-ты қолмен түзетуге болады.",
+      "productDescription": "Тауар сипаттамасы",
+      "productDescriptionHint": "Бұл мәтін тауар бетінде көрсетіледі. RU / EN / KZ үшін бөлек өңдеуге болады.",
       "shortDescription": "Қысқа сипаттама",
       "price": "Бағасы",
       "stock": "Қалдық",
       "modelsComma": "Модельдер үтір арқылы",
       "addCategory": "Санат қосу",
-      "addSubcategory": "Ішкі санат қосу",
       "addModel": "Модель қосу",
       "addSeoPage": "SEO бет қосу",
       "summarySku": "SKU",

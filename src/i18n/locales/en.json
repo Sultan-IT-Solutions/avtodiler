@@ -2,9 +2,11 @@
   "nav": {
     "home": "Home",
     "catalog": "Catalog",
+    "owners": "Owners",
     "parts": "Parts",
     "brands": "Brand",
     "service": "Service",
+    "services": "Services",
     "offers": "Offers",
     "dealers": "Dealers",
     "testDrive": "Test Drive",
@@ -579,6 +581,11 @@
     "routes": {
       "shop": "Parts store"
     },
+    "shell": {
+      "eyebrow": "Hongqi Auto Kazakhstan",
+      "modelsTab": "By model",
+      "ordersTab": "Orders"
+    },
     "actions": {
       "goCatalog": "Open catalog",
       "pickByModel": "Pick by model",
@@ -608,7 +615,20 @@
       "hero": {
         "eyebrow": "Hongqi parts online store",
         "title": "Genuine Hongqi parts in Kazakhstan",
-        "subtitle": "Catalog with article and OEM search, live stock, card payments, and Kaspi product links."
+        "subtitle": "Genuine spare parts for H5, H9, HS5, HS7, E-HS9, and the full Hongqi lineup. Direct factory supply.",
+        "badge": "Official dealer · Almaty",
+        "line1": "Parts",
+        "line2": "Hongqi",
+        "line3": "in Kazakhstan",
+        "call": "Call now",
+        "previewEyebrow": "Catalog 2026",
+        "previewTitle": "Genuine parts",
+        "warrantyLabel": "Warranty",
+        "warrantyText": "for all parts",
+        "stockText": "items in stock",
+        "deliveryLabel": "Delivery",
+        "deliveryDays": "days",
+        "catalogLead": "Filter by category, model, and OEM, jump into product cards quickly, and add parts to the cart without extra steps."
       },
       "models": {
         "eyebrow": "Pick by model",
@@ -661,7 +681,11 @@
     "catalog": {
       "eyebrow": "Catalog",
       "title": "Hongqi parts catalog",
-      "subtitle": "Client-side filtering by model, category, subcategory, stock, and search query without page reload.",
+      "subtitle": "Client-side filtering by model, category, stock, and search query without page reload.",
+      "categoryTitle": "Category",
+      "allCategories": "All categories",
+      "modelTitle": "Vehicle model",
+      "filtersTitle": "Filters",
       "searchPlaceholder": "Name, article, or OEM",
       "priceFrom": "Price from",
       "priceTo": "Price to",
@@ -675,6 +699,12 @@
       "empty": "No products found for the selected filters."
     },
     "product": {
+      "backToCatalog": "Back to catalog",
+      "originalBadge": "Genuine part",
+      "quantity": "Quantity",
+      "quickOrder": "Quick order",
+      "deliveryDetail": "2-5 days across Kazakhstan",
+      "warrantyDetail": "12 months for genuine parts",
       "article": "Article",
       "oem": "OEM number",
       "manufacturer": "Manufacturer",
@@ -762,12 +792,17 @@
       "newProduct": "New product",
       "productSlug": "Product slug",
       "productName": "Product name",
+      "categoryName": "Category name",
+      "categorySlug": "Category slug",
+      "categoryDescription": "Category description",
+      "categorySlugHint": "Fill in the English name and the URL slug will be generated automatically. You can still edit the slug manually.",
+      "productDescription": "Product description",
+      "productDescriptionHint": "This text is shown on the product page. You can edit it separately for RU / EN / KZ.",
       "shortDescription": "Short description",
       "price": "Price",
       "stock": "Stock",
       "modelsComma": "Models separated by comma",
       "addCategory": "Add category",
-      "addSubcategory": "Add subcategory",
       "addModel": "Add model",
       "addSeoPage": "Add SEO page",
       "summarySku": "SKU",

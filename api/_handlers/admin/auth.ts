@@ -52,7 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const expectedPass = (process.env.ADMIN_PASSWORD ?? '').trim();
 
   if (!expectedPass) {
-    json(res, 500, { ok: false, error: 'Server is not configured (missing ADMIN_PASSWORD)' });
+    json(res, 503, { ok: false, error: 'Service unavailable', code: 'ADMIN_PASSWORD_NOT_CONFIGURED' });
     return;
   }
 

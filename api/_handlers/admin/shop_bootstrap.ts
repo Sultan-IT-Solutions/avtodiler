@@ -3,6 +3,7 @@ import { requireAdminSession } from './_session.js';
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
 import { ensureShopSeed } from '../shop/_seed.js';
+import { normalizeShopRows } from '../shop/_normalize_rows.js';
 import type { VercelRequest, VercelResponse } from '../shop/_shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -31,5 +32,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     sql`select id, data, updated_at from shop_seo_pages order by updated_at desc`,
   ]);
 
-  json(res, 200, { ok: true, models, categories, products, stores, reviews, requests, orders, inventoryMovements, seoPages });
+  json(
+    res,
+    200,
+    {
+      ok: true,
+      ...normalizeShopRows({
+        models,
+        categories,
+        products,
+        stores,
+        reviews,
+        requests,
+        orders,
+        inventoryMovements,
+        seoPages,
+      }),
+    }
+  );
 }

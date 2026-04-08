@@ -24,6 +24,7 @@ import { Footer } from './components/Footer';
 import {
   ShopCartPage,
   ShopCatalogPage,
+  ShopLegacyCatalogRedirectPage,
   ShopCatalogResolverPage,
   ShopCheckoutPage,
   ShopHomePage,
@@ -432,12 +433,16 @@ const useSeoMeta = () => {
 };
 
 /* ===== SCROLL TO TOP ===== */
-function ScrollToTop() {
+function ScrollToTop({ lenisRef }: { lenisRef: React.RefObject<Lenis | null> }) {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+      return;
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [lenisRef, pathname]);
 
   return null;
 }
@@ -461,7 +466,7 @@ function AnimatedRoutes() {
           <Route path="/hongqi-parts" element={<ShopHomePage />} />
           <Route path="/hongqi-parts/catalog" element={<ShopCatalogPage />} />
           <Route path="/hongqi-parts/catalog/:categorySlug" element={<ShopCatalogPage />} />
-          <Route path="/hongqi-parts/catalog/:categorySlug/:subcategorySlug" element={<ShopCatalogPage />} />
+          <Route path="/hongqi-parts/catalog/:categorySlug/:subcategorySlug" element={<ShopLegacyCatalogRedirectPage />} />
           <Route path="/cart" element={<ShopCartPage />} />
           <Route path="/checkout" element={<ShopCheckoutPage />} />
           <Route path="/hongqi-parts/stores" element={<ShopStoresPage />} />
@@ -487,7 +492,10 @@ function AnimatedRoutes() {
 const AppShell = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const isShopRoute = location.pathname.startsWith('/hongqi-parts');
+  const isShopRoute =
+    location.pathname.startsWith('/hongqi-parts') ||
+    location.pathname === '/cart' ||
+    location.pathname === '/checkout';
 
   useSeoMeta();
 
@@ -495,7 +503,7 @@ const AppShell = () => {
     <RouteErrorBoundary>
       <div className="min-h-screen bg-luxury-black noise-overlay">
         {!isAdmin && <CustomCursor />}
-        {!isAdmin && <Navigation />}
+        {!isAdmin && !isShopRoute && <Navigation />}
         {!isAdmin && <FloatingWhatsApp />}
         <main>
           <AnimatedRoutes />
@@ -551,7 +559,7 @@ function App() {
       {!isLoading && (
         <Router>
           <ShopProvider>
-            <ScrollToTop />
+            <ScrollToTop lenisRef={lenisRef} />
             <AppShell />
           </ShopProvider>
         </Router>

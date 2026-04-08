@@ -2,9 +2,11 @@
   "nav": {
     "home": "Главная",
     "catalog": "Каталог",
+    "owners": "Владельцам",
     "parts": "Запчасти",
     "brands": "Бренд",
     "service": "Сервис",
+    "services": "Сервисы",
     "offers": "Акции",
     "dealers": "Дилеры",
     "testDrive": "Тест-драйв",
@@ -581,6 +583,11 @@
     "routes": {
       "shop": "Магазин запчастей"
     },
+    "shell": {
+      "eyebrow": "Hongqi Auto Kazakhstan",
+      "modelsTab": "По моделям",
+      "ordersTab": "Заказы"
+    },
     "actions": {
       "goCatalog": "Перейти в каталог",
       "pickByModel": "Подобрать по модели",
@@ -610,7 +617,20 @@
       "hero": {
         "eyebrow": "Интернет-магазин запчастей Hongqi",
         "title": "Оригинальные запчасти Hongqi в Казахстане",
-        "subtitle": "Каталог с поиском по артикулу и OEM, складскими остатками, оплатой картой и переходом в Kaspi."
+        "subtitle": "Оригинальные запасные части для H5, H9, HS5, HS7, E-HS9 и всех моделей Hongqi. Прямые поставки с завода.",
+        "badge": "Официальный дилер · Алматы",
+        "line1": "Запчасти",
+        "line2": "Hongqi",
+        "line3": "в Казахстане",
+        "call": "Позвонить",
+        "previewEyebrow": "Каталог 2026",
+        "previewTitle": "Оригинальные запчасти",
+        "warrantyLabel": "Гарантия",
+        "warrantyText": "на все запчасти",
+        "stockText": "позиций в наличии",
+        "deliveryLabel": "Доставка",
+        "deliveryDays": "дней",
+        "catalogLead": "Фильтрация по категории, модели и OEM, быстрый переход в карточку товара и добавление в корзину без лишних шагов."
       },
       "models": {
         "eyebrow": "Подбор по модели",
@@ -663,7 +683,11 @@
     "catalog": {
       "eyebrow": "Каталог",
       "title": "Каталог запчастей Hongqi",
-      "subtitle": "Фильтрация без перезагрузки по модели, категории, подкатегории, наличию и поисковому запросу.",
+      "subtitle": "Фильтрация без перезагрузки по модели, категории, наличию и поисковому запросу.",
+      "categoryTitle": "Категория",
+      "allCategories": "Все категории",
+      "modelTitle": "Модель авто",
+      "filtersTitle": "Фильтры",
       "searchPlaceholder": "Название, артикул или OEM",
       "priceFrom": "Цена от",
       "priceTo": "Цена до",
@@ -677,6 +701,12 @@
       "empty": "По вашему фильтру товары не найдены."
     },
     "product": {
+      "backToCatalog": "Назад в каталог",
+      "originalBadge": "Оригинальная запчасть",
+      "quantity": "Количество",
+      "quickOrder": "Быстрый заказ",
+      "deliveryDetail": "2-5 дней по Казахстану",
+      "warrantyDetail": "12 месяцев на оригинальные запчасти",
       "article": "Артикул",
       "oem": "OEM номер",
       "manufacturer": "Производитель",
@@ -764,12 +794,17 @@
       "newProduct": "Новый товар",
       "productSlug": "Slug товара",
       "productName": "Название товара",
+      "categoryName": "Название категории",
+      "categorySlug": "Slug категории",
+      "categoryDescription": "Описание категории",
+      "categorySlugHint": "Заполните название на английском, и slug для ссылки соберется автоматически. Поле slug можно скорректировать вручную.",
+      "productDescription": "Описание товара",
+      "productDescriptionHint": "Этот текст показывается на странице товара. Можно редактировать отдельно для RU / EN / KZ.",
       "shortDescription": "Краткое описание",
       "price": "Цена",
       "stock": "Остаток",
       "modelsComma": "Модели через запятую",
       "addCategory": "Добавить категорию",
-      "addSubcategory": "Добавить подкатегорию",
       "addModel": "Добавить модель",
       "addSeoPage": "Добавить SEO-страницу",
       "summarySku": "SKU",
