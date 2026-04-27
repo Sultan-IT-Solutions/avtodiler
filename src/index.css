@@ -75,6 +75,19 @@
 
 /* ===== COMPONENT STYLES ===== */
 @layer components {
+  .parts-scope {
+    font-family: 'Inter', system-ui, sans-serif !important;
+  }
+
+  .parts-scope :where(a, button, div, h1, h2, h3, h4, h5, h6, input, label, p, select, span, textarea) {
+    font-family: 'Inter', system-ui, sans-serif !important;
+  }
+
+  .parts-serif,
+  .parts-serif * {
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif !important;
+  }
+
   /* Glass Morphism - Multiple levels */
   .glass {
     background: rgba(255, 255, 255, 0.03);

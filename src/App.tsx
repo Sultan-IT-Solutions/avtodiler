@@ -28,9 +28,13 @@ import {
   ShopCheckoutPage,
   ShopHomePage,
   ShopRequestPage,
+} from './pages/ShopExperience';
+import {
   ShopStoresPage,
 } from './pages/ShopPages';
-import { publicApi } from './utils/publicApi';
+import {
+  publicApi,
+} from './utils/publicApi';
 import { localizedText } from './utils/localizedText';
 import type { SeoItem } from './types/admin';
 
@@ -518,9 +522,9 @@ const AppShell = () => {
   return (
     <RouteErrorBoundary>
       <div className="min-h-screen bg-luxury-black noise-overlay">
-        {!isAdmin && <CustomCursor />}
+        {!isAdmin && !isOwnersRoute && <CustomCursor />}
         {!isAdmin && (isOwnersRoute ? <OwnersNavigation /> : <SiteNavigation />)}
-        {!isAdmin && <FloatingWhatsApp />}
+        {!isAdmin && !isOwnersRoute && <FloatingWhatsApp />}
         <main>
           <AnimatedRoutes />
         </main>

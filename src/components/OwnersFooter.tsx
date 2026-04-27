@@ -1,101 +1,82 @@
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { ArrowUpRight, MapPin, Phone } from 'lucide-react';
 
 export const OwnersFooter = () => {
-  const { t } = useTranslation();
-  const ownerLinks = [
-    { path: '/hongqi-parts', label: t('nav.parts') },
-    { path: '/hongqi-parts/catalog', label: t('shop.actions.goCatalog') },
-    { path: '/hongqi-parts#service', label: t('shop.home.quickActions.service.title') },
-    { path: '/hongqi-parts/stores', label: t('shop.stores.title') },
-    { path: '/hongqi-parts/request', label: t('shop.request.title') },
-  ];
+  const catalogLinks = ['Двигатель', 'Подвеска', 'Тормоза', 'Электрика', 'Оптика'];
+  const modelLinks = ['Hongqi H5', 'Hongqi H9', 'Hongqi HS5', 'Hongqi HS7', 'Hongqi E-HS9'];
 
   return (
-    <footer className="border-t border-black/6 bg-[linear-gradient(180deg,#fff8f6_0%,#f6efec_100%)]">
-      <div className="container mx-auto px-6 py-12 lg:px-16 lg:py-16">
-        <div className="grid gap-10 xl:grid-cols-[1.2fr_0.8fr_0.8fr]">
-          <div className="relative overflow-hidden rounded-[34px] border border-luxury-burgundy/12 bg-[linear-gradient(135deg,#ffffff_0%,#fff6f3_100%)] p-8 shadow-[0_28px_80px_rgba(157,34,53,0.08)] lg:p-10">
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-luxury-burgundy/10 blur-3xl" />
-              <div className="absolute bottom-0 left-0 h-32 w-32 rounded-full bg-[#fff1ec] blur-3xl" />
-            </div>
-            <div className="relative z-10">
-              <p className="inline-flex items-center rounded-full border border-luxury-burgundy/12 bg-luxury-burgundy/6 px-4 py-2 text-[10px] uppercase tracking-[0.28em] text-black/55">
-              {t('shop.home.hero.dealerBadge')}
-              </p>
-              <h2 className="mt-6 font-display text-[clamp(32px,4vw,52px)] font-semibold leading-[1.02] text-[#1e1716]">
-                {t('shop.home.hero.titleLine1')} <span className="text-luxury-burgundy">{t('shop.home.hero.titleHighlight')}</span>
-                <br />
-                <span className="text-black/25">{t('shop.home.hero.titleLine2')}</span>
-              </h2>
-              <p className="mt-5 max-w-2xl text-sm leading-7 text-black/62">
-                {t('shop.home.hero.subtitle')}
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  to="/hongqi-parts#service-booking"
-                  className="inline-flex items-center gap-2 rounded-xl bg-luxury-burgundy px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-luxury-burgundyHover"
-                >
-                  {t('shop.home.quickActions.service.title')}
-                </Link>
-                <Link
-                  to="/hongqi-parts/catalog"
-                  className="inline-flex items-center gap-2 rounded-xl border border-luxury-burgundy/18 bg-[#fff9f8] px-6 py-3 text-[11px] uppercase tracking-[0.2em] text-[#7b2232] transition-all duration-300 hover:border-luxury-burgundy/30 hover:text-[#5d1725]"
-                >
-                  {t('shop.actions.goCatalog')}
-                </Link>
-              </div>
-            </div>
+    <footer className="parts-scope bg-[#050505] text-white">
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="grid gap-12 border-b border-white/8 pb-16 md:grid-cols-4">
+          <div>
+            <Link to="/hongqi-parts" className="inline-flex flex-col leading-none">
+              <span className="parts-serif text-base font-semibold uppercase tracking-[0.16em]">
+                HONGQI
+              </span>
+              <span className="mt-1 flex items-center gap-2">
+                <span className="h-px w-6 bg-luxury-burgundy" />
+                <span className="text-[7px] uppercase tracking-[0.35em] text-white/30">
+                  ЗАПЧАСТИ
+                </span>
+              </span>
+            </Link>
+            <p className="mt-6 max-w-[14rem] text-sm leading-7 text-white/32">
+              Оригинальные запчасти для автомобилей Hongqi с гарантией качества.
+            </p>
           </div>
 
-          <div className="rounded-[30px] border border-luxury-burgundy/14 bg-[linear-gradient(180deg,#ffffff_0%,#fff7f4_100%)] p-8 shadow-[0_20px_56px_rgba(157,34,53,0.08)]">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-black/50">
-              {t('shop.routes.shop')}
-            </p>
-            <div className="mt-6 grid gap-3">
-              {ownerLinks.map((link, index) => (
+          <div>
+            <h4 className="text-[10px] uppercase tracking-[0.28em] text-white/25">Каталог</h4>
+            <div className="mt-6 space-y-3 text-sm text-white/38">
+              {catalogLinks.map((item) => (
                 <Link
-                  key={link.path}
-                  to={link.path}
-                  className="group flex items-center justify-between gap-4 rounded-2xl border border-luxury-burgundy/14 bg-white px-4 py-4 text-sm font-medium text-[#2a2220] shadow-[0_12px_30px_rgba(157,34,53,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-luxury-burgundy/28 hover:shadow-[0_16px_36px_rgba(157,34,53,0.1)]"
+                  key={item}
+                  to="/hongqi-parts/catalog"
+                  className="block transition-colors hover:text-white/72"
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-luxury-burgundy/18 bg-luxury-burgundy/8 text-[10px] uppercase tracking-[0.18em] text-luxury-burgundy">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="min-w-0">{link.label}</span>
-                  </div>
-                  <ArrowUpRight size={15} className="shrink-0 text-black/40 transition-colors duration-300 group-hover:text-luxury-burgundy" />
+                  {item}
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[30px] border border-luxury-burgundy/12 bg-white/92 p-8 shadow-[0_20px_56px_rgba(157,34,53,0.06)]">
-            <p className="text-[10px] uppercase tracking-[0.28em] text-black/40">{t('footer.contact')}</p>
-            <div className="mt-6 grid gap-4 text-sm text-black/65">
-              <a
-                href="tel:+77753813839"
-                className="flex items-start gap-3 rounded-2xl border border-black/8 bg-[#fff8f7] px-4 py-4 transition-all duration-300 hover:-translate-y-0.5 hover:text-black"
-              >
-                <Phone size={16} className="mt-0.5 text-luxury-burgundy" />
-                <span>+7 (775) 381-38-39</span>
-              </a>
-              <div className="flex items-start gap-3 rounded-2xl border border-black/8 bg-[#fff8f7] px-4 py-4">
-                <MapPin size={16} className="mt-0.5 text-luxury-burgundy" />
-                <span>{t('footer.address')}</span>
-              </div>
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-luxury-burgundy transition-colors hover:text-[#5d1725]"
-              >
-                {t('nav.contact')}
-                <ArrowUpRight size={14} />
-              </Link>
+          <div>
+            <h4 className="text-[10px] uppercase tracking-[0.28em] text-white/25">Модели</h4>
+            <div className="mt-6 space-y-3 text-sm text-white/38">
+              {modelLinks.map((item) => (
+                <Link
+                  key={item}
+                  to={`/hongqi-parts/catalog?model=${encodeURIComponent(item.replace('Hongqi ', ''))}`}
+                  className="block transition-colors hover:text-white/72"
+                >
+                  {item}
+                </Link>
+              ))}
             </div>
           </div>
+
+          <div>
+            <h4 className="text-[10px] uppercase tracking-[0.28em] text-white/25">Контакты</h4>
+            <div className="mt-6 space-y-3 text-sm text-white/38">
+              <p>г. Алматы, ул. Тимирязева 42</p>
+              <a href="tel:+77001234567" className="block transition-colors hover:text-white/72">
+                +7 700 123 45 67
+              </a>
+              <a
+                href="mailto:parts@hongqi-almaty.kz"
+                className="block transition-colors hover:text-white/72"
+              >
+                parts@hongqi-almaty.kz
+              </a>
+              <p className="pt-2 text-xs text-white/25">Пн-Пт: 09:00-18:00</p>
+              <p className="text-xs text-white/25">Сб: 10:00-15:00</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 pt-8 text-[10px] uppercase tracking-[0.24em] text-white/20 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 HONGQI AUTO KAZAKHSTAN</p>
+          <p>Все права защищены</p>
         </div>
       </div>
     </footer>

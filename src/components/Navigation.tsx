@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Phone, ShoppingBag } from 'lucide-react';
+import { Phone, ShoppingCart } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 
 const CART_RETURN_PATH_KEY = 'hongqi-cart-return-path';
@@ -124,23 +124,23 @@ const OwnersCartButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`relative inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 transition-all duration-300 ${
+    className={`group relative inline-flex items-center gap-2 rounded-lg border px-4 py-2 transition-all duration-300 ${
       active
-        ? 'border-luxury-burgundy/45 bg-luxury-burgundy/10 text-[#6d1727]'
-        : 'border-black/10 bg-white/90 text-black/65 hover:border-luxury-burgundy/25 hover:bg-white hover:text-black'
+        ? 'border-white/30 bg-white/5 text-white'
+        : 'border-white/10 text-white/60 hover:border-white/30 hover:bg-white/5 hover:text-white'
     }`}
     aria-label={label}
   >
-    <ShoppingBag size={16} strokeWidth={1.8} />
+    <ShoppingCart className="h-4 w-4 transition-colors" strokeWidth={1.8} />
     {cartCount > 0 ? (
       <>
-        <span className="text-[11px] uppercase tracking-[0.18em] text-black/55">{cartCount}</span>
-        <span className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-luxury-burgundy px-1 text-[10px] font-semibold text-white">
+        <span className="text-[11px] tracking-wide text-white/60 transition-colors group-hover:text-white">
           {cartCount}
         </span>
+        <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#e7282d]" />
       </>
     ) : (
-      <span className="hidden text-[11px] uppercase tracking-[0.18em] text-black/45 sm:inline">
+      <span className="hidden text-[11px] tracking-wide text-white/40 sm:inline">
         {label}
       </span>
     )}
@@ -407,22 +407,30 @@ export const SiteNavigation = () => {
 export const OwnersNavigation = () => {
   const {
     t,
-    i18n,
     location,
     cartCount,
     cartNotice,
     isMobileMenuOpen,
     setIsMobileMenuOpen,
-    changeLanguage,
     handleCartClick,
-    navLinks,
   } = useNavigationBase();
   const [isScrolled, setIsScrolled] = useState(false);
-  const ownerEyebrow = [
-    t('shop.home.hero.chips.service'),
-    t('shop.home.hero.chips.parts'),
-    t('shop.home.hero.chips.support'),
-  ].join(' · ');
+  const navLinks: NavLink[] = [
+    { path: '/hongqi-parts', label: 'Запчасти' },
+    { path: '/hongqi-parts/catalog', label: 'По моделям' },
+    { path: '/hongqi-parts/request', label: 'Заказы' },
+  ];
+  const isOwnersNavActive = (path: string) => {
+    if (path === '/hongqi-parts') {
+      return location.pathname !== '/hongqi-parts/request' && isOwnersRoute(location.pathname);
+    }
+
+    if (path === '/hongqi-parts/request') {
+      return location.pathname === '/hongqi-parts/request';
+    }
+
+    return false;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -437,17 +445,17 @@ export const OwnersNavigation = () => {
     <Link
       key={link.path}
       to={link.path}
-      className={`relative px-4 py-2 text-[11px] uppercase tracking-[0.16em] transition-colors duration-300 ${
-        isLinkActive(location.pathname, link.path)
-          ? 'text-[#701729]'
-          : 'text-black/45 hover:text-black/80'
+      className={`relative px-5 py-2 text-[11px] uppercase tracking-[0.15em] transition-all duration-300 ${
+        isOwnersNavActive(link.path)
+          ? 'text-white'
+          : 'text-white/40 hover:text-white/80'
       }`}
     >
       {link.label}
-      {isLinkActive(location.pathname, link.path) ? (
+      {isOwnersNavActive(link.path) ? (
         <motion.span
           layoutId="owners-nav-line"
-          className="absolute bottom-0 left-1/2 h-px w-4 -translate-x-1/2 bg-luxury-burgundy"
+          className="absolute bottom-0 left-1/2 h-px w-4 -translate-x-1/2 bg-[#e7282d]"
         />
       ) : null}
     </Link>
@@ -459,38 +467,38 @@ export const OwnersNavigation = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ${
+        className={`parts-scope fixed left-0 right-0 top-0 z-50 transition-all duration-500 ${
           isScrolled
-            ? 'border-b border-black/5 bg-[rgba(249,245,243,0.94)] shadow-[0_18px_40px_rgba(157,34,53,0.08)] backdrop-blur-xl'
-            : 'bg-[rgba(249,245,243,0.78)] backdrop-blur-md'
+            ? 'bg-black/95 shadow-lg shadow-black/20 backdrop-blur-xl'
+            : 'bg-transparent'
         }`}
       >
-        <div className="border-b border-black/6">
-          <div className="container mx-auto flex h-8 items-center justify-between px-4 sm:px-6 lg:px-8">
-            <span className="truncate pr-3 text-[9px] uppercase tracking-[0.3em] text-black/35">
-              {ownerEyebrow}
+        <div className="border-b border-white/5 transition-all duration-300">
+          <div className="mx-auto flex h-8 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <span className="truncate pr-3 text-[9px] uppercase tracking-[0.3em] text-white/30">
+              HONGQI AUTO KAZAKHSTAN
             </span>
             <a
-              href="tel:+77753813839"
-              className="inline-flex shrink-0 items-center gap-1.5 text-[9px] uppercase tracking-[0.22em] text-black/35 transition-colors hover:text-black/70"
+              href="tel:+77001234567"
+              className="inline-flex shrink-0 items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] text-white/30 transition-colors hover:text-white/60"
             >
               <Phone className="h-2.5 w-2.5" />
-              +7 775 381 38 39
+              +7 700 123 45 67
             </a>
           </div>
         </div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between gap-4">
             <Link to="/hongqi-parts" className="group flex items-center gap-3">
               <div className="flex flex-col leading-none">
-                <span className="font-display text-base font-semibold uppercase tracking-[0.16em] text-black">
+                <span className="parts-serif text-base font-semibold uppercase tracking-[0.15em] text-white">
                   HONGQI
                 </span>
-                <div className="mt-1 flex items-center gap-2">
-                  <div className="h-px w-8 bg-luxury-burgundy" />
-                  <span className="whitespace-nowrap text-[7px] uppercase tracking-[0.35em] text-black/40">
-                    {t('nav.parts')}
+                <div className="mt-0.5 flex items-center gap-2">
+                  <div className="h-px flex-1 bg-[#e7282d]" />
+                  <span className="whitespace-nowrap text-[7px] uppercase tracking-[0.35em] text-white/40">
+                    ЗАПЧАСТИ
                   </span>
                 </div>
               </div>
@@ -501,21 +509,6 @@ export const OwnersNavigation = () => {
             </nav>
 
             <div className="hidden items-center gap-3 lg:flex">
-              <div className="flex items-center gap-1 border-r border-black/8 pr-3">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className={`rounded-lg px-2.5 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-all ${
-                      i18n.language === lang.code
-                        ? 'bg-luxury-burgundy text-white'
-                        : 'text-black/40 hover:bg-black/[0.03] hover:text-black/75'
-                    }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
               <OwnersCartButton
                 active={location.pathname === '/cart'}
                 cartCount={cartCount}
@@ -533,24 +526,24 @@ export const OwnersNavigation = () => {
               />
               <button
                 onClick={() => setIsMobileMenuOpen((value) => !value)}
-                className="flex h-10 w-10 items-center justify-center text-black/60"
+                className="flex h-10 w-10 items-center justify-center text-white/60"
                 aria-label="Toggle menu"
               >
                 <div className="relative flex h-4 w-6 flex-col justify-between">
                   <motion.span
                     animate={{ rotate: isMobileMenuOpen ? 45 : 0, y: isMobileMenuOpen ? 7 : 0 }}
                     transition={{ duration: 0.25 }}
-                    className="block h-px w-full origin-center bg-black"
+                    className="block h-px w-full origin-center bg-white"
                   />
                   <motion.span
                     animate={{ opacity: isMobileMenuOpen ? 0 : 1, x: isMobileMenuOpen ? 12 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="block h-px w-full bg-black"
+                    className="block h-px w-full bg-white"
                   />
                   <motion.span
                     animate={{ rotate: isMobileMenuOpen ? -45 : 0, y: isMobileMenuOpen ? -7 : 0 }}
                     transition={{ duration: 0.25 }}
-                    className="block h-px w-full origin-center bg-black"
+                    className="block h-px w-full origin-center bg-white"
                   />
                 </div>
               </button>
@@ -561,7 +554,7 @@ export const OwnersNavigation = () => {
 
       <CartNotice
         text={cartNotice ? t('shop.cart.added') : ''}
-        className="top-24 rounded-2xl border border-luxury-burgundy/20 bg-white/95 text-[#5a1422]"
+        className="top-24 rounded-lg border border-white/10 bg-[#111] text-white"
       />
 
       <AnimatePresence>
@@ -571,7 +564,7 @@ export const OwnersNavigation = () => {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed left-0 right-0 top-24 z-40 overflow-hidden border-t border-black/6 bg-[rgba(249,245,243,0.96)] shadow-[0_20px_40px_rgba(157,34,53,0.08)] backdrop-blur-xl lg:hidden"
+            className="parts-scope fixed left-0 right-0 top-24 z-40 overflow-hidden border-t border-white/5 bg-black/98 shadow-[0_20px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl lg:hidden"
           >
             <div className="space-y-1 px-4 py-4 sm:px-6">
               {navLinks.map((link) => (
@@ -579,36 +572,20 @@ export const OwnersNavigation = () => {
                   key={link.path}
                   to={link.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors ${
-                    isLinkActive(location.pathname, link.path)
-                      ? 'bg-luxury-burgundy/10 text-[#701729]'
-                      : 'text-black/50 hover:bg-black/[0.03] hover:text-black/80'
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3.5 text-[11px] uppercase tracking-[0.2em] transition-colors ${
+                    isOwnersNavActive(link.path)
+                      ? 'bg-white/8 text-white'
+                      : 'text-white/42 hover:bg-white/[0.04] hover:text-white'
                   }`}
                 >
                   <span
                     className={`inline-block h-px w-4 ${
-                      isLinkActive(location.pathname, link.path) ? 'bg-luxury-burgundy' : 'bg-black/10'
+                      isOwnersNavActive(link.path) ? 'bg-luxury-burgundy' : 'bg-white/10'
                     }`}
                   />
                   {link.label}
                 </Link>
               ))}
-
-              <div className="mt-4 flex flex-wrap gap-2 border-t border-black/8 pt-4">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => changeLanguage(lang.code)}
-                    className={`rounded-xl px-3 py-2 text-[10px] uppercase tracking-[0.22em] transition-all ${
-                      i18n.language === lang.code
-                        ? 'bg-luxury-burgundy text-white'
-                        : 'border border-black/10 text-black/45 hover:bg-black/[0.03] hover:text-black/80'
-                    }`}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
             </div>
           </motion.div>
         ) : null}

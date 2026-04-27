@@ -214,6 +214,185 @@ export const seedShopState: ShopState = {
       compatibility: [
         { modelCode: 'H5', year: '2022-2026', engine: '1.5T / 2.0T', note: { ru: 'Уточнить VIN', en: 'Confirm by VIN', kz: 'VIN arkyly naktylau kerek' } }
       ]
+    },
+    {
+      id: 'p-h9-left-mirror',
+      slug: 'left-side-mirror-h9-heated',
+      name: { ru: 'Зеркало боковое левое H9 с обогревом', en: 'Left heated side mirror H9', kz: 'H9 sol zhak zhylitylatyn aina' },
+      categorySlug: 'body',
+      subcategorySlug: 'mirrors',
+      article: 'HQ-BD-H9-006',
+      oem: '8202100-HQ9L',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 68000,
+      stock: 6,
+      images: ['https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=900&q=80'],
+      models: ['H9'],
+      popular: true,
+      description: { ru: 'Левое зеркало с подогревом и повторителем поворота.', en: 'Left mirror with heating and turn signal repeater.', kz: 'Zhylitu zhane burylu korshetkishi bar sol aina.' },
+      seoText: { ru: 'Подбирается по VIN для точного совпадения комплектации.', en: 'VIN matching is recommended for exact trim compatibility.', kz: 'Daiyn zhabdykpen saikestendiru ushin VIN arkyly tekseriledi.' },
+      specs: [
+        { id: 'side', label: { ru: 'Сторона', en: 'Side', kz: 'Zhak' }, value: { ru: 'Левая', en: 'Left', kz: 'Sol' } }
+      ],
+      compatibility: [
+        { modelCode: 'H9', year: '2020-2026', engine: '2.0T / 3.0T', note: { ru: 'С обогревом', en: 'With heating', kz: 'Zhylitumen' } }
+      ]
+    },
+    {
+      id: 'p-ehs9-rear-air-shock',
+      slug: 'rear-air-shock-e-hs9',
+      name: { ru: 'Амортизатор пневматический задний E-HS9', en: 'Rear air shock absorber E-HS9', kz: 'E-HS9 artky pnevmatikalyk amortizator' },
+      categorySlug: 'suspension',
+      subcategorySlug: 'shock-absorbers',
+      article: 'HQ-SS-EHS9-004',
+      oem: '2915100XJZ09A',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 120000,
+      stock: 4,
+      images: ['https://images.unsplash.com/photo-1625047509248-ec889cbff17f?auto=format&fit=crop&w=900&q=80'],
+      models: ['E-HS9'],
+      popular: true,
+      description: { ru: 'Задний пневмоамортизатор для штатной подвески E-HS9.', en: 'Rear air shock for the OEM E-HS9 suspension.', kz: 'E-HS9 standartty aspasy ushin artky pnevmoamortizator.' },
+      seoText: { ru: 'Рекомендуется установка в сертифицированном сервисе.', en: 'Certified service installation is recommended.', kz: 'Sertifikattalgan serviste ornatu usynylady.' },
+      specs: [
+        { id: 'position', label: { ru: 'Расположение', en: 'Position', kz: 'Ornalasuy' }, value: { ru: 'Задняя ось', en: 'Rear axle', kz: 'Artky os' } }
+      ],
+      compatibility: [
+        { modelCode: 'E-HS9', year: '2021-2026', engine: 'EV', note: { ru: 'Пневмоподвеска', en: 'Air suspension', kz: 'Pnevmoaspa' } }
+      ]
+    },
+    {
+      id: 'p-h9-stabilizer-link',
+      slug: 'front-stabilizer-link-h9',
+      name: { ru: 'Стойка стабилизатора передняя H9', en: 'Front stabilizer link H9', kz: 'H9 aldyngy stabilizator tiregi' },
+      categorySlug: 'suspension',
+      subcategorySlug: 'control-arms',
+      article: 'HQ-SL-H9-009',
+      oem: '2906300-HQ9F',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 12000,
+      stock: 0,
+      images: ['https://images.unsplash.com/photo-1600706432502-77a0e2e32716?auto=format&fit=crop&w=900&q=80'],
+      models: ['H9'],
+      description: { ru: 'Передняя стойка стабилизатора для H9.', en: 'Front stabilizer link for H9.', kz: 'H9 ushin aldyngy stabilizator tiregi.' },
+      seoText: { ru: 'Доступна под заказ при отсутствии на складе.', en: 'Available by request when out of stock.', kz: 'Koimada bolmasa tapsyryspen zhetkiziledi.' },
+      specs: [
+        { id: 'axle', label: { ru: 'Ось', en: 'Axle', kz: 'Os' }, value: { ru: 'Передняя', en: 'Front', kz: 'Aldyngy' } }
+      ],
+      compatibility: [
+        { modelCode: 'H9', year: '2020-2026', engine: '2.0T / 3.0T', note: { ru: 'Проверить по VIN', en: 'Check by VIN', kz: 'VIN boiynsha tekseru' } }
+      ]
+    },
+    {
+      id: 'p-eqm5-fog-lamp',
+      slug: 'front-fog-lamp-e-qm5',
+      name: { ru: 'Фара противотуманная передняя E-QM5', en: 'Front fog lamp E-QM5', kz: 'E-QM5 aldyngy tumanga karsy fara' },
+      categorySlug: 'body',
+      subcategorySlug: 'headlights',
+      article: 'HQ-LT-EQM5-012',
+      oem: '4116100EQM5',
+      manufacturer: 'FAW OEM',
+      price: 39000,
+      stock: 7,
+      images: ['https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80'],
+      models: ['EQM5'],
+      description: { ru: 'Передняя противотуманная фара для E-QM5.', en: 'Front fog lamp for E-QM5.', kz: 'E-QM5 ushin aldyngy tumanga karsy fara.' },
+      seoText: { ru: 'Оригинальная оптика с заводским разъемом.', en: 'Genuine lighting with OEM connector.', kz: 'Zauyttyk konektory bar tupnuska optika.' },
+      specs: [
+        { id: 'type', label: { ru: 'Тип', en: 'Type', kz: 'Turi' }, value: { ru: 'LED', en: 'LED', kz: 'LED' } }
+      ],
+      compatibility: [
+        { modelCode: 'EQM5', year: '2021-2026', engine: 'EV', note: { ru: 'Передняя часть', en: 'Front', kz: 'Aldyngy bolik' } }
+      ]
+    },
+    {
+      id: 'p-hs5-air-filter',
+      slug: 'engine-air-filter-hs5',
+      name: { ru: 'Воздушный фильтр двигателя HS5', en: 'Engine air filter HS5', kz: 'HS5 kozgaltkysh aua suzgisi' },
+      categorySlug: 'engine',
+      subcategorySlug: 'filters',
+      article: 'HQ-AF-HS5-003',
+      oem: '1109101-HS5',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 14500,
+      stock: 18,
+      images: ['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80'],
+      models: ['HS5'],
+      popular: true,
+      description: { ru: 'Оригинальный воздушный фильтр двигателя для HS5.', en: 'Genuine engine air filter for HS5.', kz: 'HS5 ushin tupnuska kozgaltkysh aua suzgisi.' },
+      seoText: { ru: 'Подходит для планового обслуживания каждые 10 000 км.', en: 'Fits scheduled service every 10,000 km.', kz: 'Ar 10 000 km zhosparly kyzmetke saikes.' },
+      specs: [
+        { id: 'interval', label: { ru: 'Интервал', en: 'Interval', kz: 'Interval' }, value: { ru: '10 000 км', en: '10,000 km', kz: '10 000 km' } }
+      ],
+      compatibility: [
+        { modelCode: 'HS5', year: '2020-2026', engine: '2.0T', note: { ru: 'Штатная замена', en: 'OEM replacement', kz: 'Standartty auystyru' } }
+      ]
+    },
+    {
+      id: 'p-h5-right-headlight',
+      slug: 'right-led-headlight-h5',
+      name: { ru: 'Фара LED передняя правая H5', en: 'Right LED headlight H5', kz: 'H5 on zhak aldyngy LED fara' },
+      categorySlug: 'body',
+      subcategorySlug: 'headlights',
+      article: 'HQ-BD-H5-031',
+      oem: '4121200-H5R',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 176000,
+      stock: 3,
+      images: ['https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80'],
+      models: ['H5'],
+      description: { ru: 'Правая передняя LED-фара для Hongqi H5.', en: 'Right front LED headlight for Hongqi H5.', kz: 'Hongqi H5 ushin on aldyngy LED fara.' },
+      seoText: { ru: 'Поставляется в сборе, проверяется по VIN.', en: 'Ships as an assembly, VIN check recommended.', kz: 'Zhinak turinde zhetkiziledi, VIN tekseriledi.' },
+      specs: [
+        { id: 'side', label: { ru: 'Сторона', en: 'Side', kz: 'Zhak' }, value: { ru: 'Правая', en: 'Right', kz: 'On' } }
+      ],
+      compatibility: [
+        { modelCode: 'H5', year: '2022-2026', engine: '1.5T / 2.0T', note: { ru: 'LED-комплектация', en: 'LED trim', kz: 'LED zhabdyk' } }
+      ]
+    },
+    {
+      id: 'p-hs7-oil-kit',
+      slug: 'oil-service-kit-hs7',
+      name: { ru: 'Комплект масла и фильтра HS7', en: 'Oil and filter kit HS7', kz: 'HS7 mai zhane suzgi zhiintygy' },
+      categorySlug: 'consumables',
+      subcategorySlug: 'oils',
+      article: 'HQ-CO-HS7-022',
+      oem: '5W30-HS7-KIT',
+      manufacturer: 'FAW OEM',
+      price: 41000,
+      stock: 10,
+      images: ['https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=900&q=80'],
+      models: ['HS7'],
+      description: { ru: 'Комплект для базового ТО: масло и масляный фильтр.', en: 'Basic service kit: oil and oil filter.', kz: 'Negizgi TO zhiintygy: mai zhane mai suzgisi.' },
+      seoText: { ru: 'Подходит для регламентной замены в сервисе Hongqi.', en: 'Fits scheduled replacement at a Hongqi service.', kz: 'Hongqi servisindegi reglamenttik auystyru ushin.' },
+      specs: [
+        { id: 'viscosity', label: { ru: 'Вязкость', en: 'Viscosity', kz: 'Tutkyrlyk' }, value: { ru: '5W-30', en: '5W-30', kz: '5W-30' } }
+      ],
+      compatibility: [
+        { modelCode: 'HS7', year: '2020-2026', engine: '2.0T / 3.0T', note: { ru: 'Регламент ТО', en: 'Service interval', kz: 'TO reglamenti' } }
+      ]
+    },
+    {
+      id: 'p-h6-brake-disc',
+      slug: 'front-brake-disc-h6',
+      name: { ru: 'Тормозной диск передний H6', en: 'Front brake disc H6', kz: 'H6 aldyngy tezhigish diski' },
+      categorySlug: 'brakes',
+      subcategorySlug: 'rotors',
+      article: 'HQ-BR-H6-018',
+      oem: '3501102-H6F',
+      manufacturer: 'Hongqi Genuine Parts',
+      price: 52000,
+      stock: 9,
+      images: ['https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=900&q=80'],
+      models: ['H6'],
+      description: { ru: 'Передний тормозной диск для Hongqi H6.', en: 'Front brake disc for Hongqi H6.', kz: 'Hongqi H6 ushin aldyngy tezhigish diski.' },
+      seoText: { ru: 'Рекомендуется менять парой на одной оси.', en: 'Recommended to replace in axle pairs.', kz: 'Bir osta zhup boiynsha auystyru usynylady.' },
+      specs: [
+        { id: 'axle', label: { ru: 'Ось', en: 'Axle', kz: 'Os' }, value: { ru: 'Передняя', en: 'Front', kz: 'Aldyngy' } }
+      ],
+      compatibility: [
+        { modelCode: 'H6', year: '2023-2026', engine: '2.0T', note: { ru: 'Передняя ось', en: 'Front axle', kz: 'Aldyngy os' } }
+      ]
     }
   ],
   stores: [

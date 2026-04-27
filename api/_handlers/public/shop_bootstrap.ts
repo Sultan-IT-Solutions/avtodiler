@@ -1,11 +1,17 @@
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
+import { getPublicShopBootstrapMemory, isShopMemoryMode } from '../shop/_memory.js';
 import { ensureShopSeed } from '../shop/_seed.js';
 import type { VercelRequest, VercelResponse } from '../shop/_shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     json(res, 405, { ok: false, error: 'Method not allowed' });
+    return;
+  }
+
+  if (isShopMemoryMode()) {
+    json(res, 200, { ok: true, ...getPublicShopBootstrapMemory() });
     return;
   }
 
