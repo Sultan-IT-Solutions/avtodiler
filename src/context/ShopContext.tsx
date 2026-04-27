@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 import { useLocation } from 'react-router-dom';
-import { seedShopState } from '../data/shopSeed';
+import { emptyShopState } from '../data/emptyShopState';
 import type { CartItem, CategoryItem, HongqiModel, InventoryMovement, OrderItem, ProductItem, ReviewItem, SeoPage, ShopState, StoreItem } from '../types/shop';
 import { shopAdminApi, shopPublicApi } from '../utils/shopApi';
 
@@ -63,7 +63,7 @@ const ShopContext = createContext<ShopContextValue | null>(null);
 
 export const ShopProvider = ({ children }: PropsWithChildren) => {
   const location = useLocation();
-  const [state, setState] = useState<ShopState>(seedShopState);
+  const [state, setState] = useState<ShopState>(emptyShopState);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartNotice, setCartNotice] = useState('');
   const [isLoading, setIsLoading] = useState(true);

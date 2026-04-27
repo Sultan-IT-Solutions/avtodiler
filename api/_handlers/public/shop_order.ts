@@ -1,8 +1,6 @@
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
-import { createMemoryOrder, isShopMemoryMode } from '../shop/_memory.js';
 import { readRawBody, safeJsonParse, type VercelRequest, type VercelResponse } from '../shop/_shared.js';
-import type { OrderItem } from '../../../src/types/shop.js';
 
 type OrderPayload = {
   id: string;
@@ -34,34 +32,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const data = body.data;
   if (!id || !data || typeof data !== 'object' || !Array.isArray(data.items)) {
     json(res, 400, { ok: false, error: 'Missing fields: id, data.items' });
-    return;
-  }
-
-  if (isShopMemoryMode()) {
-    const memoryOrder: OrderItem = {
-      id,
-      name: typeof data.name === 'string' ? data.name : '',
-      phone: typeof data.phone === 'string' ? data.phone : '',
-      city: typeof data.city === 'string' ? data.city : '',
-      comment: typeof data.comment === 'string' ? data.comment : '',
-      paymentMethod:
-        data.paymentMethod === 'kaspi' || data.paymentMethod === 'manager'
-          ? data.paymentMethod
-          : 'card',
-      bank: typeof data.bank === 'string' ? data.bank : undefined,
-      status:
-        data.paymentMethod === 'card'
-          ? 'paid'
-          : data.status === 'shipped' || data.status === 'completed' || data.status === 'paid'
-            ? data.status
-            : 'new',
-      createdAt: typeof data.createdAt === 'string' ? data.createdAt : new Date().toISOString(),
-      total: typeof data.total === 'number' ? data.total : 0,
-      items: data.items,
-    };
-
-    createMemoryOrder(memoryOrder);
-    json(res, 200, { ok: true });
     return;
   }
 

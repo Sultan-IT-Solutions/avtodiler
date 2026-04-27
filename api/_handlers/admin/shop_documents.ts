@@ -91,6 +91,14 @@ const deleteRow = async (sql: ReturnType<typeof getSql>, collection: CollectionK
   }
 };
 
+const getCollectionFromQuery = (req: VercelRequest) => {
+  const url = new URL(req.url ?? '', 'http://localhost');
+  return {
+    collection: getCollection(url.searchParams.get('collection')),
+    id: url.searchParams.get('id'),
+  };
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const guard = requireBasicAuth(req, res);
   if (!guard.ok) return;
@@ -101,8 +109,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sql = getSql();
 
   if (req.method === 'GET') {
-    const url = new URL(req.url ?? '', 'http://localhost');
-    const collection = getCollection(url.searchParams.get('collection'));
+    const { collection } = getCollectionFromQuery(req);
     if (!collection) {
       json(res, 400, { ok: false, error: 'Missing or invalid query param: collection' });
       return;
@@ -134,13 +141,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'DELETE') {
-    const url = new URL(req.url ?? '', 'http://localhost');
-    const collection = getCollection(url.searchParams.get('collection'));
-    const id = url.searchParams.get('id');
+    const { collection, id } = getCollectionFromQuery(req);
     if (!collection || !id) {
       json(res, 400, { ok: false, error: 'Missing query params: collection, id' });
       return;
     }
+
     await deleteRow(sql, collection, id);
     json(res, 200, { ok: true });
     return;

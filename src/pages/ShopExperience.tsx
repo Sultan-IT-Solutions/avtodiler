@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Car,
+  Check,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
@@ -17,6 +18,7 @@ import {
   Lightbulb,
   Mail,
   MapPin,
+  MessageCircle,
   Minus,
   Phone,
   Plus,
@@ -24,6 +26,7 @@ import {
   Settings,
   Shield,
   ShieldCheck,
+  ShoppingBag,
   ShoppingCart,
   Truck,
   Wrench,
@@ -230,12 +233,16 @@ const CategorySidebar = ({
   activeSubcategory,
   model,
   setModel,
+  setCategorySlug,
+  setSubcategorySlug,
 }: {
   categories: CategoryItem[];
   activeCategory?: CategoryItem;
   activeSubcategory?: CategoryItem['subcategories'][number];
   model: string;
   setModel: (value: string) => void;
+  setCategorySlug: (value: string) => void;
+  setSubcategorySlug: (value: string) => void;
 }) => {
   const { state } = useShop();
   const { t, i18n } = useTranslation();
@@ -246,23 +253,31 @@ const CategorySidebar = ({
         Категория
       </p>
       <div className="space-y-0.5">
-        <Link
-          to="/hongqi-parts/catalog"
-          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+        <button
+          type="button"
+          onClick={() => {
+            setCategorySlug('');
+            setSubcategorySlug('');
+          }}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all ${
             !activeCategory ? 'bg-[#111] text-white' : 'text-black/45 hover:bg-[#f6f6f6] hover:text-black'
           }`}
         >
           <LayoutGrid className="h-4 w-4 shrink-0 opacity-70" />
           <span className="flex-1 font-medium">Все категории</span>
-        </Link>
+        </button>
         {categories.map((category) => {
           const Icon = categoryIcons[category.slug] ?? LayoutGrid;
           const active = activeCategory?.id === category.id;
           return (
             <div key={category.id}>
-              <Link
-                to={`/hongqi-parts/catalog/${category.slug}`}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all ${
+              <button
+                type="button"
+                onClick={() => {
+                  setCategorySlug(category.slug);
+                  setSubcategorySlug('');
+                }}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all ${
                   active && !activeSubcategory
                     ? 'bg-[#111] text-white'
                     : 'text-black/45 hover:bg-[#f6f6f6] hover:text-black'
@@ -273,21 +288,27 @@ const CategorySidebar = ({
                   {localizedText(category.name, { lng: i18n.language })}
                 </span>
                 <ChevronRight className="h-3.5 w-3.5 opacity-30" />
-              </Link>
+              </button>
               {active ? (
                 <div className="mb-1 ml-4 mt-0.5 border-l-2 border-black/10 pl-3">
                   {category.subcategories.map((subcategory) => (
-                    <Link
+                    <button
                       key={subcategory.id}
-                      to={`/hongqi-parts/catalog/${category.slug}/${subcategory.slug}`}
-                      className={`block rounded-lg px-3 py-2 text-xs transition-all ${
+                      type="button"
+                      onClick={() => {
+                        setCategorySlug(category.slug);
+                        setSubcategorySlug(
+                          activeSubcategory?.id === subcategory.id ? '' : subcategory.slug
+                        );
+                      }}
+                      className={`block w-full rounded-lg px-3 py-2 text-left text-xs transition-all ${
                         activeSubcategory?.id === subcategory.id
                           ? 'bg-[#e7282d]/10 text-[#e7282d]'
                           : 'text-black/45 hover:bg-[#f6f6f6] hover:text-black'
                       }`}
                     >
                       {localizedText(subcategory.name, { lng: i18n.language })}
-                    </Link>
+                    </button>
                   ))}
                 </div>
               ) : null}
@@ -342,20 +363,27 @@ const CatalogBlock = ({
   const { t, i18n } = useTranslation();
   const { state } = useShop();
   const location = useLocation();
-  const { categorySlug, subcategorySlug } = useParams();
+  const { categorySlug: routeCategorySlug, subcategorySlug: routeSubcategorySlug } = useParams();
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [model, setModel] = useState(params.get('model') ?? '');
   const [sort, setSort] = useState<'default' | 'priceAsc' | 'priceDesc'>('default');
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState(routeCategorySlug ?? '');
+  const [selectedSubcategorySlug, setSelectedSubcategorySlug] = useState(routeSubcategorySlug ?? '');
   const deferredQuery = useDeferredValue(query);
-  const category = state.categories.find((item) => item.slug === categorySlug);
-  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
+  const category = state.categories.find((item) => item.slug === selectedCategorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === selectedSubcategorySlug);
 
   useEffect(() => {
     setQuery(params.get('q') ?? '');
     setModel(params.get('model') ?? '');
   }, [params]);
+
+  useEffect(() => {
+    setSelectedCategorySlug(routeCategorySlug ?? '');
+    setSelectedSubcategorySlug(routeSubcategorySlug ?? '');
+  }, [routeCategorySlug, routeSubcategorySlug]);
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
@@ -366,8 +394,9 @@ const CatalogBlock = ({
         product.article.toLowerCase().includes(q) ||
         product.oem.toLowerCase().includes(q);
       const modelMatch = !model || product.models.includes(model);
-      const categoryMatch = !categorySlug || product.categorySlug === categorySlug;
-      const subcategoryMatch = !subcategorySlug || product.subcategorySlug === subcategorySlug;
+      const categoryMatch = !selectedCategorySlug || product.categorySlug === selectedCategorySlug;
+      const subcategoryMatch =
+        !selectedSubcategorySlug || product.subcategorySlug === selectedSubcategorySlug;
       return queryMatch && modelMatch && categoryMatch && subcategoryMatch;
     });
 
@@ -375,7 +404,15 @@ const CatalogBlock = ({
     if (sort === 'priceDesc') items.sort((a, b) => b.price - a.price);
     if (sort === 'default') items.sort((a, b) => Number(Boolean(b.popular)) - Number(Boolean(a.popular)));
     return items;
-  }, [categorySlug, deferredQuery, i18n.language, model, sort, state.products, subcategorySlug]);
+  }, [
+    deferredQuery,
+    i18n.language,
+    model,
+    selectedCategorySlug,
+    selectedSubcategorySlug,
+    sort,
+    state.products,
+  ]);
 
   const pageTitle = subcategory
     ? localizedText(subcategory.name, { lng: i18n.language })
@@ -454,6 +491,8 @@ const CatalogBlock = ({
                 activeSubcategory={subcategory}
                 model={model}
                 setModel={setModel}
+                setCategorySlug={setSelectedCategorySlug}
+                setSubcategorySlug={setSelectedSubcategorySlug}
               />
             </motion.div>
           ) : null}
@@ -468,6 +507,8 @@ const CatalogBlock = ({
                 activeSubcategory={subcategory}
                 model={model}
                 setModel={setModel}
+                setCategorySlug={setSelectedCategorySlug}
+                setSubcategorySlug={setSelectedSubcategorySlug}
               />
             </div>
           </aside>
@@ -481,8 +522,14 @@ const CatalogBlock = ({
             ) : (
               <div className="rounded-2xl border border-black/6 bg-white p-12 text-center">
                 <Search className="mx-auto h-8 w-8 text-black/20" />
-                <h3 className="mt-5 text-xl font-semibold">Ничего не найдено</h3>
-                <p className="mt-2 text-sm text-black/45">Попробуйте изменить параметры поиска.</p>
+                <h3 className="mt-5 text-xl font-semibold">
+                  {state.products.length ? 'Ничего не найдено' : 'Каталог пока пуст'}
+                </h3>
+                <p className="mt-2 text-sm text-black/45">
+                  {state.products.length
+                    ? 'Попробуйте изменить параметры поиска.'
+                    : 'Товары и категории появятся здесь после добавления через админ-панель.'}
+                </p>
               </div>
             )}
           </div>
@@ -994,10 +1041,14 @@ export const ShopCatalogPage = () => {
 
 export const ShopProductPage = () => {
   const { t, i18n } = useTranslation();
-  const { state, addToCart } = useShop();
+  const { state, addToCart, submitPartRequest } = useShop();
   const navigate = useNavigate();
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [requestForm, setRequestForm] = useState({ name: '', phone: '', comment: '' });
+  const [requestSent, setRequestSent] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
   const product = state.products.find((item) => item.slug === slug);
 
   if (!product) {
@@ -1012,107 +1063,245 @@ export const ShopProductPage = () => {
   }
 
   const productName = localizedText(product.name, { lng: i18n.language });
+  const category = state.categories.find((item) => item.slug === product.categorySlug);
+  const categoryName = category ? localizedText(category.name, { lng: i18n.language }) : product.categorySlug;
+  const description = localizedText(product.description, { lng: i18n.language });
+  const total = product.price * quantity;
+  const inStock = product.stock > 0;
+  const requestPhoneError = phoneTouched && !isValidPhone(requestForm.phone);
   const related = state.products
     .filter((item) => item.id !== product.id && item.categorySlug === product.categorySlug)
     .slice(0, 4);
+  const handleAddToCart = () => {
+    if (!inStock) return;
+    addToCart(product.id, quantity);
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1800);
+  };
+  const handleProductRequest = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPhoneTouched(true);
+    if (!isValidPhone(requestForm.phone)) return;
+    submitPartRequest({
+      name: requestForm.name,
+      phone: requestForm.phone,
+      vin: '',
+      comment: `Запрос по товару: ${productName} (${product.article}). ${requestForm.comment}`.trim(),
+    });
+    setRequestSent(true);
+    setRequestForm({ name: '', phone: '', comment: '' });
+    setPhoneTouched(false);
+  };
 
   return (
-    <div className="bg-white pt-32 text-black">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+    <div className="parts-scope bg-[#fbfbfb] pt-32 text-black">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-black/45 hover:text-black"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-black/45 transition-colors hover:text-black"
         >
           <ArrowLeft className="h-4 w-4" />
           Назад в каталог
         </button>
-        <div className="mt-10 grid gap-12 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border border-black/6 bg-[#fafafa]">
-            <SmartImage src={product.images[0]} alt={productName} className="aspect-square w-full object-cover" />
+
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+            <div className="aspect-square bg-[#f6f6f6]">
+              <SmartImage src={product.images[0]} alt={productName} className="h-full w-full object-cover" />
+            </div>
           </div>
-          <div>
+
+          <div className="py-4">
             <div className="mb-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e7282d]/10 px-3 py-1 text-xs font-semibold text-[#e7282d]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#e7282d]/10 px-3 py-1 text-xs font-medium text-[#e7282d]">
                 <BadgeCheck className="h-3.5 w-3.5" />
-                OEM
+                Оригинальная запчасть
               </span>
-              <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                {product.stock > 0 ? t('shop.stock.inStock') : t('shop.stock.outOfStock')}
+              <span className={`rounded-full px-3 py-1 text-xs font-medium ${inStock ? 'bg-green-50 text-green-700' : 'bg-[#f1f1f1] text-black/45'}`}>
+                {inStock ? t('shop.stock.inStock') : t('shop.stock.outOfStock')}
               </span>
             </div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-black/35">
-              {product.article} · {product.models.join(', ')}
+            <p className="mb-2 text-xs tracking-wider text-black/45">
+              Артикул: {product.article} · Модель: {product.models.join(', ')} · {categoryName}
             </p>
-            <h1 className={`${displayFont} mt-4 text-4xl font-semibold leading-tight md:text-5xl`}>
+            <h1 className={`${displayFont} mb-6 text-2xl font-semibold leading-tight md:text-3xl`}>
               {productName}
             </h1>
-            <p className="mt-6 text-4xl font-bold">{formatPrice(product.price)}</p>
-            <p className="mt-6 text-base font-semibold leading-8 text-black/50">
-              {localizedText(product.description, { lng: i18n.language })}
-            </p>
 
-            <div className="mt-8 flex items-center gap-4">
-              <span className="text-sm font-semibold text-black/45">Количество:</span>
-              <div className="flex overflow-hidden rounded-xl border border-black/8">
-                <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} className="h-11 w-11">
-                  <Minus className="mx-auto h-4 w-4" />
-                </button>
-                <span className="flex h-11 min-w-12 items-center justify-center px-3 text-sm font-semibold">
-                  {quantity}
-                </span>
-                <button type="button" onClick={() => setQuantity((value) => value + 1)} className="h-11 w-11">
-                  <Plus className="mx-auto h-4 w-4" />
-                </button>
+            <div className="mb-6 rounded-xl border border-black/10 bg-white p-6">
+              <div className="mb-6 flex items-end gap-3">
+                <span className="text-3xl font-semibold">{formatPrice(product.price)}</span>
               </div>
+              <div className="mb-6 flex items-center gap-4">
+                <span className="text-sm text-black/45">Количество:</span>
+                <div className="flex items-center overflow-hidden rounded-lg border border-black/10">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                    className="p-2 transition-colors hover:bg-[#f6f6f6]"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="min-w-12 px-4 py-2 text-center text-sm font-medium">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((value) => value + 1)}
+                    className="p-2 transition-colors hover:bg-[#f6f6f6]"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={!inStock}
+                onClick={handleAddToCart}
+                className={`flex w-full items-center justify-center gap-2 rounded-lg py-3.5 text-sm font-medium transition-all disabled:opacity-50 ${
+                  added ? 'bg-green-600 text-white' : 'bg-[#111] text-white hover:bg-[#222]'
+                }`}
+              >
+                {added ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    Добавлено в корзину
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4" />
+                    В корзину · {formatPrice(total)}
+                  </>
+                )}
+              </button>
             </div>
 
-            <button
-              type="button"
-              disabled={product.stock <= 0}
-              onClick={() => addToCart(product.id, quantity)}
-              className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#111] text-sm font-bold text-white transition-colors hover:bg-[#222] disabled:opacity-50"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              {t('shop.actions.addToCart')} · {formatPrice(product.price * quantity)}
-            </button>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <a
+                href="#product-request"
+                className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-[#e7282d] py-3.5 text-sm font-semibold text-white transition-all hover:bg-[#e7282d]/90 hover:shadow-lg hover:shadow-[#e7282d]/25"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Быстрый заказ
+              </a>
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={!inStock}
+                className={`flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-medium transition-all disabled:opacity-50 ${
+                  added
+                    ? 'border-green-600 bg-green-600 text-white'
+                    : 'border-black/10 bg-white hover:border-black/30 hover:bg-[#f6f6f6]'
+                }`}
+              >
+                {added ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    В корзине
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4" />
+                    В корзину
+                  </>
+                )}
+              </button>
+              <a
+                href={`https://wa.me/77001234567?text=${encodeURIComponent(`Здравствуйте! Меня интересует запчасть: ${productName}, арт. ${product.article}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-sm font-medium text-black transition-all hover:border-green-400 hover:bg-green-50"
+              >
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                WhatsApp
+              </a>
+              <a
+                href={product.kaspiUrl ?? 'https://kaspi.kz/shop/search/?text=hongqi+запчасти'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="col-span-2 flex items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-sm font-medium text-black transition-all hover:border-[#f14635]/40 hover:bg-[#f14635]/5"
+              >
+                <span className="text-base font-bold leading-none text-[#f14635]">K</span>
+                Найти в Kaspi магазине
+              </a>
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-4">
+                <Truck className="h-5 w-5 text-black/45" />
+                <div>
+                  <p className="text-xs font-medium">Доставка</p>
+                  <p className="text-xs text-black/45">2-5 дней по РК</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-white p-4">
+                <Shield className="h-5 w-5 text-black/45" />
+                <div>
+                  <p className="text-xs font-medium">Гарантия</p>
+                  <p className="text-xs text-black/45">12 месяцев</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <section className="mt-16 grid gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-black/6 bg-white p-8">
-            <h2 className={`${displayFont} text-3xl font-semibold`}>{t('shop.product.characteristics')}</h2>
-            <div className="mt-6 divide-y divide-black/8">
-              {product.specs.map((spec) => (
-                <div key={spec.id} className="grid gap-2 py-4 sm:grid-cols-2">
-                  <span className="text-sm font-semibold text-black/45">
-                    {localizedText(spec.label, { lng: i18n.language })}
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {localizedText(spec.value, { lng: i18n.language })}
-                  </span>
-                </div>
-              ))}
+        {description ? (
+          <section className="mt-10">
+            <h2 className={`${displayFont} mb-4 text-xl font-semibold`}>Описание</h2>
+            <div className="relative overflow-hidden rounded-2xl border border-black/10 bg-gradient-to-br from-stone-50 to-white p-8">
+              <div className="pointer-events-none absolute right-0 top-0 h-48 w-48 -translate-y-1/2 translate-x-1/2 rounded-full bg-[#e7282d]/5" />
+              <p className="relative leading-relaxed text-black/45">{description}</p>
             </div>
-          </div>
-          <div className="rounded-2xl border border-black/6 bg-white p-8">
-            <h2 className={`${displayFont} text-3xl font-semibold`}>{t('shop.product.compatibility')}</h2>
-            <div className="mt-6 divide-y divide-black/8">
-              {product.compatibility.map((item, index) => (
-                <div key={`${item.modelCode}-${index}`} className="grid gap-2 py-4 sm:grid-cols-3">
-                  <span className="text-sm font-semibold">{item.modelCode}</span>
-                  <span className="text-sm text-black/50">{item.year}</span>
-                  <span className="text-sm text-black/50">{item.engine}</span>
-                </div>
-              ))}
-            </div>
+          </section>
+        ) : null}
+
+        <section className="mt-10">
+          <h2 className={`${displayFont} mb-5 text-xl font-semibold`}>Характеристики</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {[
+              { label: 'Артикул', value: product.article, highlight: true },
+              { label: 'Модель', value: product.models.join(', ') },
+              { label: 'Категория', value: categoryName },
+              { label: 'Тип', value: 'Оригинал (OEM)' },
+              { label: 'Наличие', value: inStock ? 'В наличии' : 'Под заказ', green: inStock },
+              { label: 'Гарантия', value: '12 месяцев' },
+              { label: 'Доставка', value: '2-5 дней по РК' },
+              { label: 'Цена', value: formatPrice(product.price), highlight: true },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className={`rounded-2xl border p-4 ${
+                  item.highlight
+                    ? 'border-[#111] bg-[#111] text-white'
+                    : item.green
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-black/10 bg-white'
+                }`}
+              >
+                <p
+                  className={`mb-1.5 text-[10px] font-medium uppercase tracking-widest ${
+                    item.highlight ? 'text-white/60' : item.green ? 'text-green-600' : 'text-black/45'
+                  }`}
+                >
+                  {item.label}
+                </p>
+                <p
+                  className={`text-sm font-semibold ${
+                    item.highlight ? 'text-white' : item.green ? 'text-green-700' : 'text-black'
+                  }`}
+                >
+                  {item.value}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
         {related.length ? (
           <section className="mt-16">
-            <h2 className={`${displayFont} text-4xl font-semibold`}>{t('shop.product.related')}</h2>
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <h2 className={`${displayFont} mb-6 text-xl font-semibold`}>{t('shop.product.related')}</h2>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {related.map((item, index) => (
                 <ProductCard key={item.id} product={item} index={index} />
               ))}
@@ -1120,6 +1309,82 @@ export const ShopProductPage = () => {
           </section>
         ) : null}
       </div>
+
+      <section id="product-request" className="mt-20 bg-[#0a0a0a] py-20">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+          {requestSent ? (
+            <div className="py-12 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-[#e7282d]/30">
+                <CheckCircle2 className="h-7 w-7 text-[#e7282d]" />
+              </div>
+              <p className={`${displayFont} mb-2 text-xl font-semibold text-white`}>Заявка отправлена!</p>
+              <p className="text-sm text-white/40">Мы свяжемся с вами в течение 15 минут.</p>
+            </div>
+          ) : (
+            <>
+              <p className="mb-3 text-center text-[10px] uppercase tracking-[0.3em] text-white/40">Заявка</p>
+              <h2 className={`${displayFont} mb-2 text-center text-2xl font-semibold text-white md:text-3xl`}>
+                Интересует этот товар?
+              </h2>
+              <p className="mb-10 text-center text-sm text-white/40">
+                Оставьте заявку - мы перезвоним и уточним детали заказа
+              </p>
+              <form
+                onSubmit={handleProductRequest}
+                className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.04] p-8"
+              >
+                <div className="mb-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
+                  Товар: <span className="text-white">{productName}</span>
+                  <span className="ml-3 text-white/30">Арт. {product.article}</span>
+                </div>
+                {[
+                  { key: 'name', label: 'Ваше имя', placeholder: 'Иванов Иван', required: true },
+                  { key: 'phone', label: 'Телефон', placeholder: '+7 700 000 00 00', required: true },
+                ].map((field) => (
+                  <label key={field.key} className="block">
+                    <span className="mb-1.5 block text-[10px] uppercase tracking-widest text-white/40">
+                      {field.label}
+                    </span>
+                    <input
+                      required={field.required}
+                      value={requestForm[field.key as 'name' | 'phone']}
+                      onChange={(event) =>
+                        setRequestForm((current) => ({ ...current, [field.key]: event.target.value }))
+                      }
+                      onBlur={() => {
+                        if (field.key === 'phone') setPhoneTouched(true);
+                      }}
+                      placeholder={field.placeholder}
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-white/20 focus:border-[#e7282d]/50"
+                    />
+                  </label>
+                ))}
+                {requestPhoneError ? <p className="text-sm text-[#e7282d]">{t('shop.forms.phoneError')}</p> : null}
+                <label className="block">
+                  <span className="mb-1.5 block text-[10px] uppercase tracking-widest text-white/40">
+                    Комментарий
+                  </span>
+                  <textarea
+                    value={requestForm.comment}
+                    onChange={(event) =>
+                      setRequestForm((current) => ({ ...current, comment: event.target.value }))
+                    }
+                    placeholder="Дополнительные пожелания..."
+                    rows={3}
+                    className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-white/20 focus:border-[#e7282d]/50"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  className="w-full rounded-xl bg-[#e7282d] py-3.5 text-sm font-medium text-white transition-all hover:bg-[#e7282d]/90"
+                >
+                  Отправить заявку
+                </button>
+              </form>
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

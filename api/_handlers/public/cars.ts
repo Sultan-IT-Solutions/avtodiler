@@ -18,11 +18,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  if (!process.env.DATABASE_URL?.trim()) {
-    json(res, 200, { ok: true, items: [] });
-    return;
-  }
-
   const sql = getSql();
   const rows = await sql`select id, data, updated_at from cars order by updated_at desc`;
   json(res, 200, { ok: true, items: rows });

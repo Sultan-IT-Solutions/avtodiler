@@ -1,8 +1,6 @@
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
-import { createMemoryRequest, isShopMemoryMode } from '../shop/_memory.js';
 import { readRawBody, safeJsonParse, type VercelRequest, type VercelResponse } from '../shop/_shared.js';
-import type { PartRequestItem } from '../../../src/types/shop.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -21,12 +19,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const id = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : null;
   if (!id || !body.data || typeof body.data !== 'object') {
     json(res, 400, { ok: false, error: 'Missing fields: id, data' });
-    return;
-  }
-
-  if (isShopMemoryMode()) {
-    createMemoryRequest(body.data as PartRequestItem);
-    json(res, 200, { ok: true });
     return;
   }
 

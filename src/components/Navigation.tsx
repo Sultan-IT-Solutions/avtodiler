@@ -437,6 +437,7 @@ export const OwnersNavigation = () => {
       setIsScrolled(window.scrollY > 40);
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -467,10 +468,8 @@ export const OwnersNavigation = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className={`parts-scope fixed left-0 right-0 top-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'bg-black/95 shadow-lg shadow-black/20 backdrop-blur-xl'
-            : 'bg-transparent'
+        className={`parts-scope fixed left-0 right-0 top-0 z-50 bg-black/95 backdrop-blur-xl transition-all duration-500 ${
+          isScrolled ? 'shadow-lg shadow-black/20' : 'shadow-none'
         }`}
       >
         <div className="border-b border-white/5 transition-all duration-300">

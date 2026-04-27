@@ -2,7 +2,6 @@ import { requireBasicAuth } from './_guard.js';
 import { requireAdminSession } from './_session.js';
 import { getSql } from '../_db.js';
 import { json } from '../_http.js';
-import { ensureShopSeed } from '../shop/_seed.js';
 import type { VercelRequest, VercelResponse } from '../shop/_shared.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -17,7 +16,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  await ensureShopSeed();
   const sql = getSql();
   const [models, categories, products, stores, reviews, requests, orders, inventoryMovements, seoPages] = await Promise.all([
     sql`select id, data, updated_at from shop_models order by updated_at desc`,

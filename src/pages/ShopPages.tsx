@@ -1994,10 +1994,10 @@ const ProductEditor = ({
     subcategorySlug: categories[0]?.subcategories[0]?.slug ?? '',
     article: '',
     oem: '',
-    manufacturer: 'Hongqi Genuine Parts',
+    manufacturer: '',
     price: 0,
     stock: 0,
-    images: [SITE_IMAGES.secondary, SITE_IMAGES.cta, SITE_IMAGES.hero],
+    images: [],
     models: [],
     description: emptyLocale(),
     seoText: emptyLocale(),
@@ -2092,6 +2092,20 @@ const ProductEditor = ({
           value={draft.kaspiUrl ?? ''}
           onChange={(event) => setDraft({ ...draft, kaspiUrl: event.target.value })}
           placeholder="Kaspi URL"
+        />
+        <Textarea
+          value={draft.images.join('\n')}
+          onChange={(event) =>
+            setDraft({
+              ...draft,
+              images: event.target.value
+                .split(/\n|,/)
+                .map((item) => item.trim())
+                .filter(Boolean),
+            })
+          }
+          placeholder="URL изображений, каждое с новой строки"
+          className="lg:col-span-2"
         />
       </div>
       <div className="mt-4 grid gap-4">
@@ -2376,7 +2390,17 @@ export const ShopAdminPage = ({
                 </button>
                 {state.categories.map((category) => (
                   <div key={category.id} className="card-luxury p-6">
-                    <div className="grid gap-4 lg:grid-cols-3">
+                    <div className="grid gap-4 lg:grid-cols-4">
+                      <Input
+                        value={category.slug}
+                        onChange={(event) =>
+                          saveCategory({
+                            ...category,
+                            slug: event.target.value,
+                          })
+                        }
+                        placeholder="Slug категории"
+                      />
                       {(['ru', 'en', 'kz'] as const).map((locale) => (
                         <Input
                           key={locale}
