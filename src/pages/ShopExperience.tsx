@@ -47,6 +47,16 @@ const displayFont = 'parts-serif';
 
 const formatPrice = (value: number) => `${new Intl.NumberFormat('en-US').format(value)} ₸`;
 
+const partsCountLabel = (count: number) => {
+  const lastTwo = count % 100;
+  const last = count % 10;
+
+  if (lastTwo >= 11 && lastTwo <= 14) return `${count} запчастей`;
+  if (last === 1) return `${count} запчасть`;
+  if (last >= 2 && last <= 4) return `${count} запчасти`;
+  return `${count} запчастей`;
+};
+
 const useShopSeo = (path: string, fallback?: SeoPage['h1']) => {
   const { state } = useShop();
   const { i18n } = useTranslation();
@@ -1035,6 +1045,85 @@ export const ShopCatalogPage = () => {
   return (
     <div className="bg-white pt-32">
       <CatalogBlock showTopPadding={false} />
+    </div>
+  );
+};
+
+export const ShopModelsPage = () => {
+  const { state } = useShop();
+
+  useShopSeo('/hongqi-parts/models', {
+    ru: 'Запчасти по моделям',
+    en: 'Parts by model',
+    kz: 'Модель бойынша қосалқы бөлшектер',
+  });
+
+  const cards = useMemo(
+    () =>
+      state.models
+        .map((model) => {
+          const count = state.products.filter((product) =>
+            product.models.includes(model.code)
+          ).length;
+
+          return {
+            id: model.id,
+            code: model.code,
+            label: localizedText(model.name, { lng: 'ru', fallbackLng: 'ru' }),
+            count,
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label, 'ru')),
+    [state.models, state.products]
+  );
+
+  return (
+    <div className="parts-scope min-h-screen bg-[#fbfbfb] pt-32 text-black">
+      <section className="mx-auto max-w-7xl px-4 pb-24 pt-12 sm:px-6 lg:px-8">
+        <div className="mb-14">
+          <h1 className={`${displayFont} text-4xl font-semibold leading-tight md:text-5xl`}>
+            Запчасти по моделям
+          </h1>
+          <p className="mt-3 text-lg font-medium text-black/45">
+            Выберите модель вашего автомобиля
+          </p>
+        </div>
+
+        {cards.length ? (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {cards.map((model, index) => (
+              <motion.div
+                key={model.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.32, delay: index * 0.04 }}
+              >
+                <Link
+                  to={`/hongqi-parts/catalog?model=${encodeURIComponent(model.code)}`}
+                  className="group flex min-h-36 items-start justify-between gap-6 rounded-2xl border border-black/[0.06] bg-white p-8 transition-all duration-300 hover:-translate-y-0.5 hover:border-black/15 hover:shadow-[0_18px_45px_rgba(0,0,0,0.06)]"
+                >
+                  <span>
+                    <span className={`${displayFont} block text-2xl font-semibold leading-none text-black`}>
+                      {model.label}
+                    </span>
+                    <span className="mt-8 block text-sm font-medium text-black/45">
+                      {partsCountLabel(model.count)}
+                    </span>
+                  </span>
+                  <ChevronRight className="mt-1 h-6 w-6 shrink-0 text-black/45 transition-transform group-hover:translate-x-1 group-hover:text-black" />
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-black/[0.06] bg-white p-12 text-center">
+            <h2 className="text-xl font-semibold">Модели пока не добавлены</h2>
+            <p className="mt-2 text-sm text-black/45">
+              Модели появятся здесь после добавления через админ-панель.
+            </p>
+          </div>
+        )}
+      </section>
     </div>
   );
 };

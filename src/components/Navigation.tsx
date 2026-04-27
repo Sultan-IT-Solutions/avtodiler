@@ -417,12 +417,21 @@ export const OwnersNavigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const navLinks: NavLink[] = [
     { path: '/hongqi-parts', label: 'Запчасти' },
-    { path: '/hongqi-parts/catalog', label: 'По моделям' },
+    { path: '/hongqi-parts/models', label: 'По моделям' },
     { path: '/hongqi-parts/request', label: 'Заказы' },
   ];
   const isOwnersNavActive = (path: string) => {
+    if (path === '/hongqi-parts/models') {
+      return location.pathname === '/hongqi-parts/models' || location.pathname === '/models';
+    }
+
     if (path === '/hongqi-parts') {
-      return location.pathname !== '/hongqi-parts/request' && isOwnersRoute(location.pathname);
+      return (
+        isOwnersRoute(location.pathname) &&
+        location.pathname !== '/hongqi-parts/request' &&
+        location.pathname !== '/hongqi-parts/models' &&
+        location.pathname !== '/models'
+      );
     }
 
     if (path === '/hongqi-parts/request') {

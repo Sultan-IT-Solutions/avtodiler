@@ -27,6 +27,7 @@ import {
   ShopCatalogResolverPage,
   ShopCheckoutPage,
   ShopHomePage,
+  ShopModelsPage,
   ShopRequestPage,
 } from './pages/ShopExperience';
 import {
@@ -482,7 +483,9 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/models" element={<ShopModelsPage />} />
           <Route path="/hongqi-parts" element={<ShopHomePage />} />
+          <Route path="/hongqi-parts/models" element={<ShopModelsPage />} />
           <Route path="/hongqi-parts/catalog" element={<ShopCatalogPage />} />
           <Route path="/hongqi-parts/catalog/:categorySlug" element={<ShopCatalogPage />} />
           <Route path="/hongqi-parts/catalog/:categorySlug/:subcategorySlug" element={<ShopCatalogPage />} />
@@ -513,6 +516,7 @@ const AppShell = () => {
   const isAdmin = location.pathname.startsWith('/admin');
   const isOwnersRoute =
     location.pathname.startsWith('/hongqi-parts') ||
+    location.pathname === '/models' ||
     location.pathname === '/cart' ||
     location.pathname === '/checkout' ||
     location.pathname === '/service';
